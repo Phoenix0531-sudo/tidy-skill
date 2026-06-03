@@ -1,0 +1,33 @@
+---
+description: Agent Tidy Skill — prevent agents from littering the project root with temporary Markdown files
+globs: ["*.md", "*.txt", "*.json"]
+---
+
+# Agent Tidy Rule for Cursor
+
+## Do Not
+- Create `plan.md`, `todo.md`, `summary.md`, `notes.md`, `lessons.md`, `report.md`, `final_report.md`, `work_summary.md`, `changes_summary.md`, `implementation_plan.md`, `migration_plan.md`, `audit_report.md`, `cleanup_report.md`, `task_list.md`, or `progress.md` in the project root.
+- Generate end-of-task summary files unless the user explicitly requests it.
+- Write a plan to disk when the user just asked for a plan in chat.
+
+## Do
+- Keep plans, todos, summaries, and progress in the chat reply.
+- Use `.agent_tmp/` for any temporary file. Prefix with a date/task context.
+- Use `.agent_reports/` for user-requested deliverable documents.
+- Put formal documentation under `docs/` — and only when asked.
+- Run the Artifact Intent Check before creating any file:
+
+```
+1. User requested a file?           yes / no
+2. Purpose:
+3. Reader:
+4. Expected lifetime:               session / days / persistent / formal-doc
+5. Destination path:
+6. Why a chat response is not enough:
+```
+
+## Protected Files
+Never modify without explicit request: `README.md`, `CHANGELOG.md`, `LICENSE`, `CONTRIBUTING.md`, everything under `docs/`.
+
+## End of Task
+Before finishing: clean your temp files from `.agent_tmp/`, verify no files were left in the root unintendedly.

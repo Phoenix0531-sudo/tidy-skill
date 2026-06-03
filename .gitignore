@@ -1,0 +1,19 @@
+# Agent Tidy Skill — default ignore rules
+#
+# These are the artifact directories that this Skill governs.
+# Anything placed in them by an AI agent should be considered
+# disposable working state, not part of the repository.
+
+.agent_tmp/
+.agent_reports/
+
+# Standard noise
+*.log
+.DS_Store
+Thumbs.db
+
+# Local editor / OS state — never commit
+.vscode/
+.idea/
+*.swp
+*.swo
