@@ -1,332 +1,178 @@
-# 洁癖.skill / Tidy Skill
+<h1 align="center">洁癖.skill</h1>
 
-Stop AI agents from littering your repo with `plan.md`, `todo.md`, `summary.md`, and throwaway artifacts.
+<p align="center">你想协作的下一个 AI Agent，何必自带垃圾生产线？</p>
 
-> A repo and workspace hygiene skill for people who like their AI agent outputs clean, intentional, and disposable when needed.
-
-[中文版](README.zh-CN.md)
-
----
-
-## What is Tidy Skill?
-
-Tidy Skill is an **AI agent artifact governance toolkit** for developers who care about code environment cleanliness. It does three things:
-
-1. **Teaches agents** to think before creating files — is this necessary? Where should it go? When should it be deleted?
-2. **Audits and scores** your repo hygiene — how clean is your project root? Are agent artifacts properly placed?
-3. **Safely cleans** what should be disposable — temporary files, expired reports — while **never** touching your formal documentation.
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
+  <img src="https://img.shields.io/badge/Agent_Skills-compatible-blueviolet.svg" alt="agent skills">
+  <img src="https://img.shields.io/badge/Standard_Skills-compatible-success.svg" alt="standard skills">
+  <img src="https://img.shields.io/badge/skills.sh-runtime-orange.svg" alt="skills.sh runtime">
+</p>
 
 ---
 
-## Why This Exists
+基于开放的 **Agent Skills** 协议，**洁癖.skill** 可以在任何兼容该规范的 AI Agent 运行环境（如 Claude Code, Cursor, Codex 等）中直接加载。它能在 Agent 运行期间自动约束其文件生成，并在根目录下进行全方位的洁癖审计、评分与安全清理，让你的代码环境始终干净如初。
 
-AI coding agents are productive. They are also messy.
-
-A single conversation produces `plan.md`, `todo.md`, `progress.md`, `summary.md`, `final_report.md`... Soon your project root is a landfill of single-use files no one asked for and no one maintains.
-
-Worse, different agents (Claude Code, Codex, Cursor) all write their own detritus. The problem is not Markdown. The problem is **no ownership, no lifecycle, no reusable value.**
-
-Tidy Skill does not ban files. It gives every artifact a purpose, a place, and a lifetime.
+[English Edition](README.en.md)
 
 ---
 
-## What It Does
-
-| Capability | Description |
-|---|---|
-| **Artifact Intent Check** | Forces agents to justify every file before creation |
-| **File generation rules** | Prevents generic Markdown from landing in project root |
-| **Repo hygiene scoring** | Scores your repo 0–100 across 6 dimensions |
-| **Workspace hygiene audit** | Scans multiple repos (with permission) for agent artifacts |
-| **Conservative cleanup** | DryRun-first; only cleans `.agent_tmp/` and `.agent_reports/` by default |
-| **Agent rules templates** | AGENTS.md, CLAUDE.md, Cursor Rules — drop-in and use |
+## 📖 目录
+* [🎯 核心特性](#-核心特性)
+* [⚡ 效果示例](#-效果示例)
+* [📦 安装与配置](#-安装与配置)
+* [🛡️ 产物安全边界](#-产物安全边界)
+* [🛠️ 脚本说明](#-脚本说明)
+* [🗺️ 路线图](#-路线图)
+* [📄 开源协议](#-开源协议)
 
 ---
 
-## Core Idea
+## 🎯 核心特性
 
-A file is not garbage because it is Markdown. It becomes garbage when it has **no intent, no owner, no reader, no lifecycle, and no reusable value.**
-
-> 不治理 Markdown，治理无归属、无生命周期、无复用价值的 Agent 产物。
+* 🔍 **产物意图检查 (Artifact Intent Check)**：强制 Agent 在创建任何文件前自审：此文件必须创建吗？为什么回复不够？
+* 🚫 **根目录防污染**：自动拦截 `plan.md`、`todo.md` 等无归属的临时 Markdown 文件进入项目根目录。
+* 💯 **仓库洁癖评分**：基于六大维度（0–100 分），深度诊断你的仓库文件整洁程度。
+* 📂 **工作区批量审计**：一键扫描并生成多个仓库的 Agent 垃圾产物汇总报告。
+* 🧹 **保守安全清理**：默认 DryRun 模式预览；仅清理过期的临时文件与报告，绝不触碰你的正式文档。
 
 ---
 
-## Quick Start
+## ⚡ 效果示例
 
-### 1. Audit a repo
+### 1. 洁癖评分与分析
+运行 `score-repo-hygiene.ps1` 可以得到直观的评分和建议报告：
 
-```powershell
-cd scripts/
-.\audit-agent-artifacts.ps1 -Root "C:\path\to\your\project"
+```
+Tidy Skill — Repo Hygiene Score
+Scoring: D:\3_Code_Projects\MyAwesomeProject
+
+Score: 71 / 100 — Mostly clean (基本干净)
+Report: D:\3_Code_Projects\MyAwesomeProject\.agent_reports\hygiene_score_2026-06-03_222912.md
+
+Dimension Breakdown:
+- Root cleanliness       : 18 / 25  (发现了 plan.md, todo.md)
+- Artifact placement     : 15 / 20  (临时文件未集中隔离)
+- Protected docs clarity : 12 / 15
+- Git hygiene            : 11 / 15
+- Agent state isolation  : 15 / 15
+- Cleanup readiness      : 0 / 10
 ```
 
-This produces a Markdown report. No files are modified.
-
-### 2. Score repo hygiene
-
-```powershell
-.\score-repo-hygiene.ps1 -Root "C:\path\to\your\project"
+### 2. 产物意图自审流程 (Artifact Intent Check)
+在你的项目里集成 Tidy Skill 后，Agent 在尝试写文件前必须运行以下自审：
 ```
-
-Gets a 0–100 hygiene score with breakdown.
-
-### 3. Dry-run cleanup
-
-```powershell
-.\clean-agent-artifacts.ps1 -Root "C:\path\to\your\project"
+产物意图检查 / Artifact Intent Check
+────────────────────────────────────
+1. 用户是否明确要求了文件？       是 / 否
+2. 用途：记录多模块重构步骤
+3. 读者：本次会话的 Agent
+4. 预期生命周期：                 会话级 (Session)
+5. 目标路径：                     .agent_tmp/refactor_steps.md
+6. 为什么聊天回复不够？           信息量过大，需要作为上下文持续引用
+7. 分类：                         Class C (临时工作产物)
+8. 应该被 Git 忽略吗？            是 (已在 .gitignore 中)
 ```
+任何一项无法回答，**就不要创建文件。**
 
-Preview what would be cleaned. Nothing is deleted.
+---
 
-### 4. Add agent rules to your project
+## 📦 安装与配置
 
+### 1. 作为 Skill 安装
+如果你使用的是兼容 Agent Skills 协议的 AI 平台，可以直接链接或复制本项目：
 ```bash
-cp templates/AGENTS.md /path/to/project/AGENTS.md
-cp templates/cursor-rule.mdc /path/to/project/.cursor/rules/agent-tidy.mdc
-```
-
----
-
-## Install as a Skill
-
-If your agent platform supports Skills (`.skill` directories), link or copy this directory:
-
-```bash
-# Link as a skill (macOS/Linux)
+# 链接本项目作为全局 Skill
 ln -s /path/to/tidy-skill ~/.your-agent/skills/tidy-skill
 
-# Copy as a skill
+# 或直接拷贝
 cp -r /path/to/tidy-skill ~/.your-agent/skills/tidy-skill
 ```
 
----
+### 2. 手动集成到各开发环境
+你可以直接将对应的模板复制到项目中：
 
-## Manual Install Paths
-
-### Claude Code
-
+#### 🤖 Claude Code
 ```bash
 cp templates/CLAUDE.md /path/to/your/project/CLAUDE.md
 ```
 
-### Cursor
-
+#### 🎨 Cursor
 ```bash
+# 复制 cursor 规则规则文件
 cp templates/cursor-rule.mdc /path/to/your/project/.cursor/rules/agent-tidy.mdc
 ```
 
-### Any Agent
-
+#### 🌐 通用 Agent (如 Codex 等)
 ```bash
 cp templates/AGENTS.md /path/to/your/project/AGENTS.md
 ```
 
-### Full Policy
-
+#### 📄 完整治理政策文档
 ```bash
 cp templates/artifact-governance-policy.md /path/to/your/project/docs/
 ```
 
----
-
-## Use in Your Repo
-
-Recommended `.gitignore` entries:
-
+### 3. 项目最佳实践
+推荐在你的项目 `.gitignore` 中加入以下配置，把 Agent 产生的临时文件彻底隔离在版本控制之外：
 ```gitignore
 .agent_tmp/
 .agent_reports/
 ```
 
-Recommended project layout:
-
+推荐的项目结构如下：
 ```
 project/
-├─ AGENTS.md
-├─ .agent_tmp/          # temporary agent files — auto-cleanable
-├─ .agent_reports/      # user-requested reports — 30-day retention
-├─ README.md
-├─ docs/                # formal documentation — protected
+├─ AGENTS.md            # Agent 自律准则 (Class A)
+├─ .agent_tmp/          # 临时 Agent 文件 (Class C - 自动清理)
+├─ .agent_reports/      # 用户要求的报告 (Class B - 30 天后自动清理)
+├─ README.md            # 正式文档 (Class A - 绝不触碰)
+├─ docs/                # 正式文档目录 (Class A - 绝不触碰)
 └─ src/
 ```
 
 ---
 
-## Artifact Intent Check
+## 🛡️ 产物安全边界
 
-Before creating any file, every agent must run this check:
-
-```
-Artifact Intent Check
-─────────────────────
-1. User requested a file?           yes / no
-2. Purpose:
-3. Reader:
-4. Expected lifetime:               session / days / persistent / formal-doc
-5. Destination path:
-6. Why a chat response is not enough:
-7. Class:                           temporary / persistent / formal-documentation
-8. Should this be in .gitignore?    yes / no
-```
-
-If any field cannot be answered confidently, **do not create the file.**
+所有的审计与清理操作都具备极高的安全保障：
+1. **只读审计**：审计脚本只扫描文件元数据（名称、大小、修改时间），不读取或上传文件正文。
+2. **默认 DryRun**：清理脚本默认只做预览，不会强行删除任何文件。
+3. **根目录安全**：根目录下的可疑文件仅做报告，不自动清理（除非使用 `-ConfirmClean` 参数）。
+4. **受保护名单（绝不删除）**：
+   - 项目核心文件：`README.md`、`LICENSE`、`CHANGELOG.md` 等。
+   - `docs/` 下的所有文档。
+   - Git 已跟踪的任何文件。
+   - 源代码（`src/`、`lib/`）与工具状态目录（`.claude/`、`.cursor/`、`.vscode/`）。
 
 ---
 
-## Repo Hygiene Score
+## 🛠️ 脚本说明
 
-Tidy Skill can score your repository on a 0–100 scale across six dimensions:
+本项目提供了零依赖的 PowerShell 脚本，可在 Windows (自带) 和 macOS/Linux (运行 pwsh) 上原生执行：
 
-| Dimension | Weight | What it measures |
+| 脚本 | 作用 | 安全性 |
 |---|---|---|
-| Root cleanliness | 25% | Are generic plan/todo/summary files littering the root? |
-| Artifact placement | 20% | Are temp files in `.agent_tmp/`? Reports in `.agent_reports/`? |
-| Protected docs clarity | 15% | Are README, LICENSE, docs/ well-structured? |
-| Git hygiene | 15% | Are artifact dirs gitignored? |
-| Agent state isolation | 15% | Are tool state dirs separate from project files? |
-| Cleanup readiness | 10% | Is there a clear cleanup path? |
-
-| Score | Rating |
-|---|---|
-| 90–100 | Clean |
-| 70–89 | Mostly clean |
-| 50–69 | Needs tidy-up |
-| 0–49 | Artifact landfill |
+| `audit-agent-artifacts.ps1` | 只读审计单个仓库中的 Agent 产物 | 只读，不改动任何文件 |
+| `score-repo-hygiene.ps1` | 按照六个维度给仓库整洁度评分 (0-100) | 只读 |
+| `audit-workspace-hygiene.ps1` | 扫描整个工作区内的多个 Git 仓库 | 只读，要求显式提供目录 |
+| `clean-agent-artifacts.ps1` | 清理过期的临时文件与报告 | 默认 DryRun |
+| `clean-agent-artifacts.bat` | Windows 双击一键清理工具包 | 默认 DryRun |
 
 ---
 
-## Workspace Hygiene Audit
+## 🗺️ 路线图
 
-For multi-repo setups, `audit-workspace-hygiene.ps1` scans a user-specified directory:
-
-```powershell
-.\audit-workspace-hygiene.ps1 -Root "E:\1_Code\Projects"
-```
-
-What it reports:
-- Hygiene score per repo
-- Top 10 messiest repos
-- Most common suspicious filenames
-- `.agent_tmp` / `.agent_reports` adoption
-- Global optimization suggestions
-
-**Privacy:** The root must be explicitly specified. The script never defaults to `C:\` or `$HOME`. No file contents are read. No data is uploaded.
+- [ ] **Pre-commit 集成**：在代码 commit 前自动进行洁癖审计。
+- [ ] **CI/CD 集成**：GitHub Actions 中自动进行仓库整洁度卫生检查。
+- [ ] **多语言脚本移植**：提供原生 Bash / Python 版本的脚本，免去 PowerShell 依赖。
+- [ ] **自定义权重**：允许用户自定义各个洁癖维度的扣分和计分权重。
+- [ ] **实时 MCP 插件**：开发 MCP server，实现 Agent 的实时产物治理。
 
 ---
 
-## Safe Cleanup
+## 📄 开源协议
 
-Every cleanup script follows these rules:
+MIT License — 详见 [LICENSE](LICENSE) 文件。
 
-1. **DryRun first.** Preview what would be deleted. Nothing happens without confirmation.
-2. **Default scope.** Only `.agent_tmp/` (7+ days old) and `.agent_reports/` (30+ days old).
-3. **Root-level suspicious files?** Reported, not deleted. Use `-ConfirmClean` to include them.
-4. **Protected files?** Never touched. See the full list below.
-
----
-
-## What It Will Never Delete by Default
-
-```
-README.md, README.*.md
-CHANGELOG.md
-LICENSE, LICENSE.*
-CONTRIBUTING.md
-CODE_OF_CONDUCT.md
-SECURITY.md
-Everything under docs/
-Any Git-tracked file outside .agent_tmp/ or .agent_reports/
-Source code (src/, lib/, app/)
-Tool state (.claude/, .cursor/, .codex/, .vscode/, *.sqlite)
-```
-
----
-
-## Examples
-
-See [examples/bad-artifacts.md](examples/bad-artifacts.md) and [examples/good-artifacts.md](examples/good-artifacts.md) for detailed walkthroughs.
-
-### Bad artifacts
-
-```
-./plan.md                 → generic, no lifecycle, should have been chat
-./summary.md              → self-congratulatory, no reader
-./final_report.md         → ditto
-./implementation_plan.md  → misclassified, no home
-```
-
-### Good artifacts
-
-```
-.agent_reports/migration_plan_2026-06-03.md  → user asked, scoped, dated
-docs/deployment.md                            → formal doc, correct location
-.agent_tmp/refactor_steps_2026-06-03.md       → temporary, will be cleaned
-```
-
----
-
-## Scripts
-
-| Script | Purpose | Safety |
-|---|---|---|
-| `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
-| `score-repo-hygiene.ps1` | Repo hygiene score (0–100) | Read-only |
-| `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
-| `clean-agent-artifacts.ps1` | Conservative cleanup | Defaults to DryRun |
-| `clean-agent-artifacts.bat` | Windows double-click wrapper | DryRun by default |
-
-All scripts are PowerShell-based, require no dependencies, work offline, and never upload data.
-
----
-
-## Recommended Project Layout
-
-```
-project/
-├─ AGENTS.md
-├─ .agent_tmp/          # agent temp files — gitignored, auto-cleanable
-├─ .agent_reports/      # user-requested reports — gitignored, 30-day retention
-├─ README.md
-├─ docs/                # formal documentation — versioned, protected
-└─ src/
-```
-
----
-
-## FAQ
-
-**Q: Will this delete my team's documentation?**  
-No. Everything under `docs/`, plus `README.md`, `CHANGELOG.md`, `LICENSE`, etc., is protected.
-
-**Q: What if I want to keep a report permanently?**  
-Move it from `.agent_reports/` to `docs/` or remove it from `.gitignore`.
-
-**Q: Does this work outside my project root?**  
-Yes. `audit-workspace-hygiene.ps1` can scan multiple repos. You must specify the root path. It never scans `C:\` or `$HOME` without explicit instruction.
-
-**Q: Does this work on Mac/Linux?**  
-Yes. PowerShell 7+ runs on macOS and Linux. All scripts are cross-platform compatible.
-
-**Q: Can I run this automatically every week?**  
-The scripts are safe for scheduling. You can configure Windows Task Scheduler or cron manually — Tidy Skill will **never** register one for you.
-
-**Q: Why PowerShell and not Python?**  
-Zero dependencies. PowerShell ships with Windows. PowerShell 7 is cross-platform. No `pip install`, no virtualenv, no runtime configuration.
-
----
-
-## Roadmap
-
-- **Pre-commit hook integration** — auto-audit before commits
-- **CI/CD pipeline integration** — hygiene checks in GitHub Actions
-- **Bash/Python script ports** — for non-PowerShell environments
-- **Custom scoring weights** — user-configurable hygiene dimensions
-- **Plugin ecosystem** — MCP server for real-time agent governance
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE).
-
-Copyright (c) 2026 Tidy Skill contributors
+Copyright (c) 2026 Tidy Skill Contributors.
