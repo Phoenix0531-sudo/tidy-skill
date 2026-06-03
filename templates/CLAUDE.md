@@ -1,6 +1,6 @@
-# CLAUDE.md — Claude Code Instructions for This Project
+# CLAUDE.md — Tidy Skill Instructions for Claude Code
 
-## File hygiene rules
+## File Hygiene Rules
 
 1. Do not create summary Markdown files by default.
 2. Keep plans, todos, notes, and progress in the chat unless the user asks for a file.
@@ -21,7 +21,7 @@ Before creating any file, ask yourself:
 
 If you cannot answer all of these, ask the user.
 
-## Protected files
+## Protected Files
 
 Do not modify or delete without explicit user request:
 
@@ -32,7 +32,7 @@ Do not modify or delete without explicit user request:
 - `CODE_OF_CONDUCT.md`
 - Everything under `docs/`
 
-## End-of-task
+## End-of-Task
 
 Before saying "done", check:
 
@@ -42,4 +42,4 @@ Before saying "done", check:
 
 ## Reference
 
-For the full policy, see the Agent Tidy Skill: `templates/artifact-governance-policy.md`
+For the full policy, see the Tidy Skill: `templates/artifact-governance-policy.md`

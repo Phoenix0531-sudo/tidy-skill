@@ -1,10 +1,10 @@
 # Artifact Classification Reference
 
-This document defines the five-class taxonomy used by the Agent Tidy Skill to classify all files an AI coding agent might create or encounter.
+This document defines the five-class taxonomy used by Tidy Skill to classify all files an AI coding agent might create or encounter.
 
 ---
 
-## A. Formal Documentation — protected by default
+## A. Formal Documentation — Protected by Default
 
 Files in this class are part of the project's official record. They have long-term value, clear readers, and are maintained like source code.
 
@@ -26,7 +26,7 @@ Files in this class are part of the project's official record. They have long-te
 | `spec.md` | `docs/` or root | Specifications |
 | `api.md` | `docs/` | API documentation |
 | `deployment.md` | `docs/` | Deployment guide |
-| User hand-written notes | Anywhere user put them | Recognizable by style/content |
+| User hand-written notes | Anywhere | Recognizable by style/content |
 | Product requirements docs | `docs/` | PRDs |
 | Team convention documents | `docs/` | Team standards |
 
@@ -39,7 +39,7 @@ Files in this class are part of the project's official record. They have long-te
 
 ---
 
-## B. User-requested Deliverables — allowed but must have a home
+## B. User-requested Deliverables — Allowed but Must Have a Home
 
 These are files the user explicitly asked an agent to create. They are not garbage, but they must be placed in the correct location.
 
@@ -51,7 +51,7 @@ These are files the user explicitly asked an agent to create. They are not garba
 | `.agent_reports/migration_plan_v2_to_v3.md` | User asked for a migration plan |
 | `.agent_reports/dependency_audit_2026-06-01.md` | User asked for a dependency audit |
 | `.agent_reports/research_langchain_vs_llamaindex.md` | User asked for research |
-| `docs/installation_guide.md` | User asked for install docs (formal) |
+| `docs/installation_guide.md` | User asked for install docs (became formal) |
 
 ### Rules
 
@@ -64,11 +64,11 @@ These are files the user explicitly asked an agent to create. They are not garba
 
 ---
 
-## C. Temporary Working Artifacts — `.agent_tmp/` only
+## C. Temporary Working Artifacts — `.agent_tmp/` Only
 
 These are intermediate files that help the agent track its work during a task. They have value only during the task execution and should be cleaned afterward.
 
-### Common examples
+### Common Examples
 
 | File | Purpose | Typical use |
 |---|---|---|
@@ -79,15 +79,6 @@ These are intermediate files that help the agent track its work during a task. T
 | `implementation_plan.md` | Step-by-step plan | Active during implementation |
 | `task_list.md` | Subtask tracking | Manual Kanban |
 | `progress.md` | Status tracking | Updated during long tasks |
-
-### Less common but still C-class
-
-| File | Notes |
-|---|---|
-| `debug_notes.md` | Debugging session scratch |
-| `exploration_notes.md` | Research notes during exploration |
-| `test_plan.md` | Test plan for a specific task |
-| `merge_strategy.md` | Strategy for a complex merge |
 
 ### Rules
 
@@ -100,7 +91,7 @@ These are intermediate files that help the agent track its work during a task. T
 
 ---
 
-## D. Agent Self-congratulatory Artifacts — do not create by default
+## D. Agent Self-congratulatory Artifacts — Do Not Create by Default
 
 These files exist only to document what the agent did. They typically restate the chat conversation, are written for no specific reader, and have no follow-up use.
 
@@ -110,10 +101,10 @@ These files exist only to document what the agent did. They typically restate th
 |---|---|
 | `summary.md` | Restates what happened in the chat |
 | `final_report.md` | Summarizes completed work (no one reads it) |
-| `task_complete.md` | "I finished the task" — the agent already said this in chat |
-| `lessons.md` | Lessons learned — if real, belongs in team wiki or retro doc |
-| `cleanup_summary.md` | "I cleaned up these files" — the cleanup script already logs |
-| `work_summary.md` | Duplicates git log, commit messages, and PR description |
+| `task_complete.md` | "I finished the task" — already said in chat |
+| `lessons.md` | Lessons learned — if real, belongs in team wiki |
+| `cleanup_summary.md` | "I cleaned up" — cleanup script already logs |
+| `work_summary.md` | Duplicates git log, commit, and PR |
 | `changes_summary.md` | Duplicates the diff |
 | `done.md` | The chat is the done signal |
 
@@ -121,28 +112,13 @@ These files exist only to document what the agent did. They typically restate th
 
 - **Do not create** unless the user explicitly asks for a file.
 - If the user asks "what did you do?" — answer in the chat.
-- If an actual record is needed, one of these may be appropriate:
-  - A well-written commit message.
-  - A PR description.
-  - A changelog entry in `CHANGELOG.md`.
-  - A `.agent_reports/` entry if the user requests it.
-
-### How to tell if a file is D-class
-
-Ask:
-
-1. Does this file only restate what was already said in the chat?
-2. Does this file have a specific, named reader?
-3. Will anyone read this after today?
-4. Is the same information available elsewhere (git log, chat, PR)?
-
-If the answer to 1 is "yes" and 2-4 are "no" — it is D-class. Do not create it.
+- If an actual record is needed, use: commit message, PR description, or changelog entry.
 
 ---
 
-## E. Tool State — out of scope, do not touch
+## E. Tool State — Out of Scope, Do Not Touch
 
-These are files and directories created and managed by AI coding tools, IDEs, and editors. They are not Markdown debris and are not governed by this Skill.
+These are files and directories created and managed by AI coding tools, IDEs, and editors. They are not Markdown debris and are not governed by Tidy Skill.
 
 ### Examples
 
@@ -160,7 +136,6 @@ These are files and directories created and managed by AI coding tools, IDEs, an
 | `workspaceStorage` | VS Code |
 | `globalStorage` | VS Code |
 | `History` | Various tools |
-| `User/workspaceStorage` | VS Code |
 
 ### Rules
 
@@ -169,11 +144,10 @@ These are files and directories created and managed by AI coding tools, IDEs, an
 - **Never** report as "junk".
 - **Never** move or rename.
 - **Never** modify content.
-- Silence any findings related to these in audit reports.
 
 ---
 
-## Summary: Quick Classification Guide
+## Quick Classification Guide
 
 | Question | If yes → class |
 |---|---|
@@ -182,12 +156,12 @@ These are files and directories created and managed by AI coding tools, IDEs, an
 | Did the user explicitly ask for this file? | B — User-requested Deliverable |
 | Is this a temporary plan, todo, or note for current task? | C — Temporary Working Artifact |
 | Is this a self-congratulatory summary of what the agent did? | D — Self-congratulatory (do not create) |
-| Is this a tool state directory or file (`.claude/`, `.cursor/`, etc.)? | E — Tool State (out of scope) |
+| Is this a tool state directory or file? | E — Tool State (out of scope) |
 | Do I not know what this is? | Stop and ask the user |
 
 ---
 
-## Change log
+## Change Log
 
 | Date | Change |
 |---|---|

@@ -1,10 +1,11 @@
 # AGENTS.md — Agent File Hygiene Rules for This Project
 
 This file defines how AI coding agents should handle files in this project.
+It is part of the [Tidy Skill](https://github.com/your-org/tidy-skill) governance framework.
 
 ---
 
-## Core rule
+## Core Rule
 
 **Do not create Markdown files in the project root unless the user explicitly requests a file with a specific name.**
 
@@ -12,7 +13,7 @@ Temporary plans, todos, notes, and progress belong in the chat — not on disk.
 
 ---
 
-## File classification
+## File Classification
 
 | What | Where it lives | Can auto-delete? |
 |---|---|---|
@@ -42,7 +43,7 @@ If the answer to any of these is unclear — **do not create the file**.
 
 ---
 
-## Forbidden root-level filenames
+## Forbidden Root-Level Filenames
 
 The following files must **not** appear in the project root unless the user explicitly asks for that exact file:
 
@@ -69,7 +70,7 @@ changes_summary.md
 
 ---
 
-## Directory layout
+## Directory Layout
 
 ```
 project/
@@ -83,7 +84,7 @@ project/
 
 ---
 
-## End-of-task checklist
+## End-of-Task Checklist
 
 Before reporting "done":
 
@@ -95,6 +96,6 @@ Before reporting "done":
 
 ---
 
-## When in doubt: ask
+## When in Doubt: Ask
 
 If you cannot confidently classify a file or determine its lifecycle, **ask the user** before creating, modifying, or deleting it.

@@ -1,14 +1,14 @@
 ---
-description: Agent Tidy Skill — prevent agents from littering the project root with temporary Markdown files
+description: Tidy Skill — prevent agents from littering the project root with temporary Markdown files
 globs: ["*.md", "*.txt", "*.json"]
 ---
 
-# Agent Tidy Rule for Cursor
+# Tidy Skill Rule for Cursor
 
 ## Do Not
 - Create `plan.md`, `todo.md`, `summary.md`, `notes.md`, `lessons.md`, `report.md`, `final_report.md`, `work_summary.md`, `changes_summary.md`, `implementation_plan.md`, `migration_plan.md`, `audit_report.md`, `cleanup_report.md`, `task_list.md`, or `progress.md` in the project root.
 - Generate end-of-task summary files unless the user explicitly requests it.
-- Write a plan to disk when the user just asked for a plan in chat.
+- Write a plan to disk when the user asked for a plan in chat.
 
 ## Do
 - Keep plans, todos, summaries, and progress in the chat reply.

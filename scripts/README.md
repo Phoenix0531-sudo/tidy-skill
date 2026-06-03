@@ -1,11 +1,13 @@
-# Agent Tidy Skill — Scripts
+# Tidy Skill — Scripts
 
 ## Overview
 
 | Script | Purpose | Safety |
 |---|---|---|
-| `audit-agent-artifacts.ps1` | Read-only audit of agent artifacts | Never modifies files |
-| `clean-agent-artifacts.ps1` | Conservative cleanup of temp files | Defaults to DryRun |
+| `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
+| `score-repo-hygiene.ps1` | Repo hygiene score (0–100) | Read-only |
+| `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
+| `clean-agent-artifacts.ps1` | Conservative cleanup | Defaults to DryRun |
 | `clean-agent-artifacts.bat` | Windows double-click wrapper | DryRun by default |
 
 ---
@@ -25,6 +27,30 @@ powershell -ExecutionPolicy Bypass -File audit-agent-artifacts.ps1 -Root "C:\pat
 | `-Root` | Yes | — | Project root path |
 | `-ReportPath` | No | `.agent_reports/audit_<timestamp>.md` | Output report path |
 | `-MaxDepth` | No | 3 | Maximum scan depth |
+
+---
+
+## score-repo-hygiene.ps1
+
+Scores a repository on a 0–100 scale across six dimensions.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File score-repo-hygiene.ps1 -Root "C:\path\to\project"
+```
+
+See [references/hygiene-scoring-model.md](../references/hygiene-scoring-model.md) for details.
+
+---
+
+## audit-workspace-hygiene.ps1
+
+Scans multiple Git repositories under a workspace root. User must explicitly specify the root.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File audit-workspace-hygiene.ps1 -Root "E:\1_Code\Projects"
+```
+
+**Privacy:** Never defaults to `C:\` or `$HOME`. Never reads file contents. No upload.
 
 ---
 
@@ -48,16 +74,14 @@ powershell -ExecutionPolicy Bypass -File clean-agent-artifacts.ps1 -Root "C:\pat
 | `-TmpRetentionDays` | No | 7 | Age limit for `.agent_tmp/` files |
 | `-ReportRetentionDays` | No | 30 | Age limit for `.agent_reports/` files |
 | `-DryRun` | No | `$true` | When `$true`, preview only |
-| `-ConfirmClean` | No | `$false` | When set, also includes root-level suspicious files |
+| `-ConfirmClean` | No | `$false` | Also clean root-level suspicious files |
 
 **What gets cleaned (with defaults):**
-
 1. Files in `.agent_tmp/` older than 7 days.
 2. Files in `.agent_reports/` older than 30 days.
 3. (With `-ConfirmClean`) Root-level suspicious Markdown files.
 
 **What NEVER gets cleaned:**
-
 - `README.md`, `CHANGELOG.md`, `LICENSE`, `CONTRIBUTING.md`
 - Everything under `docs/`
 - Source code (`src/`, `lib/`, `app/`, etc.)
@@ -84,7 +108,9 @@ The scripts are safe to schedule. If you want automated weekly cleanup:
 # Action: powershell -ExecutionPolicy Bypass -File "C:\path\to\clean-agent-artifacts.ps1" -Root "C:\path\to\project" -DryRun:$false
 ```
 
-**Note:** This project does NOT register scheduled tasks for you. The above is guidance only.
+**Note:** Tidy Skill does NOT register scheduled tasks for you. The above is guidance only.
+
+---
 
 ## Safety
 

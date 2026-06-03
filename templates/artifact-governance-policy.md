@@ -1,7 +1,8 @@
 # Agent Artifact Governance Policy
 
-**Version:** 1.0  
-**Applies to:** All AI coding agents working on this project  
+**Part of:** [Tidy Skill](https://github.com/your-org/tidy-skill)
+**Version:** 1.0
+**Applies to:** All AI coding agents working on this project
 **Purpose:** Define when, where, and how agents may create, retain, and remove files
 
 ---
@@ -144,4 +145,4 @@ If an agent creates files violating this policy:
 
 ---
 
-*This policy is part of the Agent Tidy Skill. See the full project at https://github.com/[your-org]/Agent_Tidy_Skill*
+*This policy is part of the Tidy Skill. See the full project at https://github.com/your-org/tidy-skill*

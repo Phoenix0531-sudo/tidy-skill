@@ -16,7 +16,6 @@
 
 .PARAMETER MaxDepth
     Maximum subdirectory depth to scan. Default 3. Use 0 for current dir only.
-    Cross-compatible with PowerShell 5+ and PowerShell 7+.
 
 .EXAMPLE
     .\audit-agent-artifacts.ps1 -Root "C:\Projects\MyApp"
@@ -25,8 +24,7 @@
     .\audit-agent-artifacts.ps1 -Root "C:\Projects\MyApp" -ReportPath "C:\reports\audit.md" -MaxDepth 5
 
 .NOTES
-    This script is read-only. It does not delete or modify any files.
-    It does not upload or transmit any data.
+    Part of Tidy Skill. Read-only. Never modifies files. Never uploads data.
     Safe for PowerShell 5.1+ and PowerShell 7+.
 #>
 
@@ -43,7 +41,7 @@ param(
     [int]$MaxDepth = 3
 )
 
-# ---- Utility functions ----
+# ---- Helpers ----
 
 function Get-RelativePath {
     param([string]$FullPath)
@@ -63,96 +61,64 @@ function Get-FilesRecursive {
     param([string]$Path, [int]$Depth)
 
     if ($Depth -le 0) {
-        # Depth 0 = current directory only (no recursion)
         return Get-ChildItem -LiteralPath $Path -File -ErrorAction SilentlyContinue
     }
 
-    # PowerShell 5.0+ supports -Depth; fallback to full recursion for older versions
     try {
         $files = Get-ChildItem -LiteralPath $Path -Recurse -File -Depth $Depth -ErrorAction Stop
         return $files
     }
     catch {
-        # Fallback: get files and filter by depth manually
         $files = Get-ChildItem -LiteralPath $Path -Recurse -File -ErrorAction SilentlyContinue
-        $rootNormalized = $Path.TrimEnd('\').TrimEnd('/')
+        $rootNorm = $Path.TrimEnd('\').TrimEnd('/')
         return $files | Where-Object {
             $parent = $_.DirectoryName
-            $rel = $parent.Substring($rootNormalized.Length).TrimStart('\').TrimStart('/')
-            if ($rel -eq '') { return $true } # direct child
+            $rel = $parent.Substring($rootNorm.Length).TrimStart('\').TrimStart('/')
+            if ($rel -eq '') { return $true }
             $level = $rel.Split([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar).Count
             return $level -le $Depth
         }
     }
 }
 
-# ---- Classification patterns ----
+# ---- Patterns ----
 
 $forbiddenRootPatterns = @(
-    '^todo\.md$',
-    '^plan\.md$',
-    '^notes\.md$',
-    '^lessons\.md$',
-    '^summary\.md$',
-    '^report\.md$',
-    '^final_report\.md$',
-    '^implementation_plan\.md$',
-    '^migration_plan\.md$',
-    '^audit_report\.md$',
-    '^cleanup_report\.md$',
-    '^task_list\.md$',
-    '^progress\.md$',
-    '^work_summary\.md$',
-    '^changes_summary\.md$',
-    '^.+_summary\.md$',
-    '^.+_report\.md$',
-    '^.+_plan\.md$'
+    '^todo\.md$', '^plan\.md$', '^notes\.md$', '^lessons\.md$',
+    '^summary\.md$', '^report\.md$', '^final_report\.md$',
+    '^implementation_plan\.md$', '^migration_plan\.md$',
+    '^audit_report\.md$', '^cleanup_report\.md$', '^task_list\.md$',
+    '^progress\.md$', '^work_summary\.md$', '^changes_summary\.md$',
+    '^.+_summary\.md$', '^.+_report\.md$', '^.+_plan\.md$'
 )
 
 $protectedDocPatterns = @(
-    '^README\.md$',
-    '^README\..+\.md$',
-    '^CHANGELOG\.md$',
-    '^LICENSE$',
-    '^LICENSE\..+$',
-    '^CONTRIBUTING\.md$',
-    '^CODE_OF_CONDUCT\.md$',
-    '^SECURITY\.md$'
+    '^README\.md$', '^README\..+\.md$',
+    '^CHANGELOG\.md$', '^LICENSE$', '^LICENSE\..+$',
+    '^CONTRIBUTING\.md$', '^CODE_OF_CONDUCT\.md$', '^SECURITY\.md$'
 )
 
 $skipDirPatterns = @(
-    '\.git',
-    'node_modules',
-    'dist',
-    'build',
-    'target',
-    '\.venv',
-    'venv',
-    '__pycache__',
-    '\.next',
-    '\.nuxt',
-    'bin',
-    'obj',
-    'packages'
+    '\.git', 'node_modules', 'dist', 'build', 'target',
+    '\.venv', 'venv', '__pycache__', '\.next', '\.nuxt',
+    'bin', 'obj', 'packages'
 )
 
-# ---- Resolve root path ----
+# ---- Resolve ----
 $Root = (Resolve-Path -LiteralPath $Root).Path
 
+Write-Host "Tidy Skill — Artifact Audit" -ForegroundColor Cyan
 Write-Host "Scanning: $Root" -ForegroundColor Cyan
 Write-Host "Max depth: $MaxDepth" -ForegroundColor Cyan
 Write-Host ""
 
 # ---- Scan ----
 $results = @{
-    AgentTmp       = @()
-    AgentReports   = @()
-    RootSuspicious = @()
-    ProtectedDocs  = @()
+    AgentTmp       = New-Object System.Collections.ArrayList
+    AgentReports   = New-Object System.Collections.ArrayList
+    RootSuspicious = New-Object System.Collections.ArrayList
+    ProtectedDocs  = New-Object System.Collections.ArrayList
 }
-
-# Determine PowerShell version for compatibility info
-$psVersion = $PSVersionTable.PSVersion.ToString()
 
 $allFiles = Get-FilesRecursive -Path $Root -Depth $MaxDepth
 
@@ -161,7 +127,6 @@ foreach ($file in $allFiles) {
     $relDir = [System.IO.Path]::GetDirectoryName($relPath)
     if ($relDir -eq '.') { $relDir = '' }
 
-    # Skip files inside skip directories
     $shouldSkip = $false
     foreach ($skip in $skipDirPatterns) {
         if ($relPath -match "(^|\\)$skip(\\)|(^|/)$skip(/)") {
@@ -171,12 +136,11 @@ foreach ($file in $allFiles) {
     }
     if ($shouldSkip) { continue }
 
-    # Classify
     if ($relDir -eq '.agent_tmp' -or $relPath -match '^\.agent_tmp[\\/]') {
-        $results.AgentTmp += $file
+        [void]$results.AgentTmp.Add($file)
     }
     elseif ($relDir -eq '.agent_reports' -or $relPath -match '^\.agent_reports[\\/]') {
-        $results.AgentReports += $file
+        [void]$results.AgentReports.Add($file)
     }
     elseif ($relDir -eq '' -or $relDir -eq '.') {
         $name = $file.Name
@@ -185,7 +149,7 @@ foreach ($file in $allFiles) {
             if ($name -match $p) { $isProtected = $true; break }
         }
         if ($isProtected) {
-            $results.ProtectedDocs += $file
+            [void]$results.ProtectedDocs.Add($file)
         }
         else {
             $isSuspicious = $false
@@ -193,7 +157,7 @@ foreach ($file in $allFiles) {
                 if ($name -match $p) { $isSuspicious = $true; break }
             }
             if ($isSuspicious) {
-                $results.RootSuspicious += $file
+                [void]$results.RootSuspicious.Add($file)
             }
         }
     }
@@ -209,135 +173,117 @@ if (-not $ReportPath) {
     $ReportPath = Join-Path -Path $reportDir -ChildPath "audit_$timestamp.md"
 }
 
-$reportLines = [System.Collections.ArrayList]@()
+$lines = [System.Collections.ArrayList]@()
+[void]$lines.Add("# Tidy Skill — Artifact Audit Report")
+[void]$lines.Add("")
+[void]$lines.Add( ("**Project root:** '{0}'" -f $Root).Replace("'", '`') )
+[void]$lines.Add("**Scan time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
+[void]$lines.Add("**Max depth:** $MaxDepth")
+[void]$lines.Add("")
+[void]$lines.Add("---")
+[void]$lines.Add("")
 
-[void]$reportLines.Add("# Agent Artifact Audit Report")
-[void]$reportLines.Add("")
-[void]$reportLines.Add("**Project root:** `$Root`")
-[void]$reportLines.Add("**Scan time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
-[void]$reportLines.Add("**Max depth:** $MaxDepth")
-[void]$reportLines.Add("**PowerShell version:** $psVersion")
-[void]$reportLines.Add("")
-[void]$reportLines.Add("---")
-[void]$reportLines.Add("")
-
-# 1. Suspicious root-level files
-[void]$reportLines.Add("## Suspicious root-level Markdown files")
-[void]$reportLines.Add("")
-[void]$reportLines.Add("These files match known agent-produce patterns and are in the project root.")
-[void]$reportLines.Add("They are **not deleted automatically**. Review and decide.")
-[void]$reportLines.Add("")
+# 1. Root suspicious
+[void]$lines.Add("## Suspicious Root-Level Files")
+[void]$lines.Add("")
+[void]$lines.Add("These match known agent-produce patterns and sit in the project root. **Reported, not deleted.**")
+[void]$lines.Add("")
 if ($results.RootSuspicious.Count -eq 0) {
-    [void]$reportLines.Add("_None found._")
+    [void]$lines.Add("_None found._")
 }
 else {
-    [void]$reportLines.Add("| File | Size | Last modified |")
-    [void]$reportLines.Add("|---|---|---|")
+    [void]$lines.Add("| File | Size | Last modified |")
+    [void]$lines.Add("|---|---|---|")
     foreach ($f in $results.RootSuspicious) {
-        [void]$reportLines.Add("| $($f.Name) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
+        [void]$lines.Add("| $($f.Name) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
     }
 }
-[void]$reportLines.Add("")
+[void]$lines.Add("")
 
-# 2. Agent tmp files
-[void]$reportLines.Add("## Temporary artifacts (`.agent_tmp/`)")
-[void]$reportLines.Add("")
+# 2. agent_tmp
+[void]$lines.Add("## Temporary Artifacts (`.agent_tmp/`)")
+[void]$lines.Add("")
 if ($results.AgentTmp.Count -eq 0) {
-    [void]$reportLines.Add("_Empty or no directory found._")
+    [void]$lines.Add("_Empty or no directory found._")
 }
 else {
-    [void]$reportLines.Add("| File | Size | Last modified |")
-    [void]$reportLines.Add("|---|---|---|")
+    [void]$lines.Add("| File | Size | Last modified |")
+    [void]$lines.Add("|---|---|---|")
     foreach ($f in $results.AgentTmp) {
-        $rel = Get-RelativePath -FullPath $f.FullName
-        [void]$reportLines.Add("| $rel | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
+        [void]$lines.Add("| $(Get-RelativePath $f.FullName) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
     }
 }
-[void]$reportLines.Add("")
+[void]$lines.Add("")
 
-# 3. Agent reports
-[void]$reportLines.Add("## Persistent reports (`.agent_reports/`)")
-[void]$reportLines.Add("")
+# 3. agent_reports
+[void]$lines.Add("## Persistent Reports (`.agent_reports/`)")
+[void]$lines.Add("")
 if ($results.AgentReports.Count -eq 0) {
-    [void]$reportLines.Add("_Empty or no directory found._")
+    [void]$lines.Add("_Empty or no directory found._")
 }
 else {
-    [void]$reportLines.Add("| File | Size | Last modified |")
-    [void]$reportLines.Add("|---|---|---|")
+    [void]$lines.Add("| File | Size | Last modified |")
+    [void]$lines.Add("|---|---|---|")
     foreach ($f in $results.AgentReports) {
-        $rel = Get-RelativePath -FullPath $f.FullName
-        [void]$reportLines.Add("| $rel | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
+        [void]$lines.Add("| $(Get-RelativePath $f.FullName) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
     }
 }
-[void]$reportLines.Add("")
+[void]$lines.Add("")
 
-# 4. Protected docs found
-[void]$reportLines.Add("## Protected documentation found")
-[void]$reportLines.Add("")
+# 4. Protected docs
+[void]$lines.Add("## Protected Documentation Found")
+[void]$lines.Add("")
 if ($results.ProtectedDocs.Count -eq 0) {
-    [void]$reportLines.Add("_None found._")
+    [void]$lines.Add("_None found._")
 }
 else {
-    [void]$reportLines.Add("| File | Size | Last modified |")
-    [void]$reportLines.Add("|---|---|---|")
+    [void]$lines.Add("| File | Size | Last modified |")
+    [void]$lines.Add("|---|---|---|")
     foreach ($f in $results.ProtectedDocs) {
-        [void]$reportLines.Add("| $($f.Name) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
+        [void]$lines.Add("| $($f.Name) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
     }
 }
-[void]$reportLines.Add("")
-[void]$reportLines.Add("---")
-[void]$reportLines.Add("")
+[void]$lines.Add("")
+[void]$lines.Add("---")
+[void]$lines.Add("")
 
-# 5. Summary and suggestions
-[void]$reportLines.Add("## Summary")
-[void]$reportLines.Add("")
-[void]$reportLines.Add("- **Suspicious root-level files:** $($results.RootSuspicious.Count) (review manually)")
-[void]$reportLines.Add("- **Temporary artifacts (`.agent_tmp/`):** $($results.AgentTmp.Count)")
-[void]$reportLines.Add("- **Persistent reports (`.agent_reports/`):** $($results.AgentReports.Count)")
-[void]$reportLines.Add("- **Protected docs:** $($results.ProtectedDocs.Count) (not touched)")
-[void]$reportLines.Add("")
-[void]$reportLines.Add("## Suggested actions")
-[void]$reportLines.Add("")
+# 5. Summary
+[void]$lines.Add("## Summary")
+[void]$lines.Add("")
+[void]$lines.Add("- **Suspicious root-level files:** $($results.RootSuspicious.Count) (review manually)")
+[void]$lines.Add("- **Temporary artifacts:** $($results.AgentTmp.Count)")
+[void]$lines.Add("- **Persistent reports:** $($results.AgentReports.Count)")
+[void]$lines.Add("- **Protected docs:** $($results.ProtectedDocs.Count) (never touched)")
+[void]$lines.Add("")
 
+[void]$lines.Add("## Suggested Actions")
+[void]$lines.Add("")
 if ($results.RootSuspicious.Count -gt 0) {
-    [void]$reportLines.Add("1. Review each suspicious root-level file. If no longer needed, delete it manually or move to the appropriate directory.")
+    [void]$lines.Add("1. Review root-level suspicious files. Delete or move to appropriate directories.")
 }
 if ($results.AgentTmp.Count -gt 0) {
-    [void]$reportLines.Add("2. Review `.agent_tmp/` contents. Files older than 7 days are candidates for cleanup.")
+    [void]$lines.Add("2. Check `.agent_tmp/`. Files older than 7 days are cleanup candidates.")
 }
 if ($results.AgentReports.Count -gt 0) {
-    [void]$reportLines.Add("3. Review `.agent_reports/` contents. Files older than 30 days are candidates for archival or deletion.")
+    [void]$lines.Add("3. Check `.agent_reports/`. Files older than 30 days are cleanup candidates.")
 }
 if ($results.RootSuspicious.Count -eq 0 -and $results.AgentTmp.Count -eq 0 -and $results.AgentReports.Count -eq 0) {
-    [void]$reportLines.Add("- No agent-generated artifacts found. The project is clean.")
+    [void]$lines.Add("- No agent artifacts found. This repo is clean.")
 }
-[void]$reportLines.Add("")
-[void]$reportLines.Add("**Next step:** Run the cleanup script with `-DryRun` to preview what would be cleaned:")
-[void]$reportLines.Add("")
-[void]$reportLines.Add("```powershell")
-[void]$reportLines.Add("powershell -ExecutionPolicy Bypass -File scripts\clean-agent-artifacts.ps1 -Root `"$Root`" -DryRun")
-[void]$reportLines.Add("```")
-[void]$reportLines.Add("")
+[void]$lines.Add("")
 
-# Write report
-$reportContent = $reportLines -join "`n"
+$reportContent = $lines -join "`n"
 $reportContent | Out-File -FilePath $ReportPath -Encoding utf8
 
-Write-Host "" -ForegroundColor Green
 Write-Host "Audit complete." -ForegroundColor Green
-Write-Host "Report written to: $ReportPath" -ForegroundColor Cyan
-
-# Console summary
-Write-Host "" -ForegroundColor Yellow
-Write-Host "--- Summary ---" -ForegroundColor Yellow
-$suspiciousColor = if ($results.RootSuspicious.Count -gt 0) { "Red" } else { "Green" }
-Write-Host "Suspicious root-level files: $($results.RootSuspicious.Count)" -ForegroundColor $suspiciousColor
-Write-Host "Temporary artifacts (tmp):    $($results.AgentTmp.Count)"
-Write-Host "Persistent reports (reports): $($results.AgentReports.Count)"
-Write-Host "Protected docs:               $($results.ProtectedDocs.Count)"
+Write-Host "Report: $ReportPath" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "--- Summary ---" -ForegroundColor Yellow
+Write-Host "Suspicious root files: $($results.RootSuspicious.Count)" -ForegroundColor $(if ($results.RootSuspicious.Count -gt 0) { 'Red' } else { 'Green' })
+Write-Host "Temporary artifacts:   $($results.AgentTmp.Count)"
+Write-Host "Persistent reports:    $($results.AgentReports.Count)"
+Write-Host "Protected docs:        $($results.ProtectedDocs.Count)"
 
-# Return summary object
 return @{
     ReportPath = $ReportPath
     Summary = @{
@@ -347,3 +293,4 @@ return @{
         ProtectedDocs  = $results.ProtectedDocs.Count
     }
 }
+
