@@ -26,7 +26,6 @@ This project does not ban Markdown. It establishes a framework for agents to dec
 - No distinction between temporary working files and formal documentation.
 - No lifecycle for process artifacts.
 - No audit trail for what an agent left behind.
-- No repeatable rules.
 - Cross-agent pollution (Claude + Codex + Cursor all writing their own files).
 
 ## What it does NOT solve
@@ -44,25 +43,19 @@ This project does not ban Markdown. It establishes a framework for agents to dec
 ### 1. Copy the agent rules into your project
 
 ```bash
+# Generic agent rules (works with any agent)
 cp templates/AGENTS.md /path/to/your/project/AGENTS.md
-```
 
-Or for Claude Code:
-
-```bash
+# Claude Code specific
 cp templates/CLAUDE.md /path/to/your/project/CLAUDE.md
-```
 
-For Cursor:
-
-```bash
+# Cursor rules
 cp templates/cursor-rule.mdc /path/to/your/project/.cursor/rules/agent-tidy.mdc
 ```
 
 ### 2. Run an audit
 
 ```powershell
-# Check what agent artifacts exist in your project
 powershell -ExecutionPolicy Bypass -File scripts/audit-agent-artifacts.ps1 -Root "C:\path\to\your\project"
 ```
 
@@ -105,11 +98,11 @@ See [references/artifact-classification.md](references/artifact-classification.m
 ```
 project/
 ├─ AGENTS.md
-├─ .agent_tmp/          # temporary agent files — auto-cleanable
-├─ .agent_reports/      # user-requested reports — 30-day retention
+├─ .agent_tmp/          # temporary agent files — auto-cleanable, gitignored
+├─ .agent_reports/      # user-requested reports — 30-day retention, gitignored
 ├─ README.md
 ├─ docs/                # formal documentation — protected
-└─ src/
+└─ src/                 # source code
 ```
 
 ---
@@ -141,7 +134,10 @@ The classification system and Artifact Intent Check apply to any file type. The 
 The scripts are designed to be safe for scheduled use. If you want to set up a Windows Task Scheduler entry, you can — but this project will **not** register one for you. See [scripts/README.md](scripts/README.md).
 
 **Q: Does this work for Mac/Linux?**  
-The audit and cleanup scripts are PowerShell-based and compatible with PowerShell 7+ on macOS and Linux. Cross-platform templates are welcome.
+The audit and cleanup scripts are PowerShell-based and compatible with PowerShell 7+ on macOS and Linux. For pure shell alternatives, contributions are welcome.
+
+**Q: Why PowerShell instead of Python?**  
+No dependencies. PowerShell ships with Windows, and PowerShell 7 is cross-platform. No pip install, no virtualenv, no runtime setup.
 
 ---
 

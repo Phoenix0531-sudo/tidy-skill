@@ -7,15 +7,22 @@ REM  This script invokes the PowerShell cleanup
 REM  script in DryRun mode by default.
 REM
 REM  Usage:
-REM    double-click       DryRun preview
-REM    drag a folder     DryRun on that folder
+REM    double-click       DryRun preview on current directory
+REM    drag a folder      DryRun on that folder
+REM    drag multiple      First folder only — use PowerShell for more
 REM
+REM  Safety:
+REM    - Defaults to DryRun (no files deleted)
+REM    - No administrator rights required
+REM    - No system modifications
+REM    - No scheduled task registration
 REM =============================================
 
 setlocal enabledelayedexpansion
 
 set "SCRIPT_DIR=%~dp0"
 set "POWERSHELL_SCRIPT=%SCRIPT_DIR%clean-agent-artifacts.ps1"
+set "TARGET=%~1"
 
 if not exist "%POWERSHELL_SCRIPT%" (
     echo [ERROR] PowerShell script not found: %POWERSHELL_SCRIPT%
@@ -25,11 +32,14 @@ if not exist "%POWERSHELL_SCRIPT%" (
     exit /b 1
 )
 
-REM If a folder was dropped onto this script, use it as Root
-if not "%~1"=="" (
-    set "TARGET=%~1"
-) else (
-    set "TARGET=%CD%"
+REM Default to current directory if no folder was dropped
+if "%TARGET%"=="" set "TARGET=%CD%"
+
+REM Verify the target exists
+if not exist "%TARGET%" (
+    echo [ERROR] Target does not exist: %TARGET%
+    pause
+    exit /b 1
 )
 
 echo ============================================

@@ -10,7 +10,7 @@
 
 ## 为什么需要 Agent 产物治理？
 
-AI coding agent 很喜欢留下痕迹。一次对话产生 `plan.md`、`todo.md`、`progress.md`、`summary.md`、`final_report.md`…… 很快你的项目根目录就堆满了没人要也每人维护的一次性文件。
+AI coding agent 很喜欢留下痕迹。一次对话产生 `plan.md`、`todo.md`、`progress.md`、`summary.md`、`final_report.md`…… 很快你的项目根目录就堆满了没人要也没人维护的一次性文件。
 
 本项目不禁止 Markdown。它建立了一套框架，让 Agent 能够判断：
 
@@ -44,25 +44,19 @@ AI coding agent 很喜欢留下痕迹。一次对话产生 `plan.md`、`todo.md`
 ### 1. 将 Agent 规则复制到你的项目
 
 ```bash
+# 通用规则（适用于任何 Agent）
 cp templates/AGENTS.md /path/to/your/project/AGENTS.md
-```
 
-对 Claude Code：
-
-```bash
+# Claude Code 专用
 cp templates/CLAUDE.md /path/to/your/project/CLAUDE.md
-```
 
-对 Cursor：
-
-```bash
+# Cursor 规则
 cp templates/cursor-rule.mdc /path/to/your/project/.cursor/rules/agent-tidy.mdc
 ```
 
 ### 2. 运行审计
 
 ```powershell
-# 检查项目中存在哪些 Agent 产物
 powershell -ExecutionPolicy Bypass -File scripts/audit-agent-artifacts.ps1 -Root "C:\path\to\your\project"
 ```
 
@@ -105,11 +99,11 @@ powershell -ExecutionPolicy Bypass -File scripts/clean-agent-artifacts.ps1 -Root
 ```
 project/
 ├─ AGENTS.md
-├─ .agent_tmp/          # 临时 Agent 文件 — 可自动清理
-├─ .agent_reports/      # 用户要求的报告 — 30 天保留期
+├─ .agent_tmp/          # 临时 Agent 文件 — 可自动清理，Git 忽略
+├─ .agent_reports/      # 用户要求的报告 — 30 天保留期，Git 忽略
 ├─ README.md
 ├─ docs/                # 正式文档 — 受保护
-└─ src/
+└─ src/                 # 源代码
 ```
 
 ---
@@ -141,7 +135,10 @@ project/
 脚本可以安全地用于定时执行。如果你需要，可以自行注册 Windows Task Scheduler——但本项目**不会**替你注册。详见 [scripts/README.md](scripts/README.md)。
 
 **问：支持 Mac/Linux 吗？**  
-审计和清理脚本基于 PowerShell，兼容 macOS 和 Linux 上的 PowerShell 7+。
+审计和清理脚本基于 PowerShell，兼容 macOS 和 Linux 上的 PowerShell 7+。欢迎贡献纯 shell 版本。
+
+**问：为什么用 PowerShell 而不是 Python？**  
+零依赖。PowerShell 随 Windows 自带，PowerShell 7 跨平台。无需 pip install、无需 virtualenv、无需运行时配置。
 
 ---
 

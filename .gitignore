@@ -1,19 +1,43 @@
 # Agent Tidy Skill — default ignore rules
 #
-# These are the artifact directories that this Skill governs.
-# Anything placed in them by an AI agent should be considered
-# disposable working state, not part of the repository.
+# Purpose: keep agent-generated temporary files and reports out of Git.
+# These directories hold working state from AI coding agents, not
+# permanent project artifacts.
+#
+# If a report in .agent_reports/ gains long-term value, move it to
+# docs/ or remove it from this file and commit it explicitly.
 
+# Artifact directories governed by this Skill
 .agent_tmp/
 .agent_reports/
 
-# Standard noise
-*.log
-.DS_Store
-Thumbs.db
-
-# Local editor / OS state — never commit
+# Editor / OS artifacts
 .vscode/
 .idea/
 *.swp
 *.swo
+.DS_Store
+Thumbs.db
+
+# Generic log files — cleanup actions write logs to .agent_reports/
+*.log
+
+# Node / Python dependency dirs (never commit these)
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# Build output
+dist/
+build/
+target/
+bin/
+obj/
+.next/
+.nuxt/
+packages/
+
+# Keep scripts, templates, examples, references tracked
+# (They are excluded by the above paths, not by negation — the gitignore
+#  above targets specific file types and artifact directories only.)
