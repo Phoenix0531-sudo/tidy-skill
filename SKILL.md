@@ -31,12 +31,14 @@ Invoke this Skill when the user asks about:
 | **Task completion** | Wrap-up hygiene check before exiting |
 | **Pollution** | "多个 Agent 乱写文件", "project root is a mess of markdown" |
 | **Complaint** | "不要生成垃圾文档", "清理 plan.md / todo.md" |
+| **Env Inspect** | "inspect my coding environment", "where is node/python/go installed?" |
+| **Drive Growth** | "why is my C drive growing?", "find package/model caches" |
 
 ---
 
-## 2. When NOT to Use This Skill
+## 2. When NOT to Use This Skill (Never Do)
 
-**Stop and ask the user** if the request involves:
+**Stop and ask the user** or strictly avoid if the request involves:
 
 - Deleting formal project documentation
 - Modifying user-written notes
@@ -48,6 +50,10 @@ Invoke this Skill when the user asks about:
 - Modifying system settings or registry
 - Registering scheduled tasks
 - Uploading logs, reports, credentials, or environment data
+- Scanning the whole computer without an explicit user-specified root scope
+- Reading auth tokens, session files, sqlite databases, or private logs
+- Deleting tool or model caches just because they are large
+- Moving tools or rewriting environment variables without a separate explicit migration request
 
 ---
 
@@ -242,7 +248,7 @@ This Skill and its scripts:
 - Do not modify system settings or registry
 - Do not register scheduled tasks
 - Do not require admin/root privileges
-- Do not perform full-disk scans
+- Do not perform full-disk scans (user must specify roots)
 - Do not delete formal documentation
 - Do not delete tool state files
 - Do not delete Git-tracked files without explicit confirmation
@@ -250,6 +256,19 @@ This Skill and its scripts:
 - Do not install dependencies
 - Do not require network access
 - Default to DryRun for all deletion operations
-- Refuse to operate on system directories (`C:\Windows`, `/`, `/usr`, `/etc`, `$HOME` root)
+- Refuse to operate on system directories (`C:\Windows`, `/`, `/usr`, `/etc`, `$HOME` root unless explicitly requested)
 - Workspace scans require explicit user-specified root path
 - Environmental suggestions only — no automatic system changes
+- Never read auth tokens, credentials, or private credentials databases
+
+---
+
+## 15. Audit Workflows
+
+### For Environment Audits:
+1. Ask for or infer the explicit scan root folder path.
+2. Run read-only audit command first (`audit-dev-environment.ps1`).
+3. Classify paths as cache, config, runtime, model, project, or unknown.
+4. Mark C-drive growth risks and potential cache size optimizations.
+5. Produce a clear Markdown report with score rating (Highly controlled to Environment sprawl).
+6. Do not perform any cleaning or migration actions unless the user confirms in a separate explicit request.
