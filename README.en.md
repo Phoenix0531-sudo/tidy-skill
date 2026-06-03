@@ -21,18 +21,18 @@ With explicit user permission, Tidy Skill can also audit your current repo, your
 
 ---
 
-## 📖 Table of Contents
-* [🎯 Product Positioning](#-product-positioning)
-* [⚡ Effect Examples](#-effect-examples)
-* [📦 Installation & Configuration](#-installation--configuration)
-* [🛡️ Hygiene Audit & Safety Principles](#-hygiene-audit--safety-principles)
-* [🛠️ Script Description](#-script-description)
-* [🗺️ Roadmap](#-roadmap)
-* [📄 License](#-license)
+## Table of Contents
+* [Product Positioning](#product-positioning)
+* [Effect Examples](#effect-examples)
+* [Installation & Configuration](#installation--configuration)
+* [Hygiene Audit & Safety Principles](#hygiene-audit--safety-principles)
+* [Script Description](#script-description)
+* [Roadmap](#roadmap)
+* [License](#license)
 
 ---
 
-## 🎯 Product Positioning
+## Product Positioning
 
 ### Tier 1: Repo-Level Agent Artifact Governance
 Specifically solves the problem of AI agents (like Claude Code, Cursor, etc.) writing temporary files (such as `plan.md`, `todo.md`) all over the project root.
@@ -58,7 +58,7 @@ Analyzes your developer environment setup to map cache footprints and disk usage
 
 ---
 
-## ⚡ Effect Examples
+## Effect Examples
 
 ### 1. Dev Environment Hygiene Audit
 Running `audit-dev-environment.ps1` maps your developer tools, caches, and system drive footprint:
@@ -95,7 +95,7 @@ Dimensions Checked:
 
 ---
 
-## 📦 Installation & Configuration
+## Installation & Configuration
 
 Recommended workflow:
 
@@ -142,7 +142,7 @@ Audits developer environment setups and AI caches (must specify Roots; no automa
 
 ---
 
-## 🛡️ Hygiene Audit & Safety Principles
+## Hygiene Audit & Safety Principles
 
 All scripts and tooling strictly comply with the following safety and privacy standards:
 * **Local & Privacy First**: All scripts run offline; no reports, paths, or environment data are uploaded.
@@ -153,7 +153,7 @@ All scripts and tooling strictly comply with the following safety and privacy st
 
 ---
 
-## 🛠️ Script Description
+## Script Description
 
 | Script | Purpose | Safety | Example Command |
 |---|---|---|---|
@@ -165,7 +165,7 @@ All scripts and tooling strictly comply with the following safety and privacy st
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] **Pre-commit Integration**: Automatically perform cleanliness auditing before code commit.
 - [ ] **CI/CD Integration**: Automatically check repository cleanliness in GitHub Actions pipelines.
@@ -175,7 +175,7 @@ All scripts and tooling strictly comply with the following safety and privacy st
 
 ---
 
-## 📄 License
+## License
 
 MIT License — see the [LICENSE](LICENSE) file.
 
