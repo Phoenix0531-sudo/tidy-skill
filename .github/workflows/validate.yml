@@ -1,0 +1,41 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  python-validation:
+    name: Python validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate skill package
+        run: python tools/validate_skill.py --skill-dir skills/tidy-skill
+      - name: Run portable repo score
+        run: python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
+      - name: Run portable artifact audit
+        run: python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
+
+  windows-smoke:
+    name: Windows PowerShell smoke tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate skill package
+        run: python tools/validate_skill.py --skill-dir skills/tidy-skill
+      - name: Score repo
+        shell: pwsh
+        run: .\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath "$env:TEMP\tidy_skill_score.md"
+      - name: Audit artifacts
+        shell: pwsh
+        run: .\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath "$env:TEMP\tidy_skill_artifacts.md"
+      - name: Cleanup dry run
+        shell: pwsh
+        run: .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun

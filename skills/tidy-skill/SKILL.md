@@ -201,6 +201,8 @@ When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_r
 
 When asked to scan multiple repos, use `${CLAUDE_SKILL_DIR}/scripts/audit-workspace-hygiene.ps1`. The user must explicitly specify a root directory. Never default to scanning entire drives.
 
+For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audit_agent_artifacts.py` when Python is available. Use `${CLAUDE_SKILL_DIR}/scripts/audit-agent-artifacts.ps1` when staying in a PowerShell workflow.
+
 ---
 
 ## 11. Cleanup Rules
@@ -272,3 +274,12 @@ This Skill and its scripts:
 4. Mark C-drive growth risks and potential cache size optimizations.
 5. Produce a clear Markdown report with score rating (Highly controlled to Environment sprawl).
 6. Do not perform any cleaning or migration actions unless the user confirms in a separate explicit request.
+
+---
+
+## 16. Supporting References
+
+- For script parameters and examples, read `references/script-usage.md`.
+- For classification edge cases, read `references/artifact-classification.md`.
+- For safety guarantees, read `references/safety-boundaries.md`.
+- For score details, read `references/hygiene-scoring-model.md`.

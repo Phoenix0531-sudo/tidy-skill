@@ -75,6 +75,38 @@ Completed on 2026-06-04.
   - `audit-agent-artifacts.ps1`
   - `audit-dev-environment.ps1`
   - `clean-agent-artifacts.ps1 -DryRun`
+
+## Polish Pass Plan
+
+- [x] Move `skills/tidy-skill/scripts/README.md` to `skills/tidy-skill/references/script-usage.md`.
+  - Verification: no `README.md` remains inside the skill folder; README links still resolve.
+- [x] Add CI validation.
+  - Verification: workflow validates skill frontmatter, runs Python scoring, runs PowerShell smoke tests, and checks `.ps1/.bat` files stay ASCII-only.
+- [x] Add `CONTRIBUTING.md` and `SECURITY.md`.
+  - Verification: root documentation covers contribution flow and safety reporting without duplicating skill internals.
+- [x] Add README before/after example.
+  - Verification: Chinese and English READMEs show the concrete value without bloating the first screen.
+- [x] Add Python artifact audit script for portable repo artifact checks.
+  - Verification: script runs without dependencies and can write a Markdown report.
+- [x] Run validation suite and commit.
+  - Verification: git status is clean after commit.
+
+## Polish Pass Review
+
+Completed on 2026-06-04.
+
+- Moved script usage docs from `scripts/README.md` to `references/script-usage.md`; no `README.md` remains inside the skill folder.
+- Added `.github/workflows/validate.yml` with Linux Python validation and Windows PowerShell smoke tests.
+- Added `tools/validate_skill.py` for repo-local validation of required files, frontmatter, script encoding, and `SKILL.md` resource links.
+- Added `CONTRIBUTING.md` and `SECURITY.md`.
+- Added README before/after examples and project governance links.
+- Added portable Python artifact audit script: `scripts/audit_agent_artifacts.py`.
+- Verified:
+  - `python tools\validate_skill.py --skill-dir skills\tidy-skill`
+  - `python skills\tidy-skill\scripts\score_repo_hygiene.py --root . --json`
+  - `python skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --json`
+  - system skill `quick_validate.py`
+  - PowerShell repo scoring, artifact audit, dev environment audit, and cleanup DryRun
 - `audit-workspace-hygiene.ps1` ran successfully; it reported no child Git repositories when pointed at this repo root, which matches its workspace-scan behavior.
 - User corrected the display name after this pass. The final display name is `洁癖.skill`; the machine-readable slug remains `tidy-skill`.
 - Added `scripts/score_repo_hygiene.py` as the portable, dependency-free Python baseline for repo scoring.

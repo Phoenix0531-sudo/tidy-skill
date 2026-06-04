@@ -24,6 +24,16 @@ AI Agent 写文件前，经常缺一个判断：这东西该不该存在，应�
 
 ---
 
+## 前后对比
+
+| Before | After |
+|---|---|
+| `plan.md`、`todo.md`、`final_report.md` 堆在项目根目录 | 计划和总结默认留在聊天里 |
+| 用户要求的审计报告和临时笔记混在一起 | 报告进 `.agent_reports/`，临时文件进 `.agent_tmp/` |
+| Agent 清理时不知道哪些文件能删 | 文件有分类、归属和默认生命周期 |
+
+---
+
 ## 核心卖点
 
 | 卖点 | 具体价值 |
@@ -32,7 +42,7 @@ AI Agent 写文件前，经常缺一个判断：这东西该不该存在，应�
 | **默认不落盘** | 计划、TODO、进度、总结默认留在聊天里，不污染项目根目录 |
 | **分级治理** | `.agent_tmp/` 放临时文件，`.agent_reports/` 放用户要求的报告，`docs/` 放正式文档 |
 | **本地离线** | 审计脚本不联网、不上传、不读取 token、数据库或私密日志 |
-| **跨平台基础检查** | `score_repo_hygiene.py` 提供无依赖 Python 仓库评分入口 |
+| **跨平台基础检查** | `score_repo_hygiene.py` 和 `audit_agent_artifacts.py` 提供无依赖 Python 入口 |
 | **Windows 深度审计** | PowerShell 脚本覆盖 WSL、Docker、Node、Python、Go、AI 模型缓存等 Windows 开发环境细节 |
 
 ---
@@ -108,7 +118,13 @@ python .\skills\tidy-skill\scripts\score_repo_hygiene.py --root . --report-path 
 .\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\.agent_reports\repo_hygiene.md
 ```
 
-### 审计单个仓库的 Agent 产物
+### 通用 Agent 产物审计，优先用 Python
+
+```powershell
+python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-path .\.agent_reports\agent_artifacts.md
+```
+
+### Windows / PowerShell Agent 产物审计
 
 ```powershell
 .\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath .\.agent_reports\agent_artifacts.md
@@ -149,13 +165,14 @@ PowerShell 仍然保留，因为这个 skill 的一部分价值来自 Windows �
 | 脚本 | 用途 | 默认行为 |
 |---|---|---|
 | `score_repo_hygiene.py` | 通用仓库洁癖评分 | Python，无依赖，只读 |
+| `audit_agent_artifacts.py` | 通用 Agent 产物审计 | Python，无依赖，只读 |
 | `score-repo-hygiene.ps1` | Windows 版仓库评分 | 只读 |
 | `audit-agent-artifacts.ps1` | 列出仓库里的可疑 Agent 产物 | 只读 |
 | `audit-workspace-hygiene.ps1` | 批量扫描多个 Git 仓库 | 只读，必须指定根目录 |
 | `audit-dev-environment.ps1` | 审计 Node/Python/Go/Docker/WSL/AI 缓存位置 | 只读，必须指定扫描范围 |
 | `clean-agent-artifacts.ps1` | 清理过期 `.agent_tmp/` 和 `.agent_reports/` | DryRun 优先 |
 
-更详细的脚本说明见 [scripts/README.md](skills/tidy-skill/scripts/README.md)。
+更详细的脚本说明见 [script-usage.md](skills/tidy-skill/references/script-usage.md)。
 
 ---
 
@@ -180,6 +197,14 @@ PowerShell 仍然保留，因为这个 skill 的一部分价值来自 Windows �
 | Claude Code | [templates/CLAUDE.md](skills/tidy-skill/templates/CLAUDE.md) |
 | Codex / 通用 Agent | [templates/AGENTS.md](skills/tidy-skill/templates/AGENTS.md) |
 | Cursor | [templates/cursor-rule.mdc](skills/tidy-skill/templates/cursor-rule.mdc) |
+
+---
+
+## 项目治理
+
+- 贡献指南：[CONTRIBUTING.md](CONTRIBUTING.md)
+- 安全边界与问题报告：[SECURITY.md](SECURITY.md)
+- CI 校验：见 [.github/workflows/validate.yml](.github/workflows/validate.yml)
 
 ---
 

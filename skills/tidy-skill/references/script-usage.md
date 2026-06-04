@@ -5,6 +5,7 @@
 | Script | Purpose | Safety |
 |---|---|---|
 | `score_repo_hygiene.py` | Portable repo hygiene score (0-100) | Python, dependency-free, read-only |
+| `audit_agent_artifacts.py` | Portable agent artifact audit | Python, dependency-free, read-only |
 | `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
 | `score-repo-hygiene.ps1` | Windows repo hygiene score (0-100) | Read-only |
 | `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
@@ -28,6 +29,25 @@ python score_repo_hygiene.py --root "C:\path\to\project" --report-path "C:\repor
 |---|---|---|---|
 | `--root` | No | `.` | Project root path |
 | `--report-path` | No | none | Optional Markdown report path |
+| `--json` | No | false | Print JSON output |
+
+---
+
+## audit_agent_artifacts.py
+
+Portable single-repository artifact audit. Prefer this script for cross-platform checks.
+
+```powershell
+python audit_agent_artifacts.py --root "C:\path\to\project" --report-path "C:\reports\agent_artifacts.md"
+```
+
+**Parameters:**
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `--root` | No | `.` | Project root path |
+| `--report-path` | No | none | Optional Markdown report path |
+| `--max-depth` | No | 3 | Maximum directory depth |
 | `--json` | No | false | Print JSON output |
 
 ---
@@ -58,7 +78,7 @@ Windows PowerShell version of repo scoring. Use it when Python is unavailable or
 powershell -ExecutionPolicy Bypass -File score-repo-hygiene.ps1 -Root "C:\path\to\project"
 ```
 
-See [references/hygiene-scoring-model.md](../references/hygiene-scoring-model.md) for details.
+See [hygiene-scoring-model.md](hygiene-scoring-model.md) for details.
 
 ---
 

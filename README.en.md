@@ -24,6 +24,16 @@ AI agents often miss one decision before creating files: should this exist, wher
 
 ---
 
+## Before / After
+
+| Before | After |
+|---|---|
+| `plan.md`, `todo.md`, and `final_report.md` pile up in the project root | Plans and summaries stay in chat by default |
+| Requested audit reports and scratch notes are mixed together | Reports go to `.agent_reports/`; temporary files go to `.agent_tmp/` |
+| Agents cannot tell what is safe to delete | Files have a class, owner, and default lifecycle |
+
+---
+
 ## Highlights
 
 | Highlight | Value |
@@ -32,7 +42,7 @@ AI agents often miss one decision before creating files: should this exist, wher
 | **No-file default** | Plans, TODOs, progress notes, and summaries stay in chat by default |
 | **Artifact classes** | `.agent_tmp/` for temporary files, `.agent_reports/` for requested reports, `docs/` for formal docs |
 | **Local and offline** | No network calls, uploads, token reads, database reads, or private log reads |
-| **Portable baseline** | `score_repo_hygiene.py` provides a dependency-free Python repo scoring entrypoint |
+| **Portable baseline** | `score_repo_hygiene.py` and `audit_agent_artifacts.py` provide dependency-free Python entrypoints |
 | **Windows deep audit** | PowerShell scripts inspect WSL, Docker, Node, Python, Go, and AI model cache locations |
 
 ---
@@ -108,7 +118,13 @@ python .\skills\tidy-skill\scripts\score_repo_hygiene.py --root . --report-path 
 .\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\.agent_reports\repo_hygiene.md
 ```
 
-### Audit agent artifacts in one repository
+### Portable artifact audit, prefer Python
+
+```powershell
+python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-path .\.agent_reports\agent_artifacts.md
+```
+
+### Windows / PowerShell artifact audit
 
 ```powershell
 .\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath .\.agent_reports\agent_artifacts.md
@@ -149,13 +165,14 @@ PowerShell remains useful because part of this skill is Windows development-envi
 | Script | Purpose | Default Behavior |
 |---|---|---|
 | `score_repo_hygiene.py` | Portable repo hygiene scoring | Python, dependency-free, read-only |
+| `audit_agent_artifacts.py` | Portable agent artifact audit | Python, dependency-free, read-only |
 | `score-repo-hygiene.ps1` | Windows repo hygiene scoring | Read-only |
 | `audit-agent-artifacts.ps1` | Lists suspicious agent artifacts | Read-only |
 | `audit-workspace-hygiene.ps1` | Scans multiple Git repositories | Read-only, explicit root required |
 | `audit-dev-environment.ps1` | Audits Node/Python/Go/Docker/WSL/AI cache locations | Read-only, scoped |
 | `clean-agent-artifacts.ps1` | Cleans expired `.agent_tmp/` and `.agent_reports/` files | DryRun first |
 
-See [scripts/README.md](skills/tidy-skill/scripts/README.md) for details.
+See [script-usage.md](skills/tidy-skill/references/script-usage.md) for details.
 
 ---
 
@@ -180,6 +197,14 @@ Copy these templates into target projects when you want multiple agents to share
 | Claude Code | [templates/CLAUDE.md](skills/tidy-skill/templates/CLAUDE.md) |
 | Codex / General Agents | [templates/AGENTS.md](skills/tidy-skill/templates/AGENTS.md) |
 | Cursor | [templates/cursor-rule.mdc](skills/tidy-skill/templates/cursor-rule.mdc) |
+
+---
+
+## Project Governance
+
+- Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security boundaries and reporting: [SECURITY.md](SECURITY.md)
+- CI validation: [.github/workflows/validate.yml](.github/workflows/validate.yml)
 
 ---
 
