@@ -5,7 +5,7 @@
 .DESCRIPTION
     Analyzes local developer environments (NPM, Python, Go, Rust, Java, Docker, WSL, AI model caches, and IDE configs)
     to map system drive footprints, identify redundant caches, and calculate environment hygiene scores.
-    Read-only — never modifies environment variables, files, system settings, or registers scheduled tasks.
+    Read-only. Never modifies environment variables, files, system settings, or registers scheduled tasks.
 
 .PARAMETER Roots
     Specific workspace or project paths to audit (e.g. "D:\Projects", "E:\1_Code").
@@ -31,7 +31,7 @@
     .\audit-dev-environment.ps1 -Roots "E:\1_Code","D:\Projects" -IncludeUserProfile -ReportPath ".\report.md"
 
 .NOTES
-    Part of Tidy Skill. Local-first, privacy-first, read-only.
+    Part of tidy-skill. Local-first, privacy-first, read-only.
     Never uploads data. Never reads authorization tokens or private sessions.
 #>
 
@@ -103,7 +103,7 @@ function Run-SafeCommand {
 
 # ---- Initialize ----
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Tidy Skill — Dev Environment Audit" -ForegroundColor Cyan
+Write-Host "  tidy-skill - Dev Environment Audit" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Local-first, read-only, privacy-first."
 
@@ -399,10 +399,10 @@ elseif ($totalVhdSize -gt 20GB) { $scoreVirtualization = 12 }
 $totalScore = $scoreCdrive + $scoreRuntimes + $scoreIsolation + $scoreAgentState + $scoreVirtualization
 $totalScore = [Math]::Min(100, [Math]::Max(0, $totalScore))
 
-if ($totalScore -ge 90) { $rating = "Highly controlled"; $ratingCn = "高度可控" }
-elseif ($totalScore -ge 70) { $rating = "Mostly controlled"; $ratingCn = "基本可控" }
-elseif ($totalScore -ge 50) { $rating = "Pollution risk"; $ratingCn = "存在污染风险" }
-else { $rating = "Environment sprawl"; $ratingCn = "环境明显失控" }
+if ($totalScore -ge 90) { $rating = "Highly controlled"; $ratingDetail = "highly controlled" }
+elseif ($totalScore -ge 70) { $rating = "Mostly controlled"; $ratingDetail = "mostly controlled" }
+elseif ($totalScore -ge 50) { $rating = "Pollution risk"; $ratingDetail = "pollution risk" }
+else { $rating = "Environment sprawl"; $ratingDetail = "environment sprawl" }
 
 # ---- Generate Report ----
 
@@ -418,16 +418,16 @@ if (-not $ReportPath) {
 }
 
 $lines = [System.Collections.ArrayList]@()
-[void]$lines.Add("# Tidy Skill — Dev Environment Hygiene Audit")
+[void]$lines.Add("# tidy-skill - Dev Environment Hygiene Audit")
 [void]$lines.Add("")
-[void]$lines.Add("**Average Control Score:** $totalScore / 100 — **$rating** ($ratingCn)")
+[void]$lines.Add("**Average Control Score:** $totalScore / 100 - **$rating** ($ratingDetail)")
 [void]$lines.Add("**Scan Time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
 [void]$lines.Add("**Scan Roots:** $(if($resolvedRoots.Count -gt 0){$resolvedRoots -join ', '}else{'_None specified (local files only)_'})")
 [void]$lines.Add("**User Profile Scanned:** $(if($IncludeUserProfile){'Yes'}else{'No'})")
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
-[void]$lines.Add("## 📊 Control Score Breakdown")
+[void]$lines.Add("## Control Score Breakdown")
 [void]$lines.Add("")
 [void]$lines.Add("| Dimension | Score | Max | Notes |")
 [void]$lines.Add("|---|---|---|---|")
@@ -436,15 +436,15 @@ $lines = [System.Collections.ArrayList]@()
 [void]$lines.Add("| Cache Isolation | $scoreIsolation | 20 | Model caches stored in system drive |")
 [void]$lines.Add("| Agent State Cleanliness | $scoreAgentState | 20 | Total IDE & Agent configuration size: $(Format-Size $totalAgentStateSize) |")
 [void]$lines.Add("| Virtualization Footprint | $scoreVirtualization | 20 | WSL and Docker vhdx sizes: $(Format-Size $totalVhdSize) |")
-[void]$lines.Add("| **Total** | **$totalScore** | **100** | **$rating ($ratingCn)** |")
+[void]$lines.Add("| **Total** | **$totalScore** | **100** | **$rating ($ratingDetail)** |")
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
-[void]$lines.Add("## 🔍 Environment Mapping Details")
+[void]$lines.Add("## Environment Mapping Details")
 [void]$lines.Add("")
 
 # Node
-[void]$lines.Add("### 🟢 Node / NPM Environment")
+[void]$lines.Add("### Node / NPM Environment")
 [void]$lines.Add("- **Node Version:** $($envData.Node.Version)")
 [void]$lines.Add("- **NPM Version:** $($envData.Node.NpmVersion)")
 [void]$lines.Add("- **NPM Prefix:** $($envData.Node.Prefix)")
@@ -458,7 +458,7 @@ if ($envData.Node.Caches.Count -gt 0) {
 [void]$lines.Add("")
 
 # Python
-[void]$lines.Add("### 🐍 Python Environment")
+[void]$lines.Add("### Python Environment")
 [void]$lines.Add("- **Python Version:** $($envData.Python.Version)")
 [void]$lines.Add("- **Uv Version:** $($envData.Python.UvVersion)")
 [void]$lines.Add("- **Pip Cache Dir:** $($envData.Python.PipCacheDir)")
@@ -471,7 +471,7 @@ if ($envData.Python.Caches.Count -gt 0) {
 [void]$lines.Add("")
 
 # Go
-[void]$lines.Add("### 🐹 Go Environment")
+[void]$lines.Add("### Go Environment")
 [void]$lines.Add("- **Go Version:** $($envData.Go.Version)")
 [void]$lines.Add("- **GOROOT:** $($envData.Go.Goroot)")
 [void]$lines.Add("- **GOPATH:** $($envData.Go.Gopath)")
@@ -486,7 +486,7 @@ if ($envData.Go.Caches.Count -gt 0) {
 [void]$lines.Add("")
 
 # Rust
-[void]$lines.Add("### 🦀 Rust Environment")
+[void]$lines.Add("### Rust Environment")
 [void]$lines.Add("- **Rustc Version:** $($envData.Rust.Version)")
 [void]$lines.Add("- **Cargo Version:** $($envData.Rust.CargoVersion)")
 if ($envData.Rust.Caches.Count -gt 0) {
@@ -498,7 +498,7 @@ if ($envData.Rust.Caches.Count -gt 0) {
 [void]$lines.Add("")
 
 # Java
-[void]$lines.Add("### ☕ Java Environment")
+[void]$lines.Add("### Java Environment")
 [void]$lines.Add("- **JAVA_HOME:** $($envData.Java.JavaHome)")
 if ($envData.Java.Caches.Count -gt 0) {
     [void]$lines.Add("- **Caches & Storage:**")
@@ -509,7 +509,7 @@ if ($envData.Java.Caches.Count -gt 0) {
 [void]$lines.Add("")
 
 # Docker / WSL
-[void]$lines.Add("### 🐳 Docker & WSL Environment")
+[void]$lines.Add("### Docker & WSL Environment")
 [void]$lines.Add("- **Docker Version:** $($envData.DockerWsl.DockerVersion)")
 [void]$lines.Add("- **WSL Distros:**")
 if ($envData.DockerWsl.WslList -and $envData.DockerWsl.WslList -ne "Not Installed") {
@@ -526,7 +526,7 @@ if ($envData.DockerWsl.Caches.Count -gt 0) {
 [void]$lines.Add("")
 
 # Agents / IDE
-[void]$lines.Add("### 🤖 AI Agent & IDE Configurations")
+[void]$lines.Add("### AI Agent & IDE Configurations")
 if ($envData.AgentsIde.Paths.Count -gt 0) {
     foreach ($c in $envData.AgentsIde.Paths) {
         [void]$lines.Add( ("- '{0}' ({1})" -f $c.Path, (Format-Size $c.Size)).Replace("'", '`') )
@@ -537,7 +537,7 @@ if ($envData.AgentsIde.Paths.Count -gt 0) {
 [void]$lines.Add("")
 
 # Model Caches
-[void]$lines.Add("### 🧠 AI Model Caches")
+[void]$lines.Add("### AI Model Caches")
 if ($envData.ModelCaches.Paths.Count -gt 0) {
     foreach ($c in $envData.ModelCaches.Paths) {
         [void]$lines.Add( ("- '{0}' ({1})" -f $c.Path, (Format-Size $c.Size)).Replace("'", '`') )
@@ -548,7 +548,7 @@ if ($envData.ModelCaches.Paths.Count -gt 0) {
 [void]$lines.Add("")
 
 # Playwright
-[void]$lines.Add("### 🎭 Playwright / Puppeteer Browser Cache")
+[void]$lines.Add("### Playwright / Puppeteer Browser Cache")
 if ($envData.Playwright.Caches.Count -gt 0) {
     foreach ($c in $envData.Playwright.Caches) {
         [void]$lines.Add( ("- '{0}' ({1})" -f $c.Path, (Format-Size $c.Size)).Replace("'", '`') )
@@ -560,7 +560,7 @@ if ($envData.Playwright.Caches.Count -gt 0) {
 
 # Project level
 if ($projectCaches.Count -gt 0) {
-    [void]$lines.Add("### 📁 Project-level Build & Cache Folders (`node_modules`, `target`, `venv`)")
+    [void]$lines.Add("### Project-level Build & Cache Folders (`node_modules`, `target`, `venv`)")
     foreach ($pc in $projectCaches) {
         [void]$lines.Add( ("- '{0}' ({1})" -f $pc.Path, (Format-Size $pc.Size)).Replace("'", '`') )
     }
@@ -568,7 +568,7 @@ if ($projectCaches.Count -gt 0) {
 }
 
 # Recommendations
-[void]$lines.Add("## 💡 Recommendations")
+[void]$lines.Add("## Recommendations")
 [void]$lines.Add("")
 if ($totalCdriveCache -gt 20GB) {
     [void]$lines.Add("- **C-Drive Risk:** Cache footprint on system C-Drive is substantial ($(Format-Size $totalCdriveCache)). Consider relocating large caches.")
@@ -589,13 +589,13 @@ if ($envData.Playwright.Caches.Count -gt 0) {
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
-[void]$lines.Add("*Report generated by Tidy Skill. Local-first, read-only.*")
+[void]$lines.Add("*Report generated by tidy-skill. Local-first, read-only.*")
 
 ($lines -join "`n") | Out-File -FilePath $ReportPath -Encoding utf8
 
 # Console output
 Write-Host ""
-Write-Host "Hygiene score: $totalScore / 100 — $rating ($ratingCn)" -ForegroundColor $(if ($totalScore -ge 70) { 'Green' } elseif ($totalScore -ge 50) { 'Yellow' } else { 'Red' })
+Write-Host "Hygiene score: $totalScore / 100 - $rating ($ratingDetail)" -ForegroundColor $(if ($totalScore -ge 70) { 'Green' } elseif ($totalScore -ge 50) { 'Yellow' } else { 'Red' })
 Write-Host "C-Drive Footprint: $(Format-Size $totalCdriveCache)"
 Write-Host "Non-C Drive Footprint: $(Format-Size $totalNonCdriveCache)"
 Write-Host "Report Path: $ReportPath" -ForegroundColor Cyan

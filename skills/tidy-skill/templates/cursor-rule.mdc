@@ -1,9 +1,9 @@
 ---
-description: Tidy Skill — prevent agents from littering the project root with temporary Markdown files
+description: 洁癖.skill - prevent agents from littering the project root with temporary Markdown files
 globs: ["*.md", "*.txt", "*.json"]
 ---
 
-# Tidy Skill Rule for Cursor
+# 洁癖.skill Rule for Cursor
 
 ## Do Not
 - Create `plan.md`, `todo.md`, `summary.md`, `notes.md`, `lessons.md`, `report.md`, `final_report.md`, `work_summary.md`, `changes_summary.md`, `implementation_plan.md`, `migration_plan.md`, `audit_report.md`, `cleanup_report.md`, `task_list.md`, or `progress.md` in the project root.

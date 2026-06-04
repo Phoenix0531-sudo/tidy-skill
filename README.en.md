@@ -1,182 +1,198 @@
-<h1 align="center">洁癖.skill / Tidy Skill</h1>
+<h1 align="center">洁癖.skill</h1>
 
-<p align="center">Leave fewer agent traces. Keep the useful ones.</p>
+<p align="center">An AI agent artifact governance skill. Create fewer throwaway files, and make every remaining file intentional, scoped, and cleanable.</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
-  <img src="https://img.shields.io/badge/Agent_Skills-compatible-blueviolet.svg" alt="agent skills">
-  <img src="https://img.shields.io/badge/Standard_Skills-compatible-success.svg" alt="standard skills">
-  <img src="https://img.shields.io/badge/skills.sh-runtime-orange.svg" alt="skills.sh runtime">
+  <img src="https://img.shields.io/badge/CC%20Switch-ready-success.svg" alt="CC Switch ready">
+  <img src="https://img.shields.io/badge/layout-skills%2Ftidy--skill-success.svg" alt="skill layout">
+  <img src="https://img.shields.io/badge/runtime-Python%20%2B%20PowerShell-5391FE.svg" alt="Python and PowerShell">
+  <img src="https://img.shields.io/badge/network-offline-lightgrey.svg" alt="offline">
+</p>
+
+<p align="center">
+  <a href="README.md">中文</a>
 </p>
 
 ---
 
-Tidy Skill is an agent artifact governance skill for developers who like clean repos and controlled workspaces. It helps agents decide whether a file should exist, where it belongs, and when it should expire.
+## One Line
 
-It is not a Markdown deleter. It gives plans, reports, summaries, and temporary files a clear purpose, place, and lifecycle.
+AI agents often miss one decision before creating files: should this exist, where should it live, and when can it be cleaned up?
 
-With explicit user permission, Tidy Skill can also audit your current repo, your code workspace, or selected development directories to map where Node.js, Python, Go, Docker, WSL, MCP servers, AI agents, and model caches live. It lets you know which environments are controlled, which caches are out of bounds, and which paths are polluting your system drive.
-
-[中文版](README.md)
+洁癖.skill gives agents a file-artifact governance policy and local audit scripts for session leftovers such as `plan.md`, `todo.md`, `summary.md`, and `report.md`.
 
 ---
 
-## Table of Contents
-* [Product Positioning](#product-positioning)
-* [Effect Examples](#effect-examples)
-* [Installation & Configuration](#installation--configuration)
-* [Hygiene Audit & Safety Principles](#hygiene-audit--safety-principles)
-* [Script Description](#script-description)
-* [Roadmap](#roadmap)
-* [License](#license)
+## Highlights
+
+| Highlight | Value |
+|---|---|
+| **CC Switch Ready** | Uses the scanner-friendly `skills/tidy-skill/SKILL.md` layout |
+| **No-file default** | Plans, TODOs, progress notes, and summaries stay in chat by default |
+| **Artifact classes** | `.agent_tmp/` for temporary files, `.agent_reports/` for requested reports, `docs/` for formal docs |
+| **Local and offline** | No network calls, uploads, token reads, database reads, or private log reads |
+| **Portable baseline** | `score_repo_hygiene.py` provides a dependency-free Python repo scoring entrypoint |
+| **Windows deep audit** | PowerShell scripts inspect WSL, Docker, Node, Python, Go, and AI model cache locations |
 
 ---
 
-## Product Positioning
+## Skill Layout
 
-### Tier 1: Repo-Level Agent Artifact Governance
-Specifically solves the problem of AI agents (like Claude Code, Cursor, etc.) writing temporary files (such as `plan.md`, `todo.md`) all over the project root.
-* **Core Principles**:
-  * **Default to no file creation**. Plans, TODOs, summaries, and progress updates stay in the chat context by default.
-  * Temporary files that must be referenced as context are isolated under `.agent_tmp/`.
-  * User-requested reports or deliverables are stored in `.agent_reports/`.
-  * Formal documentation belongs in `docs/` and must be supported by explicit user intent.
-  * No generic process Markdown files cluttering the project root.
+```text
+skills/
+└─ tidy-skill/
+   ├─ SKILL.md
+   ├─ agents/openai.yaml
+   ├─ scripts/
+   ├─ references/
+   ├─ templates/
+   └─ examples/
+```
 
-### Tier 2: Coding Environment Hygiene Audit
-Analyzes your developer environment setup to map cache footprints and disk usage risks.
-* **Audit Scope** (requires explicit user authorization):
-  * **Node/NPM**: npm/npx cache, pnpm store, yarn cache, Volta/NVM, etc.
-  * **Python**: pip cache, uv cache/toolchains/tools, pipx, conda, poetry, venv.
-  * **Go**: GOPATH, GOMODCACHE, GOCACHE, GOBIN.
-  * **Rust**: cargo/rustup caches (CARGO_HOME/RUSTUP_HOME), target directories.
-  * **Java**: Maven `.m2`, Gradle `.gradle` caches.
-  * **Docker/WSL**: WSL `.vhdx` sizes and paths, Docker images and data volumes.
-  * **AI Agents/IDE**: Claude, Codex, Cursor, VS Code cache and configuration locations (never reads tokens).
-  * **AI Model Caches**: Hugging Face, Ollama, Torch, LM Studio model storage paths and sizes.
-  * **Playwright/Puppeteer**: Rebuildable browser runtime binaries and caches.
+`tidy-skill` is the machine-readable skill name. `洁癖.skill` is the display name.
 
 ---
 
-## Effect Examples
+## Installation
 
-### 1. Dev Environment Hygiene Audit
-Running `audit-dev-environment.ps1` maps your developer tools, caches, and system drive footprint:
+### CC Switch
 
-```
-Tidy Skill — Dev Environment Audit
-Scoring: D:\3_Code_Projects
+In the CC Switch Skills page, add this repository:
 
-Score: 78 / 100 — Mostly controlled (基本可控)
-Report: D:\3_Code_Projects\.agent_reports\dev_environment_hygiene_2026-06-03_224512.md
+| Field | Value |
+|---|---|
+| Owner | Current GitHub repository owner |
+| Name | Current GitHub repository name |
+| Branch | `main` |
+| Subdirectory | `skills` |
 
-Summary Breakdown:
-- C-Drive Footprint        : 10.2 GB (Score: 10/20) - npm-cache, pip-cache
-- Active Runtimes          : Go v1.21, Python 3.10, Node v18 (Score: 20/20)
-- Cache Isolation          : Ollama models found on C:\Users\...\.ollama (Score: 10/20)
-- Agent State Cleanliness  : VS Code & Cursor cache: 1.5 GB (Score: 20/20)
-- Virtualization Footprint : WSL ext4.vhdx size: 8.5 GB (Score: 18/20)
-```
+Refresh, search for `tidy-skill` or `洁癖.skill`, then install.
 
-### 2. Repo Hygiene Score
-Evaluates a single repository's cleanliness:
-```
-Score: 71 / 100 — Mostly clean
-Report: D:\3_Code_Projects\Tidy_Skill\.agent_reports\hygiene_score_2026-06-03_222912.md
+After installation, the skill should appear at paths like:
 
-Dimensions Checked:
-- Root cleanliness       : 18 / 25
-- Artifact placement     : 15 / 20
-- Protected docs clarity : 12 / 15
-- Git hygiene            : 11 / 15
-- Agent state isolation  : 15 / 15
-- Cleanup readiness      : 0 / 10
+```text
+~/.claude/skills/tidy-skill/SKILL.md
+~/.codex/skills/tidy-skill/SKILL.md
 ```
 
----
+### Manual Install
 
-## Installation & Configuration
+Claude Code:
 
-Recommended workflow:
-
-### 1. Install Skill Rules
-* **Automatic**: Link or copy this project to a skills-compatible AI agent CLI:
-  ```bash
-  ln -s /path/to/tidy-skill ~/.your-agent/skills/tidy-skill
-  ```
-* **Manual**: Copy rule templates directly to your project:
-  * **Claude Code**: Copy `templates/CLAUDE.md` to your project root.
-  * **Cursor**: Copy `templates/cursor-rule.mdc` to `.cursor/rules/agent-tidy.mdc`.
-  * **Any Agent**: Copy `templates/AGENTS.md` to your project root.
-
-### 2. Run Repo Hygiene Scoring
-Audits the current Git repository's Agent artifacts and hygiene score:
 ```powershell
-.\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\repo_hygiene_report.md
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null
+Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.claude\skills\tidy-skill"
 ```
 
-### 3. Run Workspace or Environment Audits (User Authorized)
-Audits multiple Git repositories under a specified root:
+Codex:
+
 ```powershell
-.\scripts\audit-workspace-hygiene.ps1 -Root "E:\1_Code\Projects" -ReportPath .\workspace_hygiene_report.md
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\skills" | Out-Null
+Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.codex\skills\tidy-skill"
 ```
-
-Audits developer environment setups and AI caches (must specify Roots; no automatic full-disk scans):
-```powershell
-# Scan only specific developer directories
-.\scripts\audit-dev-environment.ps1 -Roots "E:\1_Code" -ReportPath .\dev_environment_hygiene_report.md
-
-# Scan dev directories and include user profile (for VS Code, Ollama, etc. cache paths)
-.\scripts\audit-dev-environment.ps1 -Roots "E:\1_Code","D:\Projects" -IncludeUserProfile -ReportPath .\dev_environment_hygiene_report.md
-```
-
-### 4. Clean Temporary Artifacts
-* **Preview what would be cleaned** (DryRun, does not delete files):
-  ```powershell
-  .\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
-  ```
-* **Confirm cleanup** (removes expired `.agent_tmp` and `.agent_reports` files):
-  ```powershell
-  .\scripts\clean-agent-artifacts.ps1 -Root . -ConfirmClean
-  ```
 
 ---
 
-## Hygiene Audit & Safety Principles
+## Quick Use
 
-All scripts and tooling strictly comply with the following safety and privacy standards:
-* **Local & Privacy First**: All scripts run offline; no reports, paths, or environment data are uploaded.
-* **Read-only Audits**: Scoring and environment scripts read metadata (file paths, names, sizes, modified times) only. They never read sensitive tokens, credentials, databases, or private data.
-* **Default DryRun**: The cleanup script defaults to DryRun mode and will never delete files unless explicitly instructed.
-* **No Side-Effects**: Scripts will never rewrite registry keys, modify environment variables, change system configurations, or register scheduled background tasks.
-* **Controlled Scan Range**: No blind full-disk scans are performed. The user must explicitly specify roots or drives to scan.
+### Portable repo scoring, prefer Python
+
+```powershell
+python .\skills\tidy-skill\scripts\score_repo_hygiene.py --root . --report-path .\.agent_reports\repo_hygiene.md
+```
+
+### Windows / PowerShell repo scoring
+
+```powershell
+.\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\.agent_reports\repo_hygiene.md
+```
+
+### Audit agent artifacts in one repository
+
+```powershell
+.\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath .\.agent_reports\agent_artifacts.md
+```
+
+### Audit a workspace
+
+```powershell
+.\skills\tidy-skill\scripts\audit-workspace-hygiene.ps1 -Root "D:\Projects" -ReportPath .\.agent_reports\workspace_hygiene.md
+```
+
+### Audit development environment caches
+
+```powershell
+.\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -ReportPath .\.agent_reports\dev_environment.md
+```
+
+### Preview cleanup
+
+```powershell
+.\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
+```
+
+Cleanup previews by default. Actual deletion requires explicit confirmation.
 
 ---
 
-## Script Description
+## Why Both Python and PowerShell
 
-| Script | Purpose | Safety | Example Command |
-|---|---|---|---|
-| `score-repo-hygiene.ps1` | Scores a single repo's cleanliness | Read-only | `.\score-repo-hygiene.ps1 -Root .` |
-| `audit-agent-artifacts.ps1` | Audits agent artifacts in a repository | Read-only | `.\audit-agent-artifacts.ps1 -Root .` |
-| `audit-workspace-hygiene.ps1` | Audits multiple repos in a workspace | Read-only | `.\audit-workspace-hygiene.ps1 -Root "E:\1_Code"` |
-| `audit-dev-environment.ps1` | Audits runtimes, tools, virtualization, and AI models | Read-only, scoped | `.\audit-dev-environment.ps1 -Roots "E:\1_Code" -IncludeUserProfile` |
-| `clean-agent-artifacts.ps1` | Cleans up expired temporary files | DryRun by default | `.\clean-agent-artifacts.ps1 -Root . -ConfirmClean` |
+Many skill repositories use Python because it is portable, dependency-light, and easier for agents to reuse. 洁癖.skill now provides `score_repo_hygiene.py` as the general-purpose repository scoring entrypoint.
+
+PowerShell remains useful because part of this skill is Windows development-environment hygiene: WSL `.vhdx` files, Docker, user caches, Node/Python/Go toolchains, and AI model caches are easier to inspect with Windows-native commands. Future work should move portable checks into Python while keeping Windows-specific checks in PowerShell.
+
+---
+
+## Scripts
+
+| Script | Purpose | Default Behavior |
+|---|---|---|
+| `score_repo_hygiene.py` | Portable repo hygiene scoring | Python, dependency-free, read-only |
+| `score-repo-hygiene.ps1` | Windows repo hygiene scoring | Read-only |
+| `audit-agent-artifacts.ps1` | Lists suspicious agent artifacts | Read-only |
+| `audit-workspace-hygiene.ps1` | Scans multiple Git repositories | Read-only, explicit root required |
+| `audit-dev-environment.ps1` | Audits Node/Python/Go/Docker/WSL/AI cache locations | Read-only, scoped |
+| `clean-agent-artifacts.ps1` | Cleans expired `.agent_tmp/` and `.agent_reports/` files | DryRun first |
+
+See [scripts/README.md](skills/tidy-skill/scripts/README.md) for details.
+
+---
+
+## Safety Boundaries
+
+- No uploads, no network calls.
+- Audit scripts read file paths, names, sizes, and modified times only.
+- No token, credential, database, session, or private log reads.
+- No registry, system setting, environment variable, or scheduled task changes.
+- No default full-disk scan. Users must specify the scan scope.
+- No automatic deletion of formal docs, source code, tool state, or Git-tracked files.
+- Cleanup defaults to DryRun and requires explicit confirmation for deletion.
+
+---
+
+## Rule Templates
+
+Copy these templates into target projects when you want multiple agents to share the same file hygiene rules:
+
+| Target | Template |
+|---|---|
+| Claude Code | [templates/CLAUDE.md](skills/tidy-skill/templates/CLAUDE.md) |
+| Codex / General Agents | [templates/AGENTS.md](skills/tidy-skill/templates/AGENTS.md) |
+| Cursor | [templates/cursor-rule.mdc](skills/tidy-skill/templates/cursor-rule.mdc) |
 
 ---
 
 ## Roadmap
 
-- [ ] **Pre-commit Integration**: Automatically perform cleanliness auditing before code commit.
-- [ ] **CI/CD Integration**: Automatically check repository cleanliness in GitHub Actions pipelines.
-- [ ] **Multi-language Script Porting**: Provide native Bash / Python scripts to remove PowerShell dependency.
-- [ ] **Custom Weights**: Allow users to customize weights and scoring thresholds for hygiene dimensions.
-- [ ] **Real-time MCP Plugin**: Develop an MCP server for real-time Agent artifact governance.
+- [ ] Move more portable audit checks to Python
+- [ ] Git hook or pre-commit integration
+- [ ] GitHub Actions hygiene checks
+- [ ] Configurable scoring weights
+- [ ] Real-time MCP artifact governance
 
 ---
 
 ## License
 
-MIT License — see the [LICENSE](LICENSE) file.
-
-Copyright (c) 2026 Tidy Skill Contributors.
+MIT License. See [LICENSE](LICENSE).

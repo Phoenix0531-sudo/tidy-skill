@@ -32,7 +32,7 @@
     .\clean-agent-artifacts.ps1 -Root "C:\Projects\MyApp" -ConfirmClean
 
 .NOTES
-    Part of Tidy Skill. Never modifies system settings.
+    Part of tidy-skill. Never modifies system settings.
     Never uploads data. Safe for PowerShell 5.1+ and 7+.
 #>
 
@@ -91,7 +91,7 @@ $Root = (Resolve-Path -LiteralPath $Root).Path
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Tidy Skill — Agent Artifact Cleanup" -ForegroundColor Cyan
+Write-Host "  tidy-skill - Agent Artifact Cleanup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Root:             $Root"
 Write-Host "Mode:             $(if ($DryRun) { 'DRY RUN (preview only)' } else { 'LIVE (files will be deleted)' })"
@@ -194,7 +194,7 @@ Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Cleanup Complete" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
-if ($DryRun) { Write-Host "  Mode: DRY RUN — no files deleted." -ForegroundColor Yellow }
+if ($DryRun) { Write-Host "  Mode: DRY RUN - no files deleted." -ForegroundColor Yellow }
 Write-Host "  .agent_tmp files:      $($deleted.Tmp) $(if ($DryRun) { 'would be deleted' } else { 'deleted' })"
 Write-Host "  .agent_reports files:  $($deleted.Reports) $(if ($DryRun) { 'would be deleted' } else { 'deleted' })"
 Write-Host "  Root-level suspicious: $($deleted.RootSuspicious) $(if ($DryRun) { 'would be deleted' } else { 'deleted' })"

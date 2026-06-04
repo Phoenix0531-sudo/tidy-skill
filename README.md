@@ -1,182 +1,198 @@
-<h1 align="center">洁癖.skill / Tidy Skill</h1>
+<h1 align="center">洁癖.skill</h1>
 
-<p align="center">让 AI Agent 少留痕，留下的都有用。</p>
+<p align="center">让 AI Agent 少留垃圾文件，留下的每一个都有归属、有生命周期、能被安全清理。</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
-  <img src="https://img.shields.io/badge/Agent_Skills-compatible-blueviolet.svg" alt="agent skills">
-  <img src="https://img.shields.io/badge/Standard_Skills-compatible-success.svg" alt="standard skills">
-  <img src="https://img.shields.io/badge/skills.sh-runtime-orange.svg" alt="skills.sh runtime">
+  <img src="https://img.shields.io/badge/CC%20Switch-ready-success.svg" alt="CC Switch ready">
+  <img src="https://img.shields.io/badge/layout-skills%2Ftidy--skill-success.svg" alt="skill layout">
+  <img src="https://img.shields.io/badge/runtime-Python%20%2B%20PowerShell-5391FE.svg" alt="Python and PowerShell">
+  <img src="https://img.shields.io/badge/network-offline-lightgrey.svg" alt="offline">
+</p>
+
+<p align="center">
+  <a href="README.en.md">English</a>
 </p>
 
 ---
 
-洁癖.skill 是一个给代码环境洁癖用户使用的 Agent 产物治理 Skill。它让 Agent 在写文件前先判断：该不该生成、该放哪里、什么时候清理。
+## 一句话
 
-它不是 Markdown 删除器，而是让计划、报告、总结和临时文件拥有明确的目的、归属和生命周期。
+AI Agent 写文件前，经常缺一个判断：这东西该不该存在，应该放哪，多久以后可以清掉。
 
-它还可以在你明确授权后，分析当前仓库、代码工作区，甚至整台电脑上的开发环境分布，包括 NPM、Python、Go、Docker、WSL、MCP、Agent 配置和 AI 模型缓存，让你知道哪些环境可控，哪些缓存失控，哪些路径正在污染系统盘。
-
-[English Edition](README.en.md)
+洁癖.skill 给 Agent 一套文件产物治理规则，并提供本地审计脚本，专门处理 `plan.md`、`todo.md`、`summary.md`、`report.md` 这类会话遗留物。
 
 ---
 
-## 目录
-* [产品定位](#产品定位)
-* [效果示例](#效果示例)
-* [安装与配置](#安装与配置)
-* [洁癖审计与安全原则](#洁癖审计与安全原则)
-* [脚本说明](#脚本说明)
-* [路线图](#路线图)
-* [开源协议](#开源协议)
+## 核心卖点
+
+| 卖点 | 具体价值 |
+|---|---|
+| **CC Switch Ready** | 使用 `skills/tidy-skill/SKILL.md` 标准布局，更容易被 skill 扫描器识别 |
+| **默认不落盘** | 计划、TODO、进度、总结默认留在聊天里，不污染项目根目录 |
+| **分级治理** | `.agent_tmp/` 放临时文件，`.agent_reports/` 放用户要求的报告，`docs/` 放正式文档 |
+| **本地离线** | 审计脚本不联网、不上传、不读取 token、数据库或私密日志 |
+| **跨平台基础检查** | `score_repo_hygiene.py` 提供无依赖 Python 仓库评分入口 |
+| **Windows 深度审计** | PowerShell 脚本覆盖 WSL、Docker、Node、Python、Go、AI 模型缓存等 Windows 开发环境细节 |
 
 ---
 
-## 产品定位
+## Skill 包结构
 
-### 第一层：仓库级 Agent 产物治理
-专门解决 AI Agent（如 Claude Code、Cursor 等）在项目根目录下乱写临时文件的问题（如 `plan.md`、`todo.md` 等）。
-* **核心原则**：
-  * **默认不写文件**。计划、TODO、总结、进度等信息默认留在聊天上下文里。
-  * 确实需要作为上下文持续引用的临时文件，统一放入 `.agent_tmp/`。
-  * 用户明确要求保存的报告或交付物，放入 `.agent_reports/`。
-  * 正式文档放入 `docs/`，并且必须有明确的用户意图。
-  * 根目录绝不堆放泛名过程 Markdown 文件。
+```text
+skills/
+└─ tidy-skill/
+   ├─ SKILL.md
+   ├─ agents/openai.yaml
+   ├─ scripts/
+   ├─ references/
+   ├─ templates/
+   └─ examples/
+```
 
-### 第二层：代码环境洁癖审计
-分析开发环境分布，发现失控的缓存和磁盘占用风险。
-* **审计范围**（需用户显式授权）：
-  * **Node/NPM**：npm/npx 缓存、pnpm store、yarn cache、Volta/NVM 等。
-  * **Python**：pip 缓存、uv 缓存/工具链/工具目录、pipx、conda、poetry、venv 等。
-  * **Go**：GOPATH、GOMODCACHE、GOCACHE、GOBIN。
-  * **Rust**：cargo/rustup 缓存（CARGO_HOME/RUSTUP_HOME）、项目 target 大目录。
-  * **Java**：Maven `.m2`、Gradle `.gradle` 缓存。
-  * **Docker/WSL**：wsl .vhdx 虚拟磁盘大小及位置、Docker 镜像与数据路径。
-  * **AI Agents/IDE**：Claude、Codex、Cursor、VS Code 缓存与配置位置（不读取 Token 敏感信息）。
-  * **AI 模型缓存**：Hugging Face、Ollama、Torch、LM Studio 模型存储路径与体积。
-  * **Playwright/Puppeteer**：可重建的浏览器运行时缓存。
+`tidy-skill` 是机器可识别的 skill 名称。`洁癖.skill` 是展示名。
 
 ---
 
-## 效果示例
+## 安装
 
-### 1. 代码环境洁癖审计 (Dev Environment Hygiene Audit)
-运行 `audit-dev-environment.ps1` 可以清晰掌握全盘开发缓存占用和环境健康度：
+### CC Switch 导入
 
-```
-Tidy Skill — Dev Environment Audit
-Scoring: D:\3_Code_Projects
+在 CC Switch 的 Skills 页面中添加这个仓库：
 
-Score: 78 / 100 — Mostly controlled (基本可控)
-Report: D:\3_Code_Projects\.agent_reports\dev_environment_hygiene_2026-06-03_224512.md
+| 字段 | 填写 |
+|---|---|
+| Owner | 当前 GitHub 仓库 owner |
+| Name | 当前 GitHub 仓库名 |
+| Branch | `main` |
+| Subdirectory | `skills` |
 
-Summary Breakdown:
-- C-Drive Footprint        : 10.2 GB (Score: 10/20) - npm-cache, pip-cache
-- Active Runtimes          : Go v1.21, Python 3.10, Node v18 (Score: 20/20)
-- Cache Isolation          : Ollama models found on C:\Users\...\.ollama (Score: 10/20)
-- Agent State Cleanliness  : VS Code & Cursor cache: 1.5 GB (Score: 20/20)
-- Virtualization Footprint : WSL ext4.vhdx size: 8.5 GB (Score: 18/20)
-```
+刷新后搜索 `tidy-skill` 或 `洁癖.skill`，安装即可。
 
-### 2. 仓库洁癖评分 (Repo Hygiene Score)
-评估单个 Git 仓库的整洁度评分：
-```
-Score: 71 / 100 — Mostly clean (基本干净)
-Report: D:\3_Code_Projects\Tidy_Skill\.agent_reports\hygiene_score_2026-06-03_222912.md
+安装后应能看到类似路径：
 
-Dimensions Checked:
-- Root cleanliness       : 18 / 25
-- Artifact placement     : 15 / 20
-- Protected docs clarity : 12 / 15
-- Git hygiene            : 11 / 15
-- Agent state isolation  : 15 / 15
-- Cleanup readiness      : 0 / 10
+```text
+~/.claude/skills/tidy-skill/SKILL.md
+~/.codex/skills/tidy-skill/SKILL.md
 ```
 
----
+### 手动安装
 
-## 安装与配置
+Claude Code：
 
-推荐的使用路径如下：
-
-### 1. 安装 Skill 规则
-* **自动加载**：将本项目链接或复制到兼容 Agent Skills 的 AI 终端中：
-  ```bash
-  ln -s /path/to/tidy-skill ~/.your-agent/skills/tidy-skill
-  ```
-* **手动加载**：将规则模板复制到对应项目中：
-  * **Claude Code**: 复制 `templates/CLAUDE.md` 到项目根目录。
-  * **Cursor**: 复制 `templates/cursor-rule.mdc` 到 `.cursor/rules/agent-tidy.mdc`。
-  * **通用 Agent**: 复制 `templates/AGENTS.md` 到项目根目录。
-
-### 2. 进行仓库洁癖评分
-分析当前 Git 仓库的 Agent 产物和文件健康程度：
 ```powershell
-.\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\repo_hygiene_report.md
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null
+Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.claude\skills\tidy-skill"
 ```
 
-### 3. 用户授权运行工作区或环境审计
-扫描指定目录下的所有 Git 仓库的洁癖情况：
+Codex：
+
 ```powershell
-.\scripts\audit-workspace-hygiene.ps1 -Root "E:\1_Code\Projects" -ReportPath .\workspace_hygiene_report.md
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\skills" | Out-Null
+Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.codex\skills\tidy-skill"
 ```
-
-在明确授权后，审计整个开发环境分布与 AI 缓存占用（必须指定 Roots 路径，不进行默认全盘扫描）：
-```powershell
-# 仅扫描指定的代码盘开发环境
-.\scripts\audit-dev-environment.ps1 -Roots "E:\1_Code" -ReportPath .\dev_environment_hygiene_report.md
-
-# 显式授权扫描用户目录（包含 VS Code、Ollama 等默认缓存）
-.\scripts\audit-dev-environment.ps1 -Roots "E:\1_Code","D:\Projects" -IncludeUserProfile -ReportPath .\dev_environment_hygiene_report.md
-```
-
-### 4. 清理临时产物
-* **预览要清理的文件**（默认 DryRun，不删除任何内容）：
-  ```powershell
-  .\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
-  ```
-* **确认清理**（删除超过 7 天的 `.agent_tmp` 与超过 30 天的 `.agent_reports` 临时文件）：
-  ```powershell
-  .\scripts\clean-agent-artifacts.ps1 -Root . -ConfirmClean
-  ```
 
 ---
 
-## 洁癖审计与安全原则
+## 快速使用
 
-为了确保系统与数据安全，项目内的所有工具和脚本遵循以下最严格的原则：
-* **本地与隐私优先**：所有脚本完全离线运行，绝对不上传任何报告、日志或路径信息。
-* **只读优先**：审计与打分脚本只读取文件路径、名称、大小和修改时间，绝对不读取 token、认证密钥、数据库文件等敏感内容。
-* **默认 DryRun**：清理脚本在不传入特定参数时默认进入预览模式，不会强行删除任何文件。
-* **安全底线**：脚本绝不会修改系统环境变量、绝不会修改注册表、绝不会自动删除系统关键目录，也绝不会注册后台计划任务。
-* **控制扫描范围**：拒绝进行盲目的全盘扫描，用户必须通过参数明确指定扫描的根目录或盘符范围。
+### 通用仓库评分，优先用 Python
+
+```powershell
+python .\skills\tidy-skill\scripts\score_repo_hygiene.py --root . --report-path .\.agent_reports\repo_hygiene.md
+```
+
+### Windows / PowerShell 仓库评分
+
+```powershell
+.\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\.agent_reports\repo_hygiene.md
+```
+
+### 审计单个仓库的 Agent 产物
+
+```powershell
+.\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath .\.agent_reports\agent_artifacts.md
+```
+
+### 审计一组项目
+
+```powershell
+.\skills\tidy-skill\scripts\audit-workspace-hygiene.ps1 -Root "D:\Projects" -ReportPath .\.agent_reports\workspace_hygiene.md
+```
+
+### 审计开发环境缓存
+
+```powershell
+.\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -ReportPath .\.agent_reports\dev_environment.md
+```
+
+### 预览清理动作
+
+```powershell
+.\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
+```
+
+默认只预览，不删除。真正清理需要显式确认。
 
 ---
 
-## 脚本说明
+## 为什么既有 Python，也有 PowerShell
 
-| 脚本 | 作用 | 安全性 | 示例命令 |
-|---|---|---|---|
-| `score-repo-hygiene.ps1` | 给单个仓库的整洁度打分 | 只读 | `.\score-repo-hygiene.ps1 -Root .` |
-| `audit-agent-artifacts.ps1` | 只读审计单个仓库中的 Agent 产物 | 只读 | `.\audit-agent-artifacts.ps1 -Root .` |
-| `audit-workspace-hygiene.ps1` | 批量扫描并打分工作区内的多个仓库 | 只读 | `.\audit-workspace-hygiene.ps1 -Root "E:\1_Code"` |
-| `audit-dev-environment.ps1` | 用户授权后，审计多语言开发环境及 AI 模型缓存 | 只读，需指定范围 | `.\audit-dev-environment.ps1 -Roots "E:\1_Code" -IncludeUserProfile` |
-| `clean-agent-artifacts.ps1` | 按照规则和生命周期清理过期的临时文件 | 默认 DryRun，需确认 | `.\clean-agent-artifacts.ps1 -Root . -ConfirmClean` |
+主流 skill 仓库常用 Python，是因为它跨平台、无 shell 方言问题，也更容易被 Agent 复用。所以洁癖.skill 已经提供 `score_repo_hygiene.py` 作为通用仓库评分入口。
+
+PowerShell 仍然保留，因为这个 skill 的一部分价值来自 Windows 开发环境治理：WSL `.vhdx`、Docker、用户缓存、Node/Python/Go 工具链、AI 模型缓存等都更适合用 Windows 原生命令和 PowerShell 查询。后续会逐步把可跨平台的能力迁移到 Python，Windows 专项能力继续保留 PowerShell。
+
+---
+
+## 脚本一览
+
+| 脚本 | 用途 | 默认行为 |
+|---|---|---|
+| `score_repo_hygiene.py` | 通用仓库洁癖评分 | Python，无依赖，只读 |
+| `score-repo-hygiene.ps1` | Windows 版仓库评分 | 只读 |
+| `audit-agent-artifacts.ps1` | 列出仓库里的可疑 Agent 产物 | 只读 |
+| `audit-workspace-hygiene.ps1` | 批量扫描多个 Git 仓库 | 只读，必须指定根目录 |
+| `audit-dev-environment.ps1` | 审计 Node/Python/Go/Docker/WSL/AI 缓存位置 | 只读，必须指定扫描范围 |
+| `clean-agent-artifacts.ps1` | 清理过期 `.agent_tmp/` 和 `.agent_reports/` | DryRun 优先 |
+
+更详细的脚本说明见 [scripts/README.md](skills/tidy-skill/scripts/README.md)。
+
+---
+
+## 安全边界
+
+- 不上传数据，不联网。
+- 审计脚本只读取文件路径、名称、大小和修改时间。
+- 不读取 token、认证文件、数据库、会话状态或私密日志。
+- 不修改注册表、系统设置、环境变量或计划任务。
+- 不默认全盘扫描，必须由用户指定扫描范围。
+- 不自动删除正式文档、源码、工具状态目录或 Git-tracked 文件。
+- 清理脚本默认 DryRun，删除动作需要显式确认。
+
+---
+
+## 规则模板
+
+可以把模板复制到目标项目，让不同 Agent 共享同一套文件治理规则：
+
+| 目标 | 模板 |
+|---|---|
+| Claude Code | [templates/CLAUDE.md](skills/tidy-skill/templates/CLAUDE.md) |
+| Codex / 通用 Agent | [templates/AGENTS.md](skills/tidy-skill/templates/AGENTS.md) |
+| Cursor | [templates/cursor-rule.mdc](skills/tidy-skill/templates/cursor-rule.mdc) |
 
 ---
 
 ## 路线图
 
-- [ ] **Pre-commit 集成**：在代码 commit 前自动进行洁癖审计。
-- [ ] **CI/CD 集成**：GitHub Actions 中自动进行仓库整洁度卫生检查。
-- [ ] **多语言脚本移植**：提供原生 Bash / Python 版本的脚本，免去 PowerShell 依赖。
-- [ ] **自定义权重**：允许用户自定义各个洁癖维度的扣分和计分权重。
-- [ ] **实时 MCP 插件**：开发 MCP server，实现 Agent 的实时产物治理。
+- [ ] 将更多通用审计能力迁移到 Python
+- [ ] Git hook 或 pre-commit 集成
+- [ ] GitHub Actions 洁癖检查
+- [ ] 可配置评分权重
+- [ ] 实时 MCP 产物治理
 
 ---
 
 ## 开源协议
 
-MIT License — 详见 [LICENSE](LICENSE) 文件。
-
-Copyright (c) 2026 Tidy Skill Contributors.
+MIT License，见 [LICENSE](LICENSE)。

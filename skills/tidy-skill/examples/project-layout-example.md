@@ -1,6 +1,6 @@
 # Recommended Project Layout
 
-This example shows a project directory structure that follows Tidy Skill conventions.
+This example shows a project directory structure that follows 洁癖.skill conventions.
 
 ---
 

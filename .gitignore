@@ -5,7 +5,7 @@
 # If a report in .agent_reports/ gains long-term value, move it
 # to docs/ and track it explicitly.
 
-# Artifact directories managed by Tidy Skill
+# Artifact directories managed by 洁癖.skill
 .agent_tmp/
 .agent_reports/
 
@@ -36,5 +36,4 @@ obj/
 .nuxt/
 packages/
 
-# Keep templates/, scripts/, examples/, references/ tracked
-# (They are not excluded by any of the above rules.)
+# Keep the packaged skill resources tracked under skills/tidy-skill/.

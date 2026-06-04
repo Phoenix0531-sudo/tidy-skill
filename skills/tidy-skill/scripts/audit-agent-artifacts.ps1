@@ -24,7 +24,7 @@
     .\audit-agent-artifacts.ps1 -Root "C:\Projects\MyApp" -ReportPath "C:\reports\audit.md" -MaxDepth 5
 
 .NOTES
-    Part of Tidy Skill. Read-only. Never modifies files. Never uploads data.
+    Part of tidy-skill. Read-only. Never modifies files. Never uploads data.
     Safe for PowerShell 5.1+ and PowerShell 7+.
 #>
 
@@ -107,7 +107,7 @@ $skipDirPatterns = @(
 # ---- Resolve ----
 $Root = (Resolve-Path -LiteralPath $Root).Path
 
-Write-Host "Tidy Skill — Artifact Audit" -ForegroundColor Cyan
+Write-Host "tidy-skill - Artifact Audit" -ForegroundColor Cyan
 Write-Host "Scanning: $Root" -ForegroundColor Cyan
 Write-Host "Max depth: $MaxDepth" -ForegroundColor Cyan
 Write-Host ""
@@ -174,7 +174,7 @@ if (-not $ReportPath) {
 }
 
 $lines = [System.Collections.ArrayList]@()
-[void]$lines.Add("# Tidy Skill — Artifact Audit Report")
+[void]$lines.Add("# tidy-skill - Artifact Audit Report")
 [void]$lines.Add("")
 [void]$lines.Add( ("**Project root:** '{0}'" -f $Root).Replace("'", '`') )
 [void]$lines.Add("**Scan time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")

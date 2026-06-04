@@ -1,0 +1,4 @@
+interface:
+  display_name: "洁癖.skill"
+  short_description: "Keep agent artifacts out of repo roots"
+  default_prompt: "Use $tidy-skill to audit this repository and keep agent-created files in the right place."

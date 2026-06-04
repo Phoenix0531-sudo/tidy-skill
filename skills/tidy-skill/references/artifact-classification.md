@@ -1,6 +1,6 @@
 # Artifact Classification Reference
 
-This document defines the five-class taxonomy used by Tidy Skill to classify all files an AI coding agent might create or encounter.
+This document defines the five-class taxonomy used by 洁癖.skill to classify all files an AI coding agent might create or encounter.
 
 ---
 
@@ -118,7 +118,7 @@ These files exist only to document what the agent did. They typically restate th
 
 ## E. Tool State — Out of Scope, Do Not Touch
 
-These are files and directories created and managed by AI coding tools, IDEs, and editors. They are not Markdown debris and are not governed by Tidy Skill.
+These are files and directories created and managed by AI coding tools, IDEs, and editors. They are not Markdown debris and are not governed by 洁癖.skill.
 
 ### Examples
 

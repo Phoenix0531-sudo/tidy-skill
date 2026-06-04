@@ -1,6 +1,6 @@
 @echo off
 REM =============================================
-REM  Tidy Skill — Agent Artifact Cleanup Wrapper
+REM  tidy-skill - Agent Artifact Cleanup Wrapper
 REM =============================================
 REM
 REM  Invokes the PowerShell cleanup script in
@@ -38,7 +38,7 @@ if not exist "%TARGET%" (
 )
 
 echo ============================================
-echo  Tidy Skill — Artifact Cleanup
+echo  tidy-skill - Artifact Cleanup
 echo  Mode: DRY RUN (no files will be deleted)
 echo ============================================
 echo.

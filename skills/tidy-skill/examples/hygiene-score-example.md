@@ -86,4 +86,4 @@ This is a sample output from `scripts/score-repo-hygiene.ps1`.
 3. Create a basic project structure with README, LICENSE, and docs/.
 4. Create `.agent_tmp/` and `.agent_reports/` for future agent work.
 5. Add `.gitignore` entries for both directories.
-6. Configure Tidy Skill templates to prevent future pollution.
+6. Configure 洁癖.skill templates to prevent future pollution.

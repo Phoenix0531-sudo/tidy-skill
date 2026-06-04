@@ -1,6 +1,6 @@
 # Bad Artifacts — Examples of Agent Litter
 
-These files are examples of what Tidy Skill aims to prevent or manage.
+These files are examples of what 洁癖.skill aims to prevent or manage.
 
 ---
 

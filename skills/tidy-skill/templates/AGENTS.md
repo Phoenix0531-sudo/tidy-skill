@@ -1,7 +1,7 @@
 # AGENTS.md — Agent File Hygiene Rules for This Project
 
 This file defines how AI coding agents should handle files in this project.
-It is part of the [Tidy Skill](https://github.com/your-org/tidy-skill) governance framework.
+It is part of the 洁癖.skill governance framework.
 
 ---
 

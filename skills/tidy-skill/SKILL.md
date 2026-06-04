@@ -3,7 +3,7 @@ name: tidy-skill
 description: Keep AI agent artifacts intentional, scoped, and clean. Prevent throwaway Markdown files, audit repo hygiene, and safely clean temporary agent outputs.
 ---
 
-# 洁癖.skill / Tidy Skill
+# 洁癖.skill
 
 > Stop AI agents from littering your repo with `plan.md`, `todo.md`, `summary.md`, and throwaway artifacts.
 > 别让 AI Agent 把你的项目根目录变成 Markdown 垃圾场。
@@ -184,7 +184,7 @@ User hand-written notes
 
 ## 9. Repo Hygiene Score
 
-When asked for a repo hygiene score, use `scripts/score-repo-hygiene.ps1`.
+When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_repo_hygiene.py` when Python is available. On Windows-only environments, use `${CLAUDE_SKILL_DIR}/scripts/score-repo-hygiene.ps1`.
 
 | Score | Rating (en) | Rating (zh) |
 |---|---|---|
@@ -199,7 +199,7 @@ When asked for a repo hygiene score, use `scripts/score-repo-hygiene.ps1`.
 
 ## 10. Workspace Hygiene Audit
 
-When asked to scan multiple repos, use `scripts/audit-workspace-hygiene.ps1`. The user must explicitly specify a root directory. Never default to scanning entire drives.
+When asked to scan multiple repos, use `${CLAUDE_SKILL_DIR}/scripts/audit-workspace-hygiene.ps1`. The user must explicitly specify a root directory. Never default to scanning entire drives.
 
 ---
 

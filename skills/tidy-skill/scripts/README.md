@@ -1,14 +1,34 @@
-# Tidy Skill — Scripts
+# 洁癖.skill Scripts
 
 ## Overview
 
 | Script | Purpose | Safety |
 |---|---|---|
+| `score_repo_hygiene.py` | Portable repo hygiene score (0-100) | Python, dependency-free, read-only |
 | `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
-| `score-repo-hygiene.ps1` | Repo hygiene score (0–100) | Read-only |
+| `score-repo-hygiene.ps1` | Windows repo hygiene score (0-100) | Read-only |
 | `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
+| `audit-dev-environment.ps1` | Windows development environment audit | Read-only, explicit scope |
 | `clean-agent-artifacts.ps1` | Conservative cleanup | Defaults to DryRun |
 | `clean-agent-artifacts.bat` | Windows double-click wrapper | DryRun by default |
+
+---
+
+## score_repo_hygiene.py
+
+Scores a repository on a 0-100 scale across six dimensions. Prefer this script for routine cross-platform repo checks.
+
+```powershell
+python score_repo_hygiene.py --root "C:\path\to\project" --report-path "C:\reports\repo_hygiene.md"
+```
+
+**Parameters:**
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `--root` | No | `.` | Project root path |
+| `--report-path` | No | none | Optional Markdown report path |
+| `--json` | No | false | Print JSON output |
 
 ---
 
@@ -32,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File audit-agent-artifacts.ps1 -Root "C:\pat
 
 ## score-repo-hygiene.ps1
 
-Scores a repository on a 0–100 scale across six dimensions.
+Windows PowerShell version of repo scoring. Use it when Python is unavailable or when staying inside a PowerShell workflow.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File score-repo-hygiene.ps1 -Root "C:\path\to\project"
@@ -51,6 +71,18 @@ powershell -ExecutionPolicy Bypass -File audit-workspace-hygiene.ps1 -Root "E:\1
 ```
 
 **Privacy:** Never defaults to `C:\` or `$HOME`. Never reads file contents. No upload.
+
+---
+
+## audit-dev-environment.ps1
+
+Audits selected development roots and optional user-profile cache locations for runtimes, package caches, WSL/Docker footprint, and AI model cache placement.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File audit-dev-environment.ps1 -Roots "E:\1_Code" -ReportPath "C:\reports\dev_environment.md"
+```
+
+**Privacy:** Read-only and scoped. It does not upload data, modify environment variables, or move caches.
 
 ---
 
@@ -108,7 +140,7 @@ The scripts are safe to schedule. If you want automated weekly cleanup:
 # Action: powershell -ExecutionPolicy Bypass -File "C:\path\to\clean-agent-artifacts.ps1" -Root "C:\path\to\project" -DryRun:$false
 ```
 
-**Note:** Tidy Skill does NOT register scheduled tasks for you. The above is guidance only.
+**Note:** 洁癖.skill does NOT register scheduled tasks for you. The above is guidance only.
 
 ---
 

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Score repository hygiene on a 0–100 scale.
+    Score repository hygiene on a 0-100 scale.
 
 .DESCRIPTION
     Evaluates a project directory across six dimensions:
@@ -11,7 +11,7 @@
     - Agent state isolation (15 pts)
     - Cleanup readiness (10 pts)
 
-    Produces a Markdown report. Read-only — never modifies files.
+    Produces a Markdown report. Read-only. Never modifies files.
 
 .PARAMETER Root
     Project root directory to score.
@@ -24,7 +24,7 @@
     .\score-repo-hygiene.ps1 -Root "C:\Projects\MyApp"
 
 .NOTES
-    Part of Tidy Skill. Read-only. Never uploads data.
+    Part of tidy-skill. Read-only. Never uploads data.
 #>
 
 param(
@@ -52,7 +52,7 @@ $forbiddenRootPatterns = @(
 )
 
 $Root = (Resolve-Path -LiteralPath $Root).Path
-Write-Host "Tidy Skill — Repo Hygiene Score" -ForegroundColor Cyan
+Write-Host "tidy-skill - Repo Hygiene Score" -ForegroundColor Cyan
 Write-Host "Scoring: $Root" -ForegroundColor Cyan
 
 # Helper: check if path matches skip pattern
@@ -121,11 +121,11 @@ foreach ($sd in $stateDirs) {
     if (Test-Path (Join-Path $Root $sd)) { $stateInProject++ }
 }
 $scoreIsolation = 15  # perfect score
-# No deduction for having state dirs — they belong there
+# No deduction for having state dirs - they belong there
 
 # Check if state dirs are mixed with source
 if ($hasDocs -or $hasReadme) {
-    # Good — project has clear doc structure
+    # Good - project has clear doc structure
     if ($stateInProject -gt 3) { $scoreIsolation = 12 }
 }
 
@@ -145,10 +145,10 @@ if ($hasAgentTmp -or $hasAgentReports) {
 $totalScore = $scoreRoot + $scorePlacement + $scoreDocs + $scoreGit + $scoreIsolation + $scoreCleanup
 $totalScore = [Math]::Min(100, [Math]::Max(0, $totalScore))
 
-if ($totalScore -ge 90) { $rating = "Clean"; $ratingCn = "很干净" }
-elseif ($totalScore -ge 70) { $rating = "Mostly clean"; $ratingCn = "基本干净" }
-elseif ($totalScore -ge 50) { $rating = "Needs tidy-up"; $ratingCn = "需要整理" }
-else { $rating = "Artifact landfill"; $ratingCn = "Agent 产物垃圾场" }
+if ($totalScore -ge 90) { $rating = "Clean"; $ratingDetail = "clean" }
+elseif ($totalScore -ge 70) { $rating = "Mostly clean"; $ratingDetail = "mostly clean" }
+elseif ($totalScore -ge 50) { $rating = "Needs tidy-up"; $ratingDetail = "needs tidy-up" }
+else { $rating = "Artifact landfill"; $ratingDetail = "agent artifact landfill" }
 
 # ---- Generate Report ----
 $timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
@@ -159,10 +159,10 @@ if (-not $ReportPath) {
 }
 
 $lines = [System.Collections.ArrayList]@()
-[void]$lines.Add("# Tidy Skill — Repo Hygiene Score")
+[void]$lines.Add("# tidy-skill - Repo Hygiene Score")
 [void]$lines.Add("")
 [void]$lines.Add( ("**Repository:** '{0}'" -f $Root).Replace("'", '`') )
-[void]$lines.Add("**Score:** $totalScore / 100 — **$rating** ($ratingCn)")
+[void]$lines.Add("**Score:** $totalScore / 100 - **$rating** ($ratingDetail)")
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
@@ -205,7 +205,7 @@ if (-not $hasDocs) { [void]$lines.Add("- Create a `docs/` directory for formal d
 
 ($lines -join "`n") | Out-File -FilePath $ReportPath -Encoding utf8
 
-Write-Host "`nScore: $totalScore / 100 — $rating ($ratingCn)" -ForegroundColor $(if ($totalScore -ge 70) { 'Green' } elseif ($totalScore -ge 50) { 'Yellow' } else { 'Red' })
+Write-Host "`nScore: $totalScore / 100 - $rating ($ratingDetail)" -ForegroundColor $(if ($totalScore -ge 70) { 'Green' } elseif ($totalScore -ge 50) { 'Yellow' } else { 'Red' })
 Write-Host "Report: $ReportPath" -ForegroundColor Cyan
 
 function Format-FileSize {

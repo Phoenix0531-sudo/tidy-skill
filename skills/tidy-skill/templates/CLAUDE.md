@@ -1,4 +1,4 @@
-# CLAUDE.md — Tidy Skill Instructions for Claude Code
+# CLAUDE.md — 洁癖.skill Instructions for Claude Code
 
 ## File Hygiene Rules
 
@@ -42,4 +42,4 @@ Before saying "done", check:
 
 ## Reference
 
-For the full policy, see the Tidy Skill: `templates/artifact-governance-policy.md`
+For the full policy, see `templates/artifact-governance-policy.md`.
