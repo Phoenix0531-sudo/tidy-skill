@@ -278,6 +278,12 @@ python .\skills\tidy-skill\scripts\audit_dev_environment.py --root "D:\Projects"
 
 ---
 
+## 鸣谢
+
+感谢 Linux.do 社区的讨论、反馈与支持。
+
+---
+
 ## 开源协议
 
 MIT License，见 [LICENSE](LICENSE)。

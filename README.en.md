@@ -278,6 +278,12 @@ Install these templates into target projects when you want multiple agents to sh
 
 ---
 
+## Acknowledgements
+
+Thanks to the Linux.do community for the discussion, feedback, and support.
+
+---
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).
