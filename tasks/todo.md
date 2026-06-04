@@ -107,6 +107,46 @@ Completed on 2026-06-04.
   - `python skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --json`
   - system skill `quick_validate.py`
   - PowerShell repo scoring, artifact audit, dev environment audit, and cleanup DryRun
+
+## Environment Hygiene Positioning Audit
+
+- [x] Reframe the product thesis from "clean repo artifacts" to "clean local agent environment".
+  - Proposed thesis: `让 AI Agent 在一个干净、可解释、可回收的本地环境里工作。`
+  - Verification: README, SKILL.md, and script docs present repo artifacts as one layer, not the whole product.
+- [x] Split the product scope into three layers.
+  - Layer 1: repository artifact governance (`.agent_tmp/`, `.agent_reports/`, root clutter).
+  - Layer 2: workspace development cache governance (`node_modules`, `.venv`, `target`, build caches).
+  - Layer 3: local machine environment governance (WSL2, Docker, package manager caches, model caches, agent/IDE state).
+  - Verification: README and SKILL.md describe these layers consistently.
+- [x] Add WSL2 / Docker hygiene as an explicit first-class reference.
+  - Include: WSL distro list, `ext4.vhdx` visibility, Docker Desktop WSL backend, disk image location, export/import migration warning, compaction warning, `.wslconfig` resource settings.
+  - Verification: all migration/cleanup actions remain recommendation-only; no automatic moves or compaction.
+- [x] Strengthen local recommendation model.
+  - Separate "audit findings" from "safe suggestions" from "dangerous/manual operations".
+  - Verification: generated reports never imply that large caches should be deleted automatically.
+- [x] Improve `audit-dev-environment.ps1` coverage.
+  - Add WSL status/default version, distro version table, `.wslconfig` presence, Docker Desktop disk image hints, package/cache env vars, and clearer risk buckets.
+  - Verification: script remains read-only, no registry reads, no token reads, no full-disk scan by default.
+- [x] Update README slogan and before/after examples.
+  - Verification: repo artifact cleanup becomes one use case under the broader local-agent-environment hygiene story.
+
+## Environment Hygiene Review
+
+Completed on 2026-06-04.
+
+- Reframed the slogan to: `让 AI Agent 在一个干净、可解释、可回收的本地环境里工作。`
+- Updated README and README.en.md to use a three-layer model: repository, workspace, local machine.
+- Added WSL2/Docker as first-class scope through `references/wsl2-docker-hygiene.md`.
+- Updated `SKILL.md` trigger scope to include WSL2, Docker, C-drive growth, package caches, model caches, and agent/IDE state.
+- Enhanced `audit-dev-environment.ps1` with WSL distro parsing, `.wslconfig` inspection, Docker Desktop settings hints, path-like cache environment variables, and report buckets.
+- Report buckets now separate `Findings`, `Safe Suggestions`, and `Manual / Risky Operations`.
+- Validation passed:
+  - `tools/validate_skill.py`
+  - `score_repo_hygiene.py`
+  - `audit_agent_artifacts.py`
+  - PowerShell dev environment audit
+  - PowerShell cleanup DryRun
+- System `quick_validate.py` was not rerun successfully in this shell because the uv-managed Python used for verification does not have `PyYAML`; the repo-local validator covers the same structural checks needed for CI.
 - `audit-workspace-hygiene.ps1` ran successfully; it reported no child Git repositories when pointed at this repo root, which matches its workspace-scan behavior.
 - User corrected the display name after this pass. The final display name is `洁癖.skill`; the machine-readable slug remains `tidy-skill`.
 - Added `scripts/score_repo_hygiene.py` as the portable, dependency-free Python baseline for repo scoring.

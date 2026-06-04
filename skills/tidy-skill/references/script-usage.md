@@ -96,13 +96,19 @@ powershell -ExecutionPolicy Bypass -File audit-workspace-hygiene.ps1 -Root "E:\1
 
 ## audit-dev-environment.ps1
 
-Audits selected development roots and optional user-profile cache locations for runtimes, package caches, WSL/Docker footprint, and AI model cache placement.
+Audits selected development roots and optional user-profile cache locations for local agent-environment hygiene: runtimes, package caches, WSL2/Docker footprint, model caches, agent/IDE state, path-like cache environment variables, and project-level cache folders.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File audit-dev-environment.ps1 -Roots "E:\1_Code" -ReportPath "C:\reports\dev_environment.md"
 ```
 
-**Privacy:** Read-only and scoped. It does not upload data, modify environment variables, or move caches.
+**Privacy:** Read-only and scoped. It does not upload data, modify environment variables, edit `.wslconfig`, compact VHDX files, move Docker data, or move caches.
+
+**Report structure:**
+
+- `Findings`: observed local facts.
+- `Safe Suggestions`: low-risk next steps.
+- `Manual / Risky Operations`: WSL export/import, VHDX compaction, Docker data relocation, `.wslconfig` edits, and model cache relocation.
 
 ---
 

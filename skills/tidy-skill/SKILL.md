@@ -1,6 +1,6 @@
 ---
 name: tidy-skill
-description: Keep AI agent artifacts intentional, scoped, and clean. Prevent throwaway Markdown files, audit repo hygiene, and safely clean temporary agent outputs.
+description: Keep local AI agent environments clean, explainable, and recoverable. Use for repo artifact governance, workspace cache audits, WSL2/Docker hygiene, package and model cache mapping, C-drive growth diagnosis, and safe cleanup boundaries. Prevent throwaway Markdown files, audit local development environment sprawl, and provide read-only recommendations without moving tools, changing configs, or deleting risky files.
 ---
 
 # 洁癖.skill
@@ -8,13 +8,31 @@ description: Keep AI agent artifacts intentional, scoped, and clean. Prevent thr
 > Stop AI agents from littering your repo with `plan.md`, `todo.md`, `summary.md`, and throwaway artifacts.
 > 别让 AI Agent 把你的项目根目录变成 Markdown 垃圾场。
 
-**This is not a Markdown deleter.** This Skill governs agent-generated artifacts that have **no ownership, no lifecycle, and no reusable value**.
+**This is not a Markdown deleter.** This Skill governs the local environment where agents work: repository artifacts, workspace caches, WSL2/Docker storage, package-manager caches, model caches, and agent/IDE state.
 
-A file is not garbage because it is Markdown. It becomes garbage when it has **no intent, no owner, no reader, no lifecycle, and no reusable value.** The goal is not to ban files — it is to ensure every file an agent creates has a purpose, a place, and a lifetime.
+A file or cache is not garbage just because it is large. It becomes a hygiene risk when it has **no intent, no owner, no reader, no lifecycle, and no recovery path.** The goal is not to delete aggressively — it is to ensure every artifact, cache, and local environment footprint has a purpose, a place, and a safe next action.
 
 ---
 
-## 1. When to Use This Skill
+## 1. Hygiene Model
+
+Use a three-layer model:
+
+| Layer | Scope | Examples | Default action |
+|---|---|---|---|
+| Repository | Agent-created artifacts | `plan.md`, `todo.md`, `.agent_tmp/`, `.agent_reports/` | classify, report, DryRun cleanup |
+| Workspace | Development caches across projects | `node_modules`, `.venv`, `target`, build caches | audit, score, recommend |
+| Local machine | Toolchains and virtualized environments | WSL2, Docker Desktop, package caches, model caches, agent/IDE state | read-only map, risk bucket, manual guidance |
+
+Reports should separate:
+
+1. `Findings` — facts observed locally.
+2. `Safe Suggestions` — low-risk next steps such as running DryRun or moving future reports into `.agent_reports/`.
+3. `Manual / Risky Operations` — migration, VHDX compaction, Docker data relocation, model cache relocation, or config edits. Never perform these automatically.
+
+---
+
+## 2. When to Use This Skill
 
 Invoke this Skill when the user asks about:
 
@@ -27,16 +45,20 @@ Invoke this Skill when the user asks about:
 | **Decide** | "这个文件该不该生成?", "should I create this file or keep it in chat?" |
 | **Score** | "给我的仓库打洁癖分", "repo hygiene score", "how clean is my repo?" |
 | **Workspace audit** | "扫描工作区", "audit my workspace", "找出多个仓库的 Agent 产物" |
+| **Local environment audit** | "审计我的本地环境", "inspect local agent environment", "where are my dev caches" |
 | **Create rules** | "创建 AGENTS.md / CLAUDE.md / Cursor Rules" |
 | **Task completion** | Wrap-up hygiene check before exiting |
 | **Pollution** | "多个 Agent 乱写文件", "project root is a mess of markdown" |
 | **Complaint** | "不要生成垃圾文档", "清理 plan.md / todo.md" |
 | **Env Inspect** | "inspect my coding environment", "where is node/python/go installed?" |
 | **Drive Growth** | "why is my C drive growing?", "find package/model caches" |
+| **WSL2 / Docker** | "WSL2 占用太大", "Docker Desktop disk is huge", "where is ext4.vhdx" |
+| **Model caches** | "Ollama/Hugging Face models on C drive", "AI model cache audit" |
+| **Agent state** | "Claude/Codex/Cursor state locations", "agent config/cache footprint" |
 
 ---
 
-## 2. When NOT to Use This Skill (Never Do)
+## 3. When NOT to Use This Skill (Never Do)
 
 **Stop and ask the user** or strictly avoid if the request involves:
 
@@ -54,10 +76,13 @@ Invoke this Skill when the user asks about:
 - Reading auth tokens, session files, sqlite databases, or private logs
 - Deleting tool or model caches just because they are large
 - Moving tools or rewriting environment variables without a separate explicit migration request
+- Compacting WSL/Docker VHDX files
+- Exporting/importing WSL distributions
+- Editing `.wslconfig`, Docker settings, shell profiles, or package manager config
 
 ---
 
-## 3. Artifact Classification
+## 4. Artifact Classification
 
 Every file an agent creates belongs to one of five classes. **Class — not extension — determines treatment.**
 
@@ -78,7 +103,7 @@ Every file an agent creates belongs to one of five classes. **Class — not exte
 
 ---
 
-## 4. Artifact Intent Check (MANDATORY)
+## 5. Artifact Intent Check (MANDATORY)
 
 **Before creating any new file**, fill out this check. If you cannot answer every field, **do not create the file.**
 
@@ -111,7 +136,7 @@ Artifact Intent Check
 
 ---
 
-## 5. Hard Rules for File Generation
+## 6. Hard Rules for File Generation
 
 1. **Default: do not write files.**
 2. Plans, todos, summaries, progress → answer in chat.
@@ -135,7 +160,7 @@ Artifact Intent Check
 
 ---
 
-## 6. Allowed and Forbidden Locations
+## 7. Allowed and Forbidden Locations
 
 ### Allowed
 
@@ -156,7 +181,7 @@ Artifact Intent Check
 
 ---
 
-## 7. Protected Files (Never Auto-delete)
+## 8. Protected Files (Never Auto-delete)
 
 ```
 README.md, README.*.md
@@ -172,7 +197,7 @@ User hand-written notes
 
 ---
 
-## 8. Lifecycle
+## 9. Lifecycle
 
 | Location | Default retention | Cleanup |
 |---|---|---|
@@ -182,7 +207,7 @@ User hand-written notes
 
 ---
 
-## 9. Repo Hygiene Score
+## 10. Repo Hygiene Score
 
 When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_repo_hygiene.py` when Python is available. On Windows-only environments, use `${CLAUDE_SKILL_DIR}/scripts/score-repo-hygiene.ps1`.
 
@@ -197,7 +222,7 @@ When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_r
 
 ---
 
-## 10. Workspace Hygiene Audit
+## 11. Workspace Hygiene Audit
 
 When asked to scan multiple repos, use `${CLAUDE_SKILL_DIR}/scripts/audit-workspace-hygiene.ps1`. The user must explicitly specify a root directory. Never default to scanning entire drives.
 
@@ -205,7 +230,23 @@ For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audi
 
 ---
 
-## 11. Cleanup Rules
+## 12. Local Machine Hygiene Audit
+
+When asked about C-drive growth, WSL2, Docker Desktop, model caches, package caches, agent state, or local development environment sprawl, use `${CLAUDE_SKILL_DIR}/scripts/audit-dev-environment.ps1`.
+
+Rules:
+
+1. Ask for explicit scan roots when project/workspace scanning is needed.
+2. Use `-IncludeUserProfile` only when the user wants default user-profile cache locations included.
+3. Use `-IncludeDrives` only when the user explicitly asks for drive-level hints.
+4. Treat WSL/Docker migration, VHDX compaction, Docker data relocation, `.wslconfig` edits, and model cache relocation as `Manual / Risky Operations`.
+5. Never read tokens, session files, SQLite databases, registry keys, private logs, or credential stores.
+
+For WSL2 and Docker details, read `references/wsl2-docker-hygiene.md`.
+
+---
+
+## 13. Cleanup Rules
 
 **Allowed auto-cleanup:**
 1. `.agent_tmp/` — files older than 7 days
@@ -223,7 +264,7 @@ For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audi
 
 ---
 
-## 12. Audit Rules
+## 14. Audit Rules
 
 - Read-only — never modifies files
 - Bounded depth, skips `.git/`, `node_modules/`, `dist/`, `build/`, `target/`, `.venv/`, `venv/`
@@ -233,7 +274,7 @@ For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audi
 
 ---
 
-## 13. End-of-Task Checklist
+## 15. End-of-Task Checklist
 
 Before reporting "done":
 1. Did I create any files? Were each justified by an Artifact Intent Check?
@@ -244,7 +285,7 @@ Before reporting "done":
 
 ---
 
-## 14. Safety Boundaries
+## 16. Safety Boundaries
 
 This Skill and its scripts:
 - Do not modify system settings or registry
@@ -262,10 +303,12 @@ This Skill and its scripts:
 - Workspace scans require explicit user-specified root path
 - Environmental suggestions only — no automatic system changes
 - Never read auth tokens, credentials, or private credentials databases
+- Never move, compact, export, import, or delete WSL/Docker virtual disks automatically
+- Never modify `.wslconfig`, Docker settings, shell profiles, package manager configs, or model cache environment variables automatically
 
 ---
 
-## 15. Audit Workflows
+## 17. Audit Workflows
 
 ### For Environment Audits:
 1. Ask for or infer the explicit scan root folder path.
@@ -273,13 +316,15 @@ This Skill and its scripts:
 3. Classify paths as cache, config, runtime, model, project, or unknown.
 4. Mark C-drive growth risks and potential cache size optimizations.
 5. Produce a clear Markdown report with score rating (Highly controlled to Environment sprawl).
-6. Do not perform any cleaning or migration actions unless the user confirms in a separate explicit request.
+6. Separate report recommendations into `Findings`, `Safe Suggestions`, and `Manual / Risky Operations`.
+7. Do not perform any cleaning or migration actions unless the user confirms in a separate explicit request.
 
 ---
 
-## 16. Supporting References
+## 18. Supporting References
 
 - For script parameters and examples, read `references/script-usage.md`.
 - For classification edge cases, read `references/artifact-classification.md`.
 - For safety guarantees, read `references/safety-boundaries.md`.
 - For score details, read `references/hygiene-scoring-model.md`.
+- For WSL2 and Docker hygiene, read `references/wsl2-docker-hygiene.md`.

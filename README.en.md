@@ -1,6 +1,6 @@
 <h1 align="center">洁癖.skill</h1>
 
-<p align="center">An AI agent artifact governance skill. Create fewer throwaway files, and make every remaining file intentional, scoped, and cleanable.</p>
+<p align="center">Let AI agents work inside a clean, explainable, recoverable local environment.</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
@@ -18,9 +18,17 @@
 
 ## One Line
 
-AI agents often miss one decision before creating files: should this exist, where should it live, and when can it be cleaned up?
+洁癖.skill is not a Markdown deleter and not only a repo cleanup tool. It is a local agent-environment hygiene policy and audit toolkit for keeping agent files, caches, virtualization footprints, and model storage explainable, placed, and safely recoverable.
 
-洁癖.skill gives agents a file-artifact governance policy and local audit scripts for session leftovers such as `plan.md`, `todo.md`, `summary.md`, and `report.md`.
+---
+
+## Three-Layer Hygiene Model
+
+| Layer | Governs | Typical Problem | Tools |
+|---|---|---|---|
+| Repository | Agent artifacts | `plan.md`, `todo.md`, and `final_report.md` pile up in the repo root | `audit_agent_artifacts.py`, `score_repo_hygiene.py` |
+| Workspace | Development caches | Many projects leave `node_modules`, `.venv`, `target`, and build caches behind | `audit-workspace-hygiene.ps1` |
+| Local machine | Development environment | WSL2/Docker VHDX growth, package caches, model caches, scattered agent/IDE state | `audit-dev-environment.ps1` |
 
 ---
 
@@ -28,9 +36,10 @@ AI agents often miss one decision before creating files: should this exist, wher
 
 | Before | After |
 |---|---|
-| `plan.md`, `todo.md`, and `final_report.md` pile up in the project root | Plans and summaries stay in chat by default |
-| Requested audit reports and scratch notes are mixed together | Reports go to `.agent_reports/`; temporary files go to `.agent_tmp/` |
-| Agents cannot tell what is safe to delete | Files have a class, owner, and default lifecycle |
+| Agents drop plans, summaries, and reports into the repo root | Plans stay in chat; reports go to `.agent_reports/`; temp files go to `.agent_tmp/` |
+| npm, pip, uv, Go, Rust, and Playwright caches sprawl across the system drive | Local audit reports list paths, sizes, risks, and safe suggestions |
+| WSL2 / Docker Desktop virtual disks grow without a clear owner | Reports show WSL distros, `ext4.vhdx`, Docker WSL backend, and `.wslconfig` state |
+| Agents see large files and try to delete them | Reports separate `Findings`, `Safe Suggestions`, and `Manual / Risky Operations` |
 
 ---
 
@@ -39,11 +48,11 @@ AI agents often miss one decision before creating files: should this exist, wher
 | Highlight | Value |
 |---|---|
 | **CC Switch Ready** | Uses the scanner-friendly `skills/tidy-skill/SKILL.md` layout |
-| **No-file default** | Plans, TODOs, progress notes, and summaries stay in chat by default |
-| **Artifact classes** | `.agent_tmp/` for temporary files, `.agent_reports/` for requested reports, `docs/` for formal docs |
+| **Local agent environment hygiene** | Unifies repo artifacts, workspace caches, and local machine state |
+| **WSL2 / Docker focus** | Checks WSL status, distro versions, `.wslconfig`, Docker WSL backend, and VHDX footprint |
 | **Local and offline** | No network calls, uploads, token reads, database reads, or private log reads |
-| **Portable baseline** | `score_repo_hygiene.py` and `audit_agent_artifacts.py` provide dependency-free Python entrypoints |
-| **Windows deep audit** | PowerShell scripts inspect WSL, Docker, Node, Python, Go, and AI model cache locations |
+| **Read-only first** | Audits are read-only; cleanup defaults to DryRun; migration, compaction, and config changes are suggestions only |
+| **Python + PowerShell split** | Python handles portable repo checks; PowerShell handles Windows/WSL/Docker deep audits |
 
 ---
 
@@ -106,43 +115,31 @@ Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.codex\skills\
 
 ## Quick Use
 
-### Portable repo scoring, prefer Python
+### Repo hygiene scoring, prefer Python
 
 ```powershell
 python .\skills\tidy-skill\scripts\score_repo_hygiene.py --root . --report-path .\.agent_reports\repo_hygiene.md
 ```
 
-### Windows / PowerShell repo scoring
-
-```powershell
-.\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\.agent_reports\repo_hygiene.md
-```
-
-### Portable artifact audit, prefer Python
+### Agent artifact audit, prefer Python
 
 ```powershell
 python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-path .\.agent_reports\agent_artifacts.md
 ```
 
-### Windows / PowerShell artifact audit
-
-```powershell
-.\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath .\.agent_reports\agent_artifacts.md
-```
-
-### Audit a workspace
+### Workspace audit
 
 ```powershell
 .\skills\tidy-skill\scripts\audit-workspace-hygiene.ps1 -Root "D:\Projects" -ReportPath .\.agent_reports\workspace_hygiene.md
 ```
 
-### Audit development environment caches
+### Local development environment audit
 
 ```powershell
-.\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -ReportPath .\.agent_reports\dev_environment.md
+.\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -IncludeUserProfile -ReportPath .\.agent_reports\dev_environment.md
 ```
 
-### Preview cleanup
+### Cleanup preview
 
 ```powershell
 .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
@@ -152,11 +149,19 @@ Cleanup previews by default. Actual deletion requires explicit confirmation.
 
 ---
 
-## Why Both Python and PowerShell
+## WSL2 / Docker Position
 
-Many skill repositories use Python because it is portable, dependency-light, and easier for agents to reuse. 洁癖.skill now provides `score_repo_hygiene.py` as the general-purpose repository scoring entrypoint.
+洁癖.skill audits the local footprint of WSL2 and Docker Desktop, but it does not migrate distros, compact VHDX files, modify `.wslconfig`, or move Docker data.
 
-PowerShell remains useful because part of this skill is Windows development-environment hygiene: WSL `.vhdx` files, Docker, user caches, Node/Python/Go toolchains, and AI model caches are easier to inspect with Windows-native commands. Future work should move portable checks into Python while keeping Windows-specific checks in PowerShell.
+Reports show:
+
+- Whether WSL is installed and what the default version is.
+- Which distros exist and whether they use WSL2.
+- Whether `.wslconfig` exists and whether memory / swap / processors are configured.
+- Where WSL and Docker Desktop VHDX files live and how large they are.
+- Which actions are safe suggestions and which are manual high-risk operations.
+
+See [wsl2-docker-hygiene.md](skills/tidy-skill/references/wsl2-docker-hygiene.md) for details.
 
 ---
 
@@ -167,9 +172,9 @@ PowerShell remains useful because part of this skill is Windows development-envi
 | `score_repo_hygiene.py` | Portable repo hygiene scoring | Python, dependency-free, read-only |
 | `audit_agent_artifacts.py` | Portable agent artifact audit | Python, dependency-free, read-only |
 | `score-repo-hygiene.ps1` | Windows repo hygiene scoring | Read-only |
-| `audit-agent-artifacts.ps1` | Lists suspicious agent artifacts | Read-only |
+| `audit-agent-artifacts.ps1` | Windows agent artifact audit | Read-only |
 | `audit-workspace-hygiene.ps1` | Scans multiple Git repositories | Read-only, explicit root required |
-| `audit-dev-environment.ps1` | Audits Node/Python/Go/Docker/WSL/AI cache locations | Read-only, scoped |
+| `audit-dev-environment.ps1` | Audits WSL2, Docker, package caches, model caches, and agent/IDE state | Read-only, scoped |
 | `clean-agent-artifacts.ps1` | Cleans expired `.agent_tmp/` and `.agent_reports/` files | DryRun first |
 
 See [script-usage.md](skills/tidy-skill/references/script-usage.md) for details.
@@ -179,11 +184,12 @@ See [script-usage.md](skills/tidy-skill/references/script-usage.md) for details.
 ## Safety Boundaries
 
 - No uploads, no network calls.
-- Audit scripts read file paths, names, sizes, and modified times only.
+- Audit scripts read file paths, names, sizes, modified times, and public tool state only.
 - No token, credential, database, session, or private log reads.
-- No registry, system setting, environment variable, or scheduled task changes.
+- No registry, system setting, environment variable, WSL config, or scheduled task changes.
 - No default full-disk scan. Users must specify the scan scope.
 - No automatic deletion of formal docs, source code, tool state, or Git-tracked files.
+- No automatic movement of WSL distros, Docker data, or AI model caches.
 - Cleanup defaults to DryRun and requires explicit confirmation for deletion.
 
 ---
@@ -211,8 +217,8 @@ Copy these templates into target projects when you want multiple agents to share
 ## Roadmap
 
 - [ ] Move more portable audit checks to Python
+- [ ] Improve WSL2 / Docker report explanations
 - [ ] Git hook or pre-commit integration
-- [ ] GitHub Actions hygiene checks
 - [ ] Configurable scoring weights
 - [ ] Real-time MCP artifact governance
 

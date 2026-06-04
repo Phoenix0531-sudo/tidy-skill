@@ -1,6 +1,6 @@
 <h1 align="center">洁癖.skill</h1>
 
-<p align="center">让 AI Agent 少留垃圾文件，留下的每一个都有归属、有生命周期、能被安全清理。</p>
+<p align="center">让 AI Agent 在一个干净、可解释、可回收的本地环境里工作。</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
@@ -18,19 +18,28 @@
 
 ## 一句话
 
-AI Agent 写文件前，经常缺一个判断：这东西该不该存在，应该放哪，多久以后可以清掉。
-
-洁癖.skill 给 Agent 一套文件产物治理规则，并提供本地审计脚本，专门处理 `plan.md`、`todo.md`、`summary.md`、`report.md` 这类会话遗留物。
+洁癖.skill 不是 Markdown 删除器，也不只是仓库清理工具。它是一套本地 Agent 环境洁癖规则和审计工具，让 Agent 的文件、缓存、虚拟化环境和模型存储都能被解释、被归位、被安全回收。
 
 ---
 
-## 前后对比
+## 三层洁癖模型
+
+| 层级 | 管什么 | 典型问题 | 工具 |
+|---|---|---|---|
+| 仓库层 | Agent 产物 | `plan.md`、`todo.md`、`final_report.md` 堆在根目录 | `audit_agent_artifacts.py`、`score_repo_hygiene.py` |
+| 工作区层 | 开发缓存 | 多个项目残留 `node_modules`、`.venv`、`target`、构建缓存 | `audit-workspace-hygiene.ps1` |
+| 本机层 | 本地开发环境 | WSL2/Docker VHDX 膨胀、包管理器缓存、模型缓存、Agent/IDE 状态散落 | `audit-dev-environment.ps1` |
+
+---
+
+## Before / After
 
 | Before | After |
 |---|---|
-| `plan.md`、`todo.md`、`final_report.md` 堆在项目根目录 | 计划和总结默认留在聊天里 |
-| 用户要求的审计报告和临时笔记混在一起 | 报告进 `.agent_reports/`，临时文件进 `.agent_tmp/` |
-| Agent 清理时不知道哪些文件能删 | 文件有分类、归属和默认生命周期 |
+| Agent 把计划、总结、报告都丢进项目根目录 | 计划默认留在聊天里，报告进 `.agent_reports/`，临时文件进 `.agent_tmp/` |
+| C 盘里到处是 npm、pip、uv、Go、Rust、Playwright 缓存 | 本地审计报告列出路径、体积、风险和安全建议 |
+| WSL2 / Docker Desktop 的虚拟磁盘越长越大，但不知道在哪 | 报告标出 WSL distro、`ext4.vhdx`、Docker WSL backend 和 `.wslconfig` 状态 |
+| Agent 发现大文件就想删 | 先分成 `Findings`、`Safe Suggestions`、`Manual / Risky Operations`，不自动迁移、不自动压缩、不自动删除 |
 
 ---
 
@@ -39,11 +48,11 @@ AI Agent 写文件前，经常缺一个判断：这东西该不该存在，应�
 | 卖点 | 具体价值 |
 |---|---|
 | **CC Switch Ready** | 使用 `skills/tidy-skill/SKILL.md` 标准布局，更容易被 skill 扫描器识别 |
-| **默认不落盘** | 计划、TODO、进度、总结默认留在聊天里，不污染项目根目录 |
-| **分级治理** | `.agent_tmp/` 放临时文件，`.agent_reports/` 放用户要求的报告，`docs/` 放正式文档 |
+| **本地 Agent 环境洁癖** | 把仓库产物、工作区缓存、本机环境放进同一套治理模型 |
+| **WSL2 / Docker 重点审计** | 检查 WSL 状态、distro 版本、`.wslconfig`、Docker WSL backend、VHDX 体积 |
 | **本地离线** | 审计脚本不联网、不上传、不读取 token、数据库或私密日志 |
-| **跨平台基础检查** | `score_repo_hygiene.py` 和 `audit_agent_artifacts.py` 提供无依赖 Python 入口 |
-| **Windows 深度审计** | PowerShell 脚本覆盖 WSL、Docker、Node、Python、Go、AI 模型缓存等 Windows 开发环境细节 |
+| **只读优先** | 审计只读；清理默认 DryRun；迁移、压缩、改配置永远只是建议 |
+| **Python + PowerShell 分工** | Python 做通用仓库审计；PowerShell 做 Windows/WSL/Docker 深度审计 |
 
 ---
 
@@ -106,43 +115,31 @@ Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.codex\skills\
 
 ## 快速使用
 
-### 通用仓库评分，优先用 Python
+### 仓库洁癖评分，优先用 Python
 
 ```powershell
 python .\skills\tidy-skill\scripts\score_repo_hygiene.py --root . --report-path .\.agent_reports\repo_hygiene.md
 ```
 
-### Windows / PowerShell 仓库评分
-
-```powershell
-.\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath .\.agent_reports\repo_hygiene.md
-```
-
-### 通用 Agent 产物审计，优先用 Python
+### Agent 产物审计，优先用 Python
 
 ```powershell
 python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-path .\.agent_reports\agent_artifacts.md
 ```
 
-### Windows / PowerShell Agent 产物审计
-
-```powershell
-.\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath .\.agent_reports\agent_artifacts.md
-```
-
-### 审计一组项目
+### 工作区审计
 
 ```powershell
 .\skills\tidy-skill\scripts\audit-workspace-hygiene.ps1 -Root "D:\Projects" -ReportPath .\.agent_reports\workspace_hygiene.md
 ```
 
-### 审计开发环境缓存
+### 本机开发环境审计
 
 ```powershell
-.\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -ReportPath .\.agent_reports\dev_environment.md
+.\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -IncludeUserProfile -ReportPath .\.agent_reports\dev_environment.md
 ```
 
-### 预览清理动作
+### 清理预览
 
 ```powershell
 .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
@@ -152,11 +149,19 @@ python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-pa
 
 ---
 
-## 为什么既有 Python，也有 PowerShell
+## WSL2 / Docker 立场
 
-主流 skill 仓库常用 Python，是因为它跨平台、无 shell 方言问题，也更容易被 Agent 复用。所以洁癖.skill 已经提供 `score_repo_hygiene.py` 作为通用仓库评分入口。
+洁癖.skill 会审计 WSL2 和 Docker Desktop 的本地 footprint，但不会替你迁移 distro、压缩 VHDX、修改 `.wslconfig`、移动 Docker 数据盘。
 
-PowerShell 仍然保留，因为这个 skill 的一部分价值来自 Windows 开发环境治理：WSL `.vhdx`、Docker、用户缓存、Node/Python/Go 工具链、AI 模型缓存等都更适合用 Windows 原生命令和 PowerShell 查询。后续会逐步把可跨平台的能力迁移到 Python，Windows 专项能力继续保留 PowerShell。
+报告只会告诉你：
+
+- WSL 是否安装、默认版本是什么。
+- 哪些 distro 在跑，是否是 WSL2。
+- `.wslconfig` 是否存在，是否设置 memory / swap / processors。
+- WSL 和 Docker Desktop 相关 VHDX 文件在哪里、体积多大。
+- 哪些动作属于安全建议，哪些属于需要你手动确认的高风险操作。
+
+更多细节见 [wsl2-docker-hygiene.md](skills/tidy-skill/references/wsl2-docker-hygiene.md)。
 
 ---
 
@@ -167,9 +172,9 @@ PowerShell 仍然保留，因为这个 skill 的一部分价值来自 Windows �
 | `score_repo_hygiene.py` | 通用仓库洁癖评分 | Python，无依赖，只读 |
 | `audit_agent_artifacts.py` | 通用 Agent 产物审计 | Python，无依赖，只读 |
 | `score-repo-hygiene.ps1` | Windows 版仓库评分 | 只读 |
-| `audit-agent-artifacts.ps1` | 列出仓库里的可疑 Agent 产物 | 只读 |
+| `audit-agent-artifacts.ps1` | Windows 版 Agent 产物审计 | 只读 |
 | `audit-workspace-hygiene.ps1` | 批量扫描多个 Git 仓库 | 只读，必须指定根目录 |
-| `audit-dev-environment.ps1` | 审计 Node/Python/Go/Docker/WSL/AI 缓存位置 | 只读，必须指定扫描范围 |
+| `audit-dev-environment.ps1` | 审计 WSL2、Docker、包缓存、模型缓存、Agent/IDE 状态 | 只读，必须指定扫描范围 |
 | `clean-agent-artifacts.ps1` | 清理过期 `.agent_tmp/` 和 `.agent_reports/` | DryRun 优先 |
 
 更详细的脚本说明见 [script-usage.md](skills/tidy-skill/references/script-usage.md)。
@@ -179,11 +184,12 @@ PowerShell 仍然保留，因为这个 skill 的一部分价值来自 Windows �
 ## 安全边界
 
 - 不上传数据，不联网。
-- 审计脚本只读取文件路径、名称、大小和修改时间。
+- 审计脚本只读取文件路径、名称、大小、修改时间和公开工具状态。
 - 不读取 token、认证文件、数据库、会话状态或私密日志。
-- 不修改注册表、系统设置、环境变量或计划任务。
+- 不修改注册表、系统设置、环境变量、WSL 配置或计划任务。
 - 不默认全盘扫描，必须由用户指定扫描范围。
 - 不自动删除正式文档、源码、工具状态目录或 Git-tracked 文件。
+- 不自动移动 WSL distro、Docker 数据盘或 AI 模型缓存。
 - 清理脚本默认 DryRun，删除动作需要显式确认。
 
 ---
@@ -211,8 +217,8 @@ PowerShell 仍然保留，因为这个 skill 的一部分价值来自 Windows �
 ## 路线图
 
 - [ ] 将更多通用审计能力迁移到 Python
+- [ ] 增强 WSL2 / Docker 报告解释能力
 - [ ] Git hook 或 pre-commit 集成
-- [ ] GitHub Actions 洁癖检查
 - [ ] 可配置评分权重
 - [ ] 实时 MCP 产物治理
 

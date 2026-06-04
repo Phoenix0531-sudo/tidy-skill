@@ -19,6 +19,7 @@ REQUIRED_SKILL_FILES = [
     "scripts/audit-workspace-hygiene.ps1",
     "scripts/clean-agent-artifacts.ps1",
     "references/script-usage.md",
+    "references/wsl2-docker-hygiene.md",
     "references/artifact-classification.md",
     "references/hygiene-scoring-model.md",
     "references/safety-boundaries.md",

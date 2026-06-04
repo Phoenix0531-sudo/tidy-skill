@@ -14,6 +14,9 @@ This document defines what 洁癖.skill will **never** do. The goal is to make t
 - Modify the Windows registry
 - Change environment variables
 - Alter system PATH
+- Edit `.wslconfig`
+- Change Docker Desktop settings
+- Move package manager or model cache locations
 - Install system services or daemons
 - Modify firewall rules
 - Change system security settings
@@ -68,6 +71,16 @@ Users may manually configure scheduling. 洁癖.skill provides guidance only.
 - `state.json`, `session.json`, `auth-token` — Tool state files
 - `workspaceStorage`, `globalStorage` — IDE storage
 - `History`, `User/workspaceStorage` — More tool state
+
+### 7b. No WSL or Docker Mutation
+
+洁癖.skill never:
+- Compacts VHDX files
+- Deletes `ext4.vhdx` or Docker virtual disks
+- Runs `wsl --export`, `wsl --import`, or `wsl --unregister`
+- Moves Docker Desktop data
+- Edits `.wslconfig`
+- Changes Docker Desktop settings
 
 ### 8. No Administrator Privileges
 

@@ -91,14 +91,50 @@ function Run-SafeCommand {
     param([string]$Cmd, [string]$ArgsStr)
     if (-not (Test-Command $Cmd)) { return "Not Installed" }
     try {
-        $proc = Start-Process -FilePath $Cmd -ArgumentList $ArgsStr -NoNewWindow -PassThru -RedirectStandardOutput $env:TEMP\agy_cmd_out.txt -RedirectStandardError $env:TEMP\agy_cmd_err.txt -Wait
-        if (Test-Path $env:TEMP\agy_cmd_out.txt) {
-            $out = Get-Content $env:TEMP\agy_cmd_out.txt -Raw -ErrorAction SilentlyContinue
-            Remove-Item $env:TEMP\agy_cmd_out.txt -ErrorAction SilentlyContinue | Out-Null
-            if ($out) { return $out.Trim() }
-        }
+        $argList = @()
+        if ($ArgsStr) { $argList = $ArgsStr -split '\s+' }
+        $out = & $Cmd @argList 2>$null | Out-String
+        if ($out) { return ($out -replace [char]0, '').Trim() }
     } catch {}
     return "Unknown / Error running command"
+}
+
+function Get-ConfigValue {
+    param([string]$Content, [string]$Key)
+    if (-not $Content) { return "" }
+    $pattern = "(?im)^\s*$([regex]::Escape($Key))\s*=\s*(.+?)\s*$"
+    $match = [regex]::Match($Content, $pattern)
+    if ($match.Success) { return $match.Groups[1].Value.Trim() }
+    return ""
+}
+
+function Parse-WslVerboseList {
+    param([string]$Text)
+    $rows = @()
+    if (-not $Text -or $Text -eq "Not Installed") { return $rows }
+    $lines = $Text -split "`r?`n"
+    foreach ($line in $lines) {
+        $clean = ($line -replace [char]0, '').Trim()
+        if (-not $clean) { continue }
+        if ($clean -match 'NAME\s+STATE\s+VERSION') { continue }
+        $clean = $clean.TrimStart('*').Trim()
+        if ($clean -match '^(.+?)\s+(Running|Stopped|Installing|Uninstalling|Converting)\s+([12])$') {
+            $rows += @{
+                Name = $matches[1].Trim()
+                State = $matches[2].Trim()
+                Version = $matches[3].Trim()
+            }
+        }
+    }
+    return $rows
+}
+
+function Test-ReadableText {
+    param([string]$Text)
+    if (-not $Text) { return $false }
+    if ($Text -match [char]0xfffd) { return $false }
+    if ($Text -match '[\x00-\x08\x0B\x0C\x0E-\x1F]') { return $false }
+    return $true
 }
 
 # ---- Initialize ----
@@ -115,7 +151,8 @@ foreach ($r in $Roots) {
 }
 
 Write-Host "Roots to scan:   $($resolvedRoots -join ', ')"
-Write-Host "User profile:    $(if($IncludeUserProfile){'Yes'}else{'No (pass -IncludeUserProfile to enable)'})"
+Write-Host "Known cache paths: Yes"
+Write-Host "User deep scan:  $(if($IncludeUserProfile){'Yes'}else{'No (pass -IncludeUserProfile to include WSL package VHDX scan)'})"
 Write-Host "Drive scan:      $(if($IncludeDrives){'Yes'}else{'No (pass -IncludeDrives to enable)'})"
 Write-Host "Max depth:       $MaxDepth"
 Write-Host ""
@@ -136,6 +173,7 @@ $envData = @{
     AgentsIde = @{}
     ModelCaches = @{}
     Playwright = @{}
+    PackageEnv = @{}
 }
 
 # 1. Node / NPM
@@ -237,25 +275,70 @@ foreach ($p in $javaPaths) {
 
 # 6. Docker / WSL
 Write-Host "Auditing Docker and WSL..." -ForegroundColor Cyan
+$envData.DockerWsl.WslStatus = Run-SafeCommand "wsl" "--status"
+$envData.DockerWsl.WslStatusReadable = Test-ReadableText $envData.DockerWsl.WslStatus
 $envData.DockerWsl.WslList = Run-SafeCommand "wsl" "--list --verbose"
+$envData.DockerWsl.Distros = @(Parse-WslVerboseList $envData.DockerWsl.WslList)
 $envData.DockerWsl.DockerVersion = Run-SafeCommand "docker" "--version"
+
+$wslConfigPath = Join-Path $userProfile ".wslconfig"
+$wslConfigContent = ""
+if (Test-Path -LiteralPath $wslConfigPath -PathType Leaf) {
+    $wslConfigContent = Get-Content -LiteralPath $wslConfigPath -Raw -ErrorAction SilentlyContinue
+}
+$envData.DockerWsl.WslConfig = @{
+    Path = $wslConfigPath
+    Exists = (Test-Path -LiteralPath $wslConfigPath -PathType Leaf)
+    Memory = Get-ConfigValue $wslConfigContent "memory"
+    Swap = Get-ConfigValue $wslConfigContent "swap"
+    Processors = Get-ConfigValue $wslConfigContent "processors"
+    DefaultVhdSize = Get-ConfigValue $wslConfigContent "defaultVhdSize"
+    AutoMemoryReclaim = Get-ConfigValue $wslConfigContent "autoMemoryReclaim"
+    SparseVhd = Get-ConfigValue $wslConfigContent "sparseVhd"
+}
 
 $wslPaths = @(
     (Join-Path $appdataLocal "Docker\wsl"),
     (Join-Path $appdataLocal "Packages")
 )
 $envData.DockerWsl.Caches = @()
+$dockerVhdHints = @(
+    (Join-Path $appdataLocal "Docker\wsl\data\ext4.vhdx"),
+    (Join-Path $appdataLocal "Docker\wsl\distro\ext4.vhdx")
+)
+foreach ($hint in $dockerVhdHints) {
+    if (Test-Path -LiteralPath $hint -PathType Leaf) {
+        $f = Get-Item -LiteralPath $hint -ErrorAction SilentlyContinue
+        if ($f) { $envData.DockerWsl.Caches += @{ Path = $f.FullName; Size = $f.Length; Owner = "Docker Desktop WSL backend" } }
+    }
+}
 if ($IncludeUserProfile -or $IncludeDrives) {
     foreach ($p in $wslPaths) {
         if (Test-Path -LiteralPath $p) {
-            # Only scan for ext4.vhdx sizes to be fast and safe
+            # Only scan for VHDX sizes to be fast and safe.
             try {
                 $vhdxFiles = Get-ChildItem -LiteralPath $p -Filter "*.vhdx" -Recurse -File -ErrorAction SilentlyContinue
                 foreach ($v in $vhdxFiles) {
-                    $envData.DockerWsl.Caches += @{ Path = $v.FullName; Size = $v.Length }
+                    $owner = "WSL/Docker"
+                    if ($v.FullName -match "\\Docker\\wsl\\") { $owner = "Docker Desktop WSL backend" }
+                    elseif ($v.FullName -match "\\Packages\\") { $owner = "WSL distro package" }
+                    $envData.DockerWsl.Caches += @{ Path = $v.FullName; Size = $v.Length; Owner = $owner }
                 }
             } catch {}
         }
+    }
+}
+$envData.DockerWsl.Caches = @($envData.DockerWsl.Caches | Sort-Object Path -Unique)
+$dockerSettingPaths = @(
+    (Join-Path $appdataRoaming "Docker\settings-store.json"),
+    (Join-Path $appdataRoaming "Docker\settings.json"),
+    (Join-Path $appdataRoaming "Docker Desktop\settings.json")
+)
+$envData.DockerWsl.DockerSettings = @()
+foreach ($p in $dockerSettingPaths) {
+    if (Test-Path -LiteralPath $p -PathType Leaf) {
+        $f = Get-Item -LiteralPath $p -ErrorAction SilentlyContinue
+        if ($f) { $envData.DockerWsl.DockerSettings += @{ Path = $f.FullName; Size = $f.Length } }
     }
 }
 
@@ -322,6 +405,41 @@ foreach ($p in ($browserPaths | Select-Object -Unique)) {
     if (Test-Path -LiteralPath $p) {
         $size = Get-DirSize $p
         $envData.Playwright.Caches += @{ Path = $p; Size = $size }
+    }
+}
+
+# 10. Known path-like environment variables
+$pathEnvNames = @(
+    "NPM_CONFIG_CACHE",
+    "PNPM_HOME",
+    "YARN_CACHE_FOLDER",
+    "PIP_CACHE_DIR",
+    "UV_CACHE_DIR",
+    "UV_TOOL_DIR",
+    "UV_PYTHON_INSTALL_DIR",
+    "GOPATH",
+    "GOMODCACHE",
+    "GOCACHE",
+    "CARGO_HOME",
+    "RUSTUP_HOME",
+    "DOCKER_CONFIG",
+    "HF_HOME",
+    "TRANSFORMERS_CACHE",
+    "HUGGINGFACE_HUB_CACHE",
+    "OLLAMA_MODELS",
+    "TORCH_HOME",
+    "PLAYWRIGHT_BROWSERS_PATH"
+)
+$envData.PackageEnv.Paths = @()
+foreach ($name in $pathEnvNames) {
+    $value = [Environment]::GetEnvironmentVariable($name, "Process")
+    if (-not $value) { $value = [Environment]::GetEnvironmentVariable($name, "User") }
+    if ($value) {
+        $exists = Test-Path -LiteralPath $value
+        $size = 0
+        if ($exists -and (Test-Path -LiteralPath $value -PathType Container)) { $size = Get-DirSize $value }
+        elseif ($exists -and (Test-Path -LiteralPath $value -PathType Leaf)) { $size = (Get-Item -LiteralPath $value).Length }
+        $envData.PackageEnv.Paths += @{ Name = $name; Path = $value; Exists = $exists; Size = $size }
     }
 }
 
@@ -404,6 +522,51 @@ elseif ($totalScore -ge 70) { $rating = "Mostly controlled"; $ratingDetail = "mo
 elseif ($totalScore -ge 50) { $rating = "Pollution risk"; $ratingDetail = "pollution risk" }
 else { $rating = "Environment sprawl"; $ratingDetail = "environment sprawl" }
 
+$findings = [System.Collections.ArrayList]@()
+$safeSuggestions = [System.Collections.ArrayList]@()
+$manualOperations = [System.Collections.ArrayList]@()
+
+[void]$findings.Add("C-drive development footprint: $(Format-Size $totalCdriveCache).")
+[void]$findings.Add("Non-C-drive development footprint: $(Format-Size $totalNonCdriveCache).")
+if ($envData.DockerWsl.Distros.Count -gt 0) {
+    [void]$findings.Add("WSL distros detected: $($envData.DockerWsl.Distros.Count).")
+}
+if ($envData.DockerWsl.WslConfig.Exists) {
+    [void]$findings.Add(".wslconfig found at $($envData.DockerWsl.WslConfig.Path).")
+} else {
+    [void]$findings.Add(".wslconfig not found in the user profile.")
+}
+if ($envData.DockerWsl.Caches.Count -gt 0) {
+    [void]$findings.Add("WSL/Docker VHDX files detected: $($envData.DockerWsl.Caches.Count), total $(Format-Size $totalVhdSize).")
+}
+if ($envData.ModelCaches.Paths.Count -gt 0) {
+    [void]$findings.Add("AI model cache locations detected: $($envData.ModelCaches.Paths.Count).")
+}
+
+[void]$safeSuggestions.Add("Keep cleanup in DryRun mode first and review paths before deletion.")
+[void]$safeSuggestions.Add("Prefer moving future reports to .agent_reports/ and temporary files to .agent_tmp/.")
+if (-not $envData.DockerWsl.WslConfig.Exists) {
+    [void]$safeSuggestions.Add("Consider reviewing whether a .wslconfig file is useful for WSL2 memory/swap/process limits.")
+}
+if ($envData.PackageEnv.Paths.Count -gt 0) {
+    [void]$safeSuggestions.Add("Review path-like cache environment variables before moving cache folders.")
+}
+if ($totalCdriveCache -gt 10GB) {
+    [void]$safeSuggestions.Add("Prioritize C-drive cache owners before deleting anything.")
+}
+
+foreach ($v in $envData.DockerWsl.Caches) {
+    if ($v.Size -gt 20GB) {
+        [void]$manualOperations.Add("Large VHDX requires manual review: $($v.Path) ($(Format-Size $v.Size)).")
+    }
+}
+foreach ($m in $envData.ModelCaches.Paths) {
+    if ($m.Path -match "^[Cc]:" -and $m.Size -gt 10GB) {
+        [void]$manualOperations.Add("Model cache relocation is manual: $($m.Path) ($(Format-Size $m.Size)).")
+    }
+}
+[void]$manualOperations.Add("WSL export/import, VHDX compaction, Docker data relocation, and .wslconfig edits are never automatic.")
+
 # ---- Generate Report ----
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
@@ -423,7 +586,8 @@ $lines = [System.Collections.ArrayList]@()
 [void]$lines.Add("**Average Control Score:** $totalScore / 100 - **$rating** ($ratingDetail)")
 [void]$lines.Add("**Scan Time:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
 [void]$lines.Add("**Scan Roots:** $(if($resolvedRoots.Count -gt 0){$resolvedRoots -join ', '}else{'_None specified (local files only)_'})")
-[void]$lines.Add("**User Profile Scanned:** $(if($IncludeUserProfile){'Yes'}else{'No'})")
+[void]$lines.Add("**Known Cache Paths Scanned:** Yes")
+[void]$lines.Add("**User Profile Deep Scan:** $(if($IncludeUserProfile){'Yes'}else{'No'})")
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
@@ -437,6 +601,20 @@ $lines = [System.Collections.ArrayList]@()
 [void]$lines.Add("| Agent State Cleanliness | $scoreAgentState | 20 | Total IDE & Agent configuration size: $(Format-Size $totalAgentStateSize) |")
 [void]$lines.Add("| Virtualization Footprint | $scoreVirtualization | 20 | WSL and Docker vhdx sizes: $(Format-Size $totalVhdSize) |")
 [void]$lines.Add("| **Total** | **$totalScore** | **100** | **$rating ($ratingDetail)** |")
+[void]$lines.Add("")
+[void]$lines.Add("---")
+[void]$lines.Add("")
+[void]$lines.Add("## Findings")
+[void]$lines.Add("")
+foreach ($item in $findings) { [void]$lines.Add("- $item") }
+[void]$lines.Add("")
+[void]$lines.Add("## Safe Suggestions")
+[void]$lines.Add("")
+foreach ($item in $safeSuggestions) { [void]$lines.Add("- $item") }
+[void]$lines.Add("")
+[void]$lines.Add("## Manual / Risky Operations")
+[void]$lines.Add("")
+foreach ($item in $manualOperations) { [void]$lines.Add("- $item") }
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
@@ -511,16 +689,46 @@ if ($envData.Java.Caches.Count -gt 0) {
 # Docker / WSL
 [void]$lines.Add("### Docker & WSL Environment")
 [void]$lines.Add("- **Docker Version:** $($envData.DockerWsl.DockerVersion)")
+[void]$lines.Add("- **WSL Status:**")
+if ($envData.DockerWsl.WslStatusReadable -and $envData.DockerWsl.WslStatus -ne "Not Installed") {
+    [void]$lines.Add('```text' + "`n" + $envData.DockerWsl.WslStatus + "`n" + '```')
+} else {
+    [void]$lines.Add("  - Raw status output unavailable or not safely decodable; use parsed distro table below.")
+}
 [void]$lines.Add("- **WSL Distros:**")
 if ($envData.DockerWsl.WslList -and $envData.DockerWsl.WslList -ne "Not Installed") {
     [void]$lines.Add('```text' + "`n" + $envData.DockerWsl.WslList + "`n" + '```')
 } else {
     [void]$lines.Add("  - Not Installed or Stopped")
 }
+if ($envData.DockerWsl.Distros.Count -gt 0) {
+    [void]$lines.Add("- **Parsed WSL Distro Table:**")
+    [void]$lines.Add("")
+    [void]$lines.Add("  | Distro | State | Version |")
+    [void]$lines.Add("  |---|---|---|")
+    foreach ($d in $envData.DockerWsl.Distros) {
+        [void]$lines.Add("  | $($d.Name) | $($d.State) | $($d.Version) |")
+    }
+}
+[void]$lines.Add("- **.wslconfig:** $(if($envData.DockerWsl.WslConfig.Exists){$envData.DockerWsl.WslConfig.Path}else{'not found'})")
+if ($envData.DockerWsl.WslConfig.Exists) {
+    [void]$lines.Add("  - memory: $(if($envData.DockerWsl.WslConfig.Memory){$envData.DockerWsl.WslConfig.Memory}else{'not set'})")
+    [void]$lines.Add("  - swap: $(if($envData.DockerWsl.WslConfig.Swap){$envData.DockerWsl.WslConfig.Swap}else{'not set'})")
+    [void]$lines.Add("  - processors: $(if($envData.DockerWsl.WslConfig.Processors){$envData.DockerWsl.WslConfig.Processors}else{'not set'})")
+    [void]$lines.Add("  - defaultVhdSize: $(if($envData.DockerWsl.WslConfig.DefaultVhdSize){$envData.DockerWsl.WslConfig.DefaultVhdSize}else{'not set'})")
+    [void]$lines.Add("  - autoMemoryReclaim: $(if($envData.DockerWsl.WslConfig.AutoMemoryReclaim){$envData.DockerWsl.WslConfig.AutoMemoryReclaim}else{'not set'})")
+    [void]$lines.Add("  - sparseVhd: $(if($envData.DockerWsl.WslConfig.SparseVhd){$envData.DockerWsl.WslConfig.SparseVhd}else{'not set'})")
+}
 if ($envData.DockerWsl.Caches.Count -gt 0) {
-    [void]$lines.Add("- **VHdx File Storage:**")
+    [void]$lines.Add("- **VHDX File Storage:**")
     foreach ($c in $envData.DockerWsl.Caches) {
-        [void]$lines.Add( ("  - '{0}' ({1})" -f $c.Path, (Format-Size $c.Size)).Replace("'", '`') )
+        [void]$lines.Add( ("  - [{0}] '{1}' ({2})" -f $c.Owner, $c.Path, (Format-Size $c.Size)).Replace("'", '`') )
+    }
+}
+if ($envData.DockerWsl.DockerSettings.Count -gt 0) {
+    [void]$lines.Add("- **Docker Desktop Settings Hints:**")
+    foreach ($s in $envData.DockerWsl.DockerSettings) {
+        [void]$lines.Add( ("  - '{0}' ({1})" -f $s.Path, (Format-Size $s.Size)).Replace("'", '`') )
     }
 }
 [void]$lines.Add("")
@@ -558,6 +766,19 @@ if ($envData.Playwright.Caches.Count -gt 0) {
 }
 [void]$lines.Add("")
 
+# Path-like environment variables
+[void]$lines.Add("### Path-like Cache Environment Variables")
+if ($envData.PackageEnv.Paths.Count -gt 0) {
+    [void]$lines.Add("| Name | Path | Exists | Size |")
+    [void]$lines.Add("|---|---|---|---|")
+    foreach ($e in $envData.PackageEnv.Paths) {
+        [void]$lines.Add( ("| {0} | '{1}' | {2} | {3} |" -f $e.Name, $e.Path, $e.Exists, (Format-Size $e.Size)).Replace("'", '`') )
+    }
+} else {
+    [void]$lines.Add("- _No known path-like cache environment variables found._")
+}
+[void]$lines.Add("")
+
 # Project level
 if ($projectCaches.Count -gt 0) {
     [void]$lines.Add("### Project-level Build & Cache Folders (`node_modules`, `target`, `venv`)")
@@ -567,25 +788,25 @@ if ($projectCaches.Count -gt 0) {
     [void]$lines.Add("")
 }
 
-# Recommendations
-[void]$lines.Add("## Recommendations")
+# Additional notes
+[void]$lines.Add("## Additional Notes")
 [void]$lines.Add("")
 if ($totalCdriveCache -gt 20GB) {
-    [void]$lines.Add("- **C-Drive Risk:** Cache footprint on system C-Drive is substantial ($(Format-Size $totalCdriveCache)). Consider relocating large caches.")
+    [void]$lines.Add("- **C-Drive Risk:** Cache footprint on system C-Drive is substantial ($(Format-Size $totalCdriveCache)). Review owners before relocating or deleting anything.")
 }
 foreach ($m in $envData.ModelCaches.Paths) {
     if ($m.Path -match "^[Cc]:" -and $m.Size -gt 10GB) {
-        [void]$lines.Add( ("- **Model relocation:** AI models in '{0}' ({1}) are taking up system space. Consider moving models via Ollama ('OLLAMA_MODELS' environment variable) or HuggingFace ('HF_HOME')." -f $m.Path, (Format-Size $m.Size)).Replace("'", '`') )
+        [void]$lines.Add( ("- **Model cache:** AI models in '{0}' ({1}) are taking up system space. Relocation is manual and should use tool-supported settings such as OLLAMA_MODELS or HF_HOME." -f $m.Path, (Format-Size $m.Size)).Replace("'", '`') )
     }
 }
 if ($envData.Playwright.Caches.Count -gt 0) {
     $pwSize = 0
     foreach ($p in $envData.Playwright.Caches) { $pwSize += $p.Size }
     if ($pwSize -gt 5GB) {
-        [void]$lines.Add("- **Browser Runtimes:** Playwright/Puppeteer browser cache is large ($(Format-Size $pwSize)). These can be safely deleted; they will auto-rebuild when running tests.")
+        [void]$lines.Add("- **Browser Runtimes:** Playwright/Puppeteer browser cache is large ($(Format-Size $pwSize)). Review project needs before cleanup; browser runtimes can usually be rebuilt.")
     }
 }
-[void]$lines.Add("- **Safe Cleanup:** Run `.\clean-agent-artifacts.ps1 -Root . -DryRun` to verify project-level cleanup without touching system config.")
+[void]$lines.Add("- **Safe Cleanup:** Run `.\clean-agent-artifacts.ps1 -Root . -DryRun` to preview project-level cleanup without touching system config.")
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
