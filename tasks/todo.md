@@ -158,3 +158,51 @@ Completed on 2026-06-04.
   - `audit-agent-artifacts.ps1`
   - `audit-dev-environment.ps1`
   - `clean-agent-artifacts.ps1 -DryRun`
+
+## Productization Pass Plan
+
+- [x] Improve report presentation and actionability.
+  - Add overview cards for hygiene score, C-drive risk, WSL/Docker risk, and model cache risk.
+  - Add a Top 10 optimization section where each item explains why it matters, whether it can be touched, and the next step.
+  - Verification: generated dev-environment report contains the overview cards, Top 10 section, and clear safe/manual operation separation.
+- [x] Add local install and self-check script.
+  - Add a script that installs the skill into `.codex/skills` and `.claude/skills`, with DryRun support and display-name validation.
+  - Verification: DryRun and self-check modes complete without modifying the current checkout.
+- [x] Add a portable Python development-environment audit baseline.
+  - Cover cross-platform package/model cache mapping for npm, pip, uv, Go, Rust, Playwright, Hugging Face, Ollama, and common project caches.
+  - Verification: script runs dependency-free and can emit JSON plus Markdown.
+- [x] Add focused tests.
+  - Cover suspicious root detection, protected document safety, Git-tracked cleanup safety, and required report buckets.
+  - Verification: tests pass locally and are wired into CI.
+- [x] Add README report preview and new commands.
+  - Update Chinese and English READMEs plus script usage docs.
+  - Verification: README commands reference existing scripts and the preview matches the generated report structure.
+- [x] Add template installation command.
+  - Add a DryRun-first script that can install AGENTS.md, CLAUDE.md, or Cursor rules into a target project.
+  - Verification: DryRun and actual install into a temp folder behave as documented.
+
+## Productization Pass Review
+
+Completed on 2026-06-04.
+
+- Improved `audit-dev-environment.ps1` reports with `Overview Cards`, `Top 10 Optimization Plan`, and clearer safe/manual operation sections.
+- Added portable `audit_dev_environment.py` with dependency-free JSON and Markdown output.
+- Added `install-local.ps1` for local Codex/Claude installation previews and package self-checks.
+- Added `install-rule-template.ps1` for DryRun-first AGENTS/CLAUDE/Cursor rule installation.
+- Hardened `clean-agent-artifacts.ps1` so Git-tracked files are skipped even when root cleanup is explicitly enabled.
+- Added focused Python tests and a Windows cleanup safety test.
+- Updated README, README.en.md, script usage docs, safety boundaries, contributing guidance, validator, and CI.
+- Validation passed:
+  - `tools/validate_skill.py`
+  - Python unit tests
+  - `score_repo_hygiene.py`
+  - `audit_agent_artifacts.py`
+  - `audit_dev_environment.py`
+  - PowerShell repo score, artifact audit, dev environment audit
+  - local install self-check
+  - rule template install DryRun
+  - rule template actual install into a temp directory
+  - cleanup DryRun
+  - Git-tracked cleanup safety test
+  - script ASCII check for `.ps1` and `.bat`
+  - `git diff --check`

@@ -234,6 +234,8 @@ For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audi
 
 When asked about C-drive growth, WSL2, Docker Desktop, model caches, package caches, agent state, or local development environment sprawl, use `${CLAUDE_SKILL_DIR}/scripts/audit-dev-environment.ps1`.
 
+For portable package/model cache mapping on non-Windows environments, use `${CLAUDE_SKILL_DIR}/scripts/audit_dev_environment.py`. Use the PowerShell script for Windows-specific WSL2/Docker VHDX inspection.
+
 Rules:
 
 1. Ask for explicit scan roots when project/workspace scanning is needed.
@@ -259,7 +261,7 @@ For WSL2 and Docker details, read `references/wsl2-docker-hygiene.md`.
 - Source code
 - Tool state (Class E)
 - Unknown Markdown in user folders
-- Git-tracked files without explicit confirmation
+- Git-tracked files
 - Root-level suspicious files → **report only, ask user**
 
 ---
@@ -294,7 +296,7 @@ This Skill and its scripts:
 - Do not perform full-disk scans (user must specify roots)
 - Do not delete formal documentation
 - Do not delete tool state files
-- Do not delete Git-tracked files without explicit confirmation
+- Do not delete Git-tracked files
 - Do not upload any data
 - Do not install dependencies
 - Do not require network access
@@ -312,12 +314,22 @@ This Skill and its scripts:
 
 ### For Environment Audits:
 1. Ask for or infer the explicit scan root folder path.
-2. Run read-only audit command first (`audit-dev-environment.ps1`).
+2. Run a read-only audit command first: `audit_dev_environment.py` for portable package/model cache mapping, or `audit-dev-environment.ps1` for Windows WSL2/Docker inspection.
 3. Classify paths as cache, config, runtime, model, project, or unknown.
 4. Mark C-drive growth risks and potential cache size optimizations.
 5. Produce a clear Markdown report with score rating (Highly controlled to Environment sprawl).
-6. Separate report recommendations into `Findings`, `Safe Suggestions`, and `Manual / Risky Operations`.
+6. Include `Overview Cards`, `Top 10 Optimization Plan`, `Findings`, `Safe Suggestions`, and `Manual / Risky Operations`.
 7. Do not perform any cleaning or migration actions unless the user confirms in a separate explicit request.
+
+### For Local Install / Self-check:
+1. Use `${CLAUDE_SKILL_DIR}/scripts/install-local.ps1 -SelfCheckOnly` to validate local package metadata.
+2. Use `install-local.ps1` in DryRun mode before copying into `.codex/skills` or `.claude/skills`.
+3. Preserve display name `洁癖.skill` and machine slug `tidy-skill`.
+
+### For Rule Template Install:
+1. Use `${CLAUDE_SKILL_DIR}/scripts/install-rule-template.ps1` in DryRun mode first.
+2. Install only user-requested templates: `AGENTS`, `CLAUDE`, `cursor`, or `all`.
+3. Do not overwrite existing project rules unless the user explicitly asks for `-Force`.
 
 ---
 

@@ -57,7 +57,7 @@ Users may manually configure scheduling. 洁癖.skill provides guidance only.
 
 ### 6. No Git-tracked File Deletion
 
-洁癖.skill never deletes Git-tracked files by default. Files tracked by Git outside `.agent_tmp/` and `.agent_reports/` are excluded from cleanup operations.
+洁癖.skill never deletes Git-tracked files. Cleanup scripts detect Git-tracked paths and skip them, even when root-level cleanup is explicitly enabled.
 
 ### 7. No Tool State Touching
 
@@ -172,7 +172,7 @@ Users can verify safety guarantees by:
 | Document deletion | Never without explicit flags |
 | User document cleanup | Never |
 | Unknown content deletion | Never |
-| Git-tracked file deletion | Never without explicit `-ConfirmClean` |
+| Git-tracked file deletion | Never |
 | Tool state modification | Never |
 | Admin rights required | Never |
 | Full-disk scan | Never |

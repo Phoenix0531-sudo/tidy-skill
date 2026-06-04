@@ -97,6 +97,12 @@ After installation, the skill should appear at paths like:
 
 ### Manual Install
 
+Self-check first:
+
+```powershell
+.\skills\tidy-skill\scripts\install-local.ps1 -SelfCheckOnly
+```
+
 Claude Code:
 
 ```powershell
@@ -109,6 +115,18 @@ Codex:
 ```powershell
 New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\skills" | Out-Null
 Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.codex\skills\tidy-skill"
+```
+
+You can also preview installation into both Codex and Claude:
+
+```powershell
+.\skills\tidy-skill\scripts\install-local.ps1
+```
+
+Actual copying requires explicitly disabling DryRun:
+
+```powershell
+.\skills\tidy-skill\scripts\install-local.ps1 -DryRun:$false -Force
 ```
 
 ---
@@ -133,7 +151,13 @@ python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-pa
 .\skills\tidy-skill\scripts\audit-workspace-hygiene.ps1 -Root "D:\Projects" -ReportPath .\.agent_reports\workspace_hygiene.md
 ```
 
-### Local development environment audit
+### Local development environment audit, prefer Python for the portable baseline
+
+```powershell
+python .\skills\tidy-skill\scripts\audit_dev_environment.py --root "D:\Projects" --report-path .\.agent_reports\dev_environment.md
+```
+
+### Windows / WSL2 / Docker deep audit
 
 ```powershell
 .\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -IncludeUserProfile -ReportPath .\.agent_reports\dev_environment.md
@@ -146,6 +170,28 @@ python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-pa
 ```
 
 Cleanup previews by default. Actual deletion requires explicit confirmation.
+
+---
+
+## Report Preview
+
+```markdown
+## Overview Cards
+
+| Card | Status | Evidence | Next step |
+|---|---|---|---|
+| Environment hygiene | Watch | 82 / 100 - Mostly controlled | Review the Top 10 optimization plan before changing anything. |
+| C-drive risk | Watch | 14.20 GB detected on C drive | Prioritize package and model cache owners before touching tool state. |
+| WSL/Docker risk | Manual deep audit | 2 distros, 28.40 GB VHDX footprint | Treat migration, compaction, and Docker data moves as manual operations. |
+| Model cache risk | Controlled | 2.10 GB total, 0 B on C drive | Move future models only through tool-supported settings. |
+
+## Top 10 Optimization Plan
+
+| # | Area | Size | Why it matters | Can touch? | Next step |
+|---:|---|---:|---|---|---|
+| 1 | WSL/Docker VHDX | 28.40 GB | Virtual disks can grow even after data is deleted inside WSL or Docker. | Manual | Use documented WSL/Docker maintenance steps; do not delete or move the VHDX file directly. |
+| 2 | Browser runtimes | 5.30 GB | Playwright/Puppeteer browser binaries are often rebuildable but can be shared by tests. | Safe to review | Check active projects first, then use the browser tool's supported reinstall/cleanup flow. |
+```
 
 ---
 
@@ -171,11 +217,14 @@ See [wsl2-docker-hygiene.md](skills/tidy-skill/references/wsl2-docker-hygiene.md
 |---|---|---|
 | `score_repo_hygiene.py` | Portable repo hygiene scoring | Python, dependency-free, read-only |
 | `audit_agent_artifacts.py` | Portable agent artifact audit | Python, dependency-free, read-only |
+| `audit_dev_environment.py` | Portable local environment audit baseline | Python, dependency-free, read-only |
 | `score-repo-hygiene.ps1` | Windows repo hygiene scoring | Read-only |
 | `audit-agent-artifacts.ps1` | Windows agent artifact audit | Read-only |
 | `audit-workspace-hygiene.ps1` | Scans multiple Git repositories | Read-only, explicit root required |
 | `audit-dev-environment.ps1` | Audits WSL2, Docker, package caches, model caches, and agent/IDE state | Read-only, scoped |
 | `clean-agent-artifacts.ps1` | Cleans expired `.agent_tmp/` and `.agent_reports/` files | DryRun first |
+| `install-local.ps1` | Installs into local Codex / Claude skill directories and self-checks | DryRun first |
+| `install-rule-template.ps1` | Installs AGENTS / CLAUDE / Cursor rule templates | DryRun first |
 
 See [script-usage.md](skills/tidy-skill/references/script-usage.md) for details.
 
@@ -196,13 +245,18 @@ See [script-usage.md](skills/tidy-skill/references/script-usage.md) for details.
 
 ## Rule Templates
 
-Copy these templates into target projects when you want multiple agents to share the same file hygiene rules:
+Install these templates into target projects when you want multiple agents to share the same file hygiene rules:
 
 | Target | Template |
 |---|---|
 | Claude Code | [templates/CLAUDE.md](skills/tidy-skill/templates/CLAUDE.md) |
 | Codex / General Agents | [templates/AGENTS.md](skills/tidy-skill/templates/AGENTS.md) |
 | Cursor | [templates/cursor-rule.mdc](skills/tidy-skill/templates/cursor-rule.mdc) |
+
+```powershell
+.\skills\tidy-skill\scripts\install-rule-template.ps1 -TargetRoot "D:\Projects\MyApp"
+.\skills\tidy-skill\scripts\install-rule-template.ps1 -TargetRoot "D:\Projects\MyApp" -Template AGENTS -DryRun:$false
+```
 
 ---
 

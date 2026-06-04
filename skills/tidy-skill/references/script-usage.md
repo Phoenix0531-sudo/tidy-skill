@@ -6,12 +6,15 @@
 |---|---|---|
 | `score_repo_hygiene.py` | Portable repo hygiene score (0-100) | Python, dependency-free, read-only |
 | `audit_agent_artifacts.py` | Portable agent artifact audit | Python, dependency-free, read-only |
+| `audit_dev_environment.py` | Portable dev environment audit | Python, dependency-free, read-only |
 | `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
 | `score-repo-hygiene.ps1` | Windows repo hygiene score (0-100) | Read-only |
 | `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
 | `audit-dev-environment.ps1` | Windows development environment audit | Read-only, explicit scope |
 | `clean-agent-artifacts.ps1` | Conservative cleanup | Defaults to DryRun |
 | `clean-agent-artifacts.bat` | Windows double-click wrapper | DryRun by default |
+| `install-local.ps1` | Local skill install and self-check | DryRun by default |
+| `install-rule-template.ps1` | Rule template installer | DryRun by default |
 
 ---
 
@@ -70,6 +73,27 @@ powershell -ExecutionPolicy Bypass -File audit-agent-artifacts.ps1 -Root "C:\pat
 
 ---
 
+## audit_dev_environment.py
+
+Portable development-environment audit for package caches, model caches, browser runtimes, path-like cache environment variables, and project-local cache folders. It does not inspect Windows WSL2/Docker VHDX files; use `audit-dev-environment.ps1` for that.
+
+```powershell
+python audit_dev_environment.py --root "C:\path\to\workspace" --report-path "C:\reports\dev_environment.md"
+```
+
+**Parameters:**
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `--root` | No | none | Project/workspace root to scan; may be repeated |
+| `--report-path` | No | none | Optional Markdown report path |
+| `--max-depth` | No | 3 | Maximum project cache scan depth |
+| `--json` | No | false | Print JSON output |
+
+**Report structure:** `Overview Cards`, `Top 10 Optimization Plan`, `Findings`, `Safe Suggestions`, and `Manual / Risky Operations`.
+
+---
+
 ## score-repo-hygiene.ps1
 
 Windows PowerShell version of repo scoring. Use it when Python is unavailable or when staying inside a PowerShell workflow.
@@ -106,6 +130,8 @@ powershell -ExecutionPolicy Bypass -File audit-dev-environment.ps1 -Roots "E:\1_
 
 **Report structure:**
 
+- `Overview Cards`: score, C-drive risk, WSL/Docker risk, and model cache risk.
+- `Top 10 Optimization Plan`: why each item matters, whether it can be touched, and the next step.
 - `Findings`: observed local facts.
 - `Safe Suggestions`: low-risk next steps.
 - `Manual / Risky Operations`: WSL export/import, VHDX compaction, Docker data relocation, `.wslconfig` edits, and model cache relocation.
@@ -144,7 +170,7 @@ powershell -ExecutionPolicy Bypass -File clean-agent-artifacts.ps1 -Root "C:\pat
 - Everything under `docs/`
 - Source code (`src/`, `lib/`, `app/`, etc.)
 - Tool state (`.claude/`, `.cursor/`, `.vscode/`, `*.sqlite`, etc.)
-- Git-tracked files outside `.agent_tmp/` and `.agent_reports/`
+- Git-tracked files
 
 ---
 
@@ -154,6 +180,51 @@ Double-click wrapper that runs the PowerShell script in DryRun mode.
 
 - **Double-click:** Run on current directory.
 - **Drag-and-drop a folder:** Run on that folder.
+
+---
+
+## install-local.ps1
+
+Installs the packaged skill into local Codex and Claude skill directories, with metadata self-checks for `SKILL.md` and `agents/openai.yaml`.
+
+```powershell
+# Self-check only
+powershell -ExecutionPolicy Bypass -File install-local.ps1 -SelfCheckOnly
+
+# Preview local install
+powershell -ExecutionPolicy Bypass -File install-local.ps1
+
+# Actual install to both Codex and Claude
+powershell -ExecutionPolicy Bypass -File install-local.ps1 -DryRun:$false -Force
+```
+
+**Safety:** Defaults to DryRun. Existing installed skill folders are replaced only when `-DryRun:$false -Force` is provided.
+
+---
+
+## install-rule-template.ps1
+
+Installs rule templates into a target project.
+
+```powershell
+# Preview all template installs
+powershell -ExecutionPolicy Bypass -File install-rule-template.ps1 -TargetRoot "C:\path\to\project"
+
+# Install only AGENTS.md
+powershell -ExecutionPolicy Bypass -File install-rule-template.ps1 -TargetRoot "C:\path\to\project" -Template AGENTS -DryRun:$false
+
+# Replace an existing Cursor rule
+powershell -ExecutionPolicy Bypass -File install-rule-template.ps1 -TargetRoot "C:\path\to\project" -Template cursor -DryRun:$false -Force
+```
+
+Targets:
+
+| Template | Destination |
+|---|---|
+| `AGENTS` | `AGENTS.md` |
+| `CLAUDE` | `CLAUDE.md` |
+| `cursor` | `.cursor/rules/tidy-skill.mdc` |
+| `all` | all of the above |
 
 ---
 

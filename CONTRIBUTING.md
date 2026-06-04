@@ -29,6 +29,8 @@ Run these checks before opening a pull request:
 python tools\validate_skill.py --skill-dir skills\tidy-skill
 python skills\tidy-skill\scripts\score_repo_hygiene.py --root . --json
 python skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --json
+python skills\tidy-skill\scripts\audit_dev_environment.py --root . --json
+python -m unittest discover -s tests -p "test_*.py"
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
 ```
 
@@ -37,6 +39,9 @@ On Windows, also smoke-test the PowerShell scoring and audit scripts:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath "$env:TEMP\tidy_skill_score.md"
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath "$env:TEMP\tidy_skill_artifacts.md"
+powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots . -ReportPath "$env:TEMP\tidy_skill_dev_environment.md"
+powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\install-local.ps1 -SelfCheckOnly
+powershell -ExecutionPolicy Bypass -File .\tests\test-clean-agent-artifacts.ps1
 ```
 
 ## Pull Request Checklist

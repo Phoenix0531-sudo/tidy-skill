@@ -137,6 +137,45 @@ function Test-ReadableText {
     return $true
 }
 
+function Get-PathTouchClass {
+    param([string]$Path)
+    if (-not $Path) { return "Review only" }
+    if ($Path -match '\.vhdx$' -or $Path -match '\\Docker\\wsl\\' -or $Path -match '\\Packages\\') { return "Manual" }
+    if ($Path -match '\\\.claude($|\\)' -or $Path -match '\\\.codex($|\\)' -or $Path -match '\\\.cursor($|\\)' -or $Path -match '\\\.vscode($|\\)' -or $Path -match '\\Code($|\\)') { return "Do not clean automatically" }
+    if ($Path -match 'huggingface' -or $Path -match 'ollama' -or $Path -match 'lmstudio' -or $Path -match 'lm-studio' -or $Path -match 'torch') { return "Manual" }
+    if ($Path -match 'node_modules' -or $Path -match '\\\.venv($|\\)' -or $Path -match '\\venv($|\\)' -or $Path -match '\\target($|\\)') { return "Review project first" }
+    return "Safe to review"
+}
+
+function Get-PathNextStep {
+    param([string]$Path)
+    $touchClass = Get-PathTouchClass $Path
+    if ($touchClass -eq "Manual") { return "Inspect owner and use tool-supported migration or cleanup commands only." }
+    if ($touchClass -eq "Do not clean automatically") { return "Leave it alone unless the owning tool documents a cleanup path." }
+    if ($touchClass -eq "Review project first") { return "Confirm the project can rebuild it, then clean from that project context." }
+    return "Review owner first; prefer the package manager's cache command over manual deletion."
+}
+
+function Add-OptimizationItem {
+    param(
+        [System.Collections.ArrayList]$Items,
+        [string]$Area,
+        [string]$Why,
+        [string]$CanTouch,
+        [string]$NextStep,
+        [long]$Size = 0,
+        [int]$Priority = 50
+    )
+    [void]$Items.Add([pscustomobject]@{
+        Area = $Area
+        Why = $Why
+        CanTouch = $CanTouch
+        NextStep = $NextStep
+        Size = $Size
+        Priority = $Priority
+    })
+}
+
 # ---- Initialize ----
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  tidy-skill - Dev Environment Audit" -ForegroundColor Cyan
@@ -514,6 +553,19 @@ foreach ($v in $envData.DockerWsl.Caches) {
 if ($totalVhdSize -gt 50GB) { $scoreVirtualization = 5 }
 elseif ($totalVhdSize -gt 20GB) { $scoreVirtualization = 12 }
 
+$totalModelCache = [long]0
+$modelCdriveSize = [long]0
+foreach ($m in $envData.ModelCaches.Paths) {
+    $totalModelCache += $m.Size
+    if ($m.Path -match "^[Cc]:") { $modelCdriveSize += $m.Size }
+}
+
+$totalBrowserCache = [long]0
+foreach ($p in $envData.Playwright.Caches) { $totalBrowserCache += $p.Size }
+
+$totalProjectCache = [long]0
+foreach ($p in $projectCaches) { $totalProjectCache += $p.Size }
+
 $totalScore = $scoreCdrive + $scoreRuntimes + $scoreIsolation + $scoreAgentState + $scoreVirtualization
 $totalScore = [Math]::Min(100, [Math]::Max(0, $totalScore))
 
@@ -522,9 +574,15 @@ elseif ($totalScore -ge 70) { $rating = "Mostly controlled"; $ratingDetail = "mo
 elseif ($totalScore -ge 50) { $rating = "Pollution risk"; $ratingDetail = "pollution risk" }
 else { $rating = "Environment sprawl"; $ratingDetail = "environment sprawl" }
 
+$scoreRisk = if ($totalScore -ge 90) { "Controlled" } elseif ($totalScore -ge 70) { "Watch" } elseif ($totalScore -ge 50) { "Review" } else { "High" }
+$cDriveRisk = if ($totalCdriveCache -ge 20GB) { "High" } elseif ($totalCdriveCache -ge 5GB) { "Watch" } else { "Controlled" }
+$wslDockerRisk = if ($totalVhdSize -ge 50GB) { "High" } elseif ($totalVhdSize -ge 20GB) { "Watch" } elseif ($envData.DockerWsl.Distros.Count -gt 0 -or $envData.DockerWsl.Caches.Count -gt 0) { "Mapped" } else { "Controlled" }
+$modelRisk = if ($modelCdriveSize -ge 10GB) { "High" } elseif ($totalModelCache -ge 5GB) { "Watch" } else { "Controlled" }
+
 $findings = [System.Collections.ArrayList]@()
 $safeSuggestions = [System.Collections.ArrayList]@()
 $manualOperations = [System.Collections.ArrayList]@()
+$optimizationItems = [System.Collections.ArrayList]@()
 
 [void]$findings.Add("C-drive development footprint: $(Format-Size $totalCdriveCache).")
 [void]$findings.Add("Non-C-drive development footprint: $(Format-Size $totalNonCdriveCache).")
@@ -555,17 +613,45 @@ if ($totalCdriveCache -gt 10GB) {
     [void]$safeSuggestions.Add("Prioritize C-drive cache owners before deleting anything.")
 }
 
+if ($totalCdriveCache -gt 5GB) {
+    Add-OptimizationItem -Items $optimizationItems -Area "C-drive footprint" -Why "Development caches on the system drive can create slow, confusing disk pressure." -CanTouch "Review only" -NextStep "Sort the cache owners below by size and handle package caches before touching tool state." -Size $totalCdriveCache -Priority 100
+}
+
 foreach ($v in $envData.DockerWsl.Caches) {
     if ($v.Size -gt 20GB) {
         [void]$manualOperations.Add("Large VHDX requires manual review: $($v.Path) ($(Format-Size $v.Size)).")
+        Add-OptimizationItem -Items $optimizationItems -Area "WSL/Docker VHDX" -Why "Virtual disks can grow even after data is deleted inside WSL or Docker." -CanTouch "Manual" -NextStep "Use documented WSL/Docker maintenance steps; do not delete or move the VHDX file directly." -Size $v.Size -Priority 95
     }
 }
 foreach ($m in $envData.ModelCaches.Paths) {
     if ($m.Path -match "^[Cc]:" -and $m.Size -gt 10GB) {
         [void]$manualOperations.Add("Model cache relocation is manual: $($m.Path) ($(Format-Size $m.Size)).")
+        Add-OptimizationItem -Items $optimizationItems -Area "Model cache" -Why "Large model files on C drive are high-impact but tool-owned." -CanTouch "Manual" -NextStep "Use tool-supported settings such as HF_HOME or OLLAMA_MODELS before moving future models." -Size $m.Size -Priority 90
     }
 }
 [void]$manualOperations.Add("WSL export/import, VHDX compaction, Docker data relocation, and .wslconfig edits are never automatic.")
+
+if ($totalBrowserCache -gt 5GB) {
+    Add-OptimizationItem -Items $optimizationItems -Area "Browser runtimes" -Why "Playwright/Puppeteer browser binaries are often rebuildable but can be shared by tests." -CanTouch "Safe to review" -NextStep "Check active projects first, then use the browser tool's supported reinstall/cleanup flow." -Size $totalBrowserCache -Priority 80
+}
+if ($totalProjectCache -gt 1GB) {
+    Add-OptimizationItem -Items $optimizationItems -Area "Project build caches" -Why "Project-local dependency and build folders are usually rebuildable but may be expensive to restore." -CanTouch "Review project first" -NextStep "Clean only from the owning project after confirming tests/builds can recreate them." -Size $totalProjectCache -Priority 75
+}
+if ($envData.PackageEnv.Paths.Count -gt 0) {
+    Add-OptimizationItem -Items $optimizationItems -Area "Cache environment variables" -Why "Path-like cache variables decide where future package/model data lands." -CanTouch "Review only" -NextStep "Audit current values before changing shell profiles or user environment variables." -Size 0 -Priority 70
+}
+if (-not $envData.DockerWsl.WslConfig.Exists -and $envData.DockerWsl.Distros.Count -gt 0) {
+    Add-OptimizationItem -Items $optimizationItems -Area "WSL resource policy" -Why "A missing .wslconfig can leave WSL memory/swap behavior implicit." -CanTouch "Manual" -NextStep "Review whether memory, swap, processors, or sparseVhd settings are appropriate before editing config." -Size 0 -Priority 65
+}
+if ($totalAgentStateSize -gt 5GB) {
+    Add-OptimizationItem -Items $optimizationItems -Area "Agent/IDE state" -Why "Agent and IDE state can be large but may contain settings, history, indexes, or sessions." -CanTouch "Do not clean automatically" -NextStep "Use the owning app's cleanup UI or documented cache reset path." -Size $totalAgentStateSize -Priority 60
+}
+
+$largeCaches = @($allScannedCaches | Where-Object { $_.Size -gt 1GB } | Sort-Object Size -Descending | Select-Object -First 5)
+foreach ($c in $largeCaches) {
+    Add-OptimizationItem -Items $optimizationItems -Area "Large cache owner" -Why "$($c.Path) is one of the largest detected local footprints ($(Format-Size $c.Size))." -CanTouch (Get-PathTouchClass $c.Path) -NextStep (Get-PathNextStep $c.Path) -Size $c.Size -Priority 50
+}
+$optimizationItems = @($optimizationItems | Sort-Object Priority, Size -Descending | Select-Object -First 10)
 
 # ---- Generate Report ----
 
@@ -591,6 +677,33 @@ $lines = [System.Collections.ArrayList]@()
 [void]$lines.Add("")
 [void]$lines.Add("---")
 [void]$lines.Add("")
+[void]$lines.Add("## Overview Cards")
+[void]$lines.Add("")
+[void]$lines.Add("| Card | Status | Evidence | Next step |")
+[void]$lines.Add("|---|---|---|---|")
+[void]$lines.Add("| Environment hygiene | $scoreRisk | $totalScore / 100 - $rating | Review the Top 10 optimization plan before changing anything. |")
+[void]$lines.Add("| C-drive risk | $cDriveRisk | $(Format-Size $totalCdriveCache) detected on C drive | Prioritize package and model cache owners before touching tool state. |")
+[void]$lines.Add("| WSL/Docker risk | $wslDockerRisk | $($envData.DockerWsl.Distros.Count) distros, $(Format-Size $totalVhdSize) VHDX footprint | Treat migration, compaction, and Docker data moves as manual operations. |")
+[void]$lines.Add("| Model cache risk | $modelRisk | $(Format-Size $totalModelCache) total, $(Format-Size $modelCdriveSize) on C drive | Move future models only through tool-supported settings. |")
+[void]$lines.Add("")
+[void]$lines.Add("## Top 10 Optimization Plan")
+[void]$lines.Add("")
+if ($optimizationItems.Count -gt 0) {
+    [void]$lines.Add("| # | Area | Size | Why it matters | Can touch? | Next step |")
+    [void]$lines.Add("|---:|---|---:|---|---|---|")
+    $rank = 1
+    foreach ($item in $optimizationItems) {
+        $why = ($item.Why -replace '\|', '/')
+        $next = ($item.NextStep -replace '\|', '/')
+        [void]$lines.Add("| $rank | $($item.Area) | $(Format-Size $item.Size) | $why | $($item.CanTouch) | $next |")
+        $rank++
+    }
+} else {
+    [void]$lines.Add("_No high-impact optimization items found._")
+}
+[void]$lines.Add("")
+[void]$lines.Add("---")
+[void]$lines.Add("")
 [void]$lines.Add("## Control Score Breakdown")
 [void]$lines.Add("")
 [void]$lines.Add("| Dimension | Score | Max | Notes |")
@@ -610,9 +723,13 @@ foreach ($item in $findings) { [void]$lines.Add("- $item") }
 [void]$lines.Add("")
 [void]$lines.Add("## Safe Suggestions")
 [void]$lines.Add("")
+[void]$lines.Add("These are low-risk review steps. They do not move, delete, compact, or reconfigure system-owned data.")
+[void]$lines.Add("")
 foreach ($item in $safeSuggestions) { [void]$lines.Add("- $item") }
 [void]$lines.Add("")
 [void]$lines.Add("## Manual / Risky Operations")
+[void]$lines.Add("")
+[void]$lines.Add("These require separate confirmation and tool-specific documentation. This report never performs them automatically.")
 [void]$lines.Add("")
 foreach ($item in $manualOperations) { [void]$lines.Add("- $item") }
 [void]$lines.Add("")

@@ -86,6 +86,37 @@ function Write-Log {
     Write-Host $line -ForegroundColor $Color
 }
 
+function Test-Command {
+    param([string]$Name)
+    try {
+        Get-Command $Name -ErrorAction Stop | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Get-GitTrackedMap {
+    param([string]$RepoRoot)
+    $tracked = @{}
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot ".git"))) { return $tracked }
+    if (-not (Test-Command "git")) { return $tracked }
+    try {
+        $files = & git -C $RepoRoot ls-files 2>$null
+        foreach ($file in $files) {
+            if (-not $file) { continue }
+            $tracked[$file.Replace('\', '/').ToLowerInvariant()] = $true
+        }
+    } catch {}
+    return $tracked
+}
+
+function Test-GitTracked {
+    param([string]$RelativePath)
+    $key = $RelativePath.Replace('\', '/').ToLowerInvariant()
+    return $gitTracked.ContainsKey($key)
+}
+
 # ---- Resolve ----
 $Root = (Resolve-Path -LiteralPath $Root).Path
 
@@ -109,8 +140,9 @@ $cutoffTmp = (Get-Date).AddDays(-$TmpRetentionDays)
 $cutoffReport = (Get-Date).AddDays(-$ReportRetentionDays)
 
 $log = New-Object System.Collections.ArrayList
-$deleted = @{ Tmp = 0; Reports = 0; RootSuspicious = 0 }
+$deleted = @{ Tmp = 0; Reports = 0; RootSuspicious = 0; GitTrackedSkipped = 0 }
 $actionLabel = if ($DryRun) { 'Would delete' } else { 'Deleted' }
+$gitTracked = Get-GitTrackedMap -RepoRoot $Root
 
 # ---- 1. Clean .agent_tmp/ ----
 $tmpDir = Join-Path -Path $Root -ChildPath ".agent_tmp"
@@ -123,6 +155,12 @@ if (Test-Path -LiteralPath $tmpDir) {
             $found = $true
             $rel = Get-RelativePath -FullPath $f.FullName
             $age = [Math]::Floor(((Get-Date) - $f.LastWriteTime).TotalDays)
+            if (Test-GitTracked -RelativePath $rel) {
+                Write-Log "Skipping Git-tracked tmp file: $rel" -Color "Gray"
+                [void]$log.Add("Skipped Git-tracked tmp: $rel")
+                $deleted.GitTrackedSkipped++
+                continue
+            }
             [void]$log.Add("$actionLabel tmp: $rel (age: ${age}d)")
             if ($DryRun) { Write-Log "[DRY RUN] Would delete: $rel (age: ${age}d)" -Color "Yellow" }
             else {
@@ -148,6 +186,12 @@ if (Test-Path -LiteralPath $rptDir) {
             $found = $true
             $rel = Get-RelativePath -FullPath $f.FullName
             $age = [Math]::Floor(((Get-Date) - $f.LastWriteTime).TotalDays)
+            if (Test-GitTracked -RelativePath $rel) {
+                Write-Log "Skipping Git-tracked report: $rel" -Color "Gray"
+                [void]$log.Add("Skipped Git-tracked report: $rel")
+                $deleted.GitTrackedSkipped++
+                continue
+            }
             [void]$log.Add("$actionLabel report: $rel (age: ${age}d)")
             if ($DryRun) { Write-Log "[DRY RUN] Would delete expired report: $rel (age: ${age}d)" -Color "Yellow" }
             else {
@@ -175,6 +219,12 @@ if ($ConfirmClean) {
         if ($match) {
             $found = $true
             $rel = Get-RelativePath -FullPath $f.FullName
+            if (Test-GitTracked -RelativePath $rel) {
+                Write-Log "Skipping Git-tracked root-level file: $rel" -Color "Gray"
+                [void]$log.Add("Skipped Git-tracked root-level: $rel")
+                $deleted.GitTrackedSkipped++
+                continue
+            }
             [void]$log.Add("$actionLabel root-level: $rel")
             if ($DryRun) { Write-Log "[DRY RUN] Would delete root-level: $rel" -Color "Yellow" }
             else {
@@ -198,6 +248,7 @@ if ($DryRun) { Write-Host "  Mode: DRY RUN - no files deleted." -ForegroundColor
 Write-Host "  .agent_tmp files:      $($deleted.Tmp) $(if ($DryRun) { 'would be deleted' } else { 'deleted' })"
 Write-Host "  .agent_reports files:  $($deleted.Reports) $(if ($DryRun) { 'would be deleted' } else { 'deleted' })"
 Write-Host "  Root-level suspicious: $($deleted.RootSuspicious) $(if ($DryRun) { 'would be deleted' } else { 'deleted' })"
+Write-Host "  Git-tracked skipped:   $($deleted.GitTrackedSkipped)"
 Write-Host "========================================" -ForegroundColor Cyan
 
 $logDir = Join-Path -Path $Root -ChildPath ".agent_reports"
@@ -206,6 +257,6 @@ $logFile = Join-Path -Path $logDir -ChildPath "cleanup_$(Get-Date -Format 'yyyy-
 ($log -join "`n") | Out-File -FilePath $logFile -Encoding utf8
 
 Write-Host "`nLog: $logFile" -ForegroundColor Cyan
-Write-Host "`nRun with -DryRun:$false for actual cleanup."
+Write-Host "`nRun with -DryRun:`$false for actual cleanup."
 Write-Host "Add -ConfirmClean to include root-level suspicious files." -ForegroundColor Gray
 

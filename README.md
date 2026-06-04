@@ -97,6 +97,12 @@ skills/
 
 ### 手动安装
 
+先自检：
+
+```powershell
+.\skills\tidy-skill\scripts\install-local.ps1 -SelfCheckOnly
+```
+
 Claude Code：
 
 ```powershell
@@ -109,6 +115,18 @@ Codex：
 ```powershell
 New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\skills" | Out-Null
 Copy-Item -Recurse -Force ".\skills\tidy-skill" "$env:USERPROFILE\.codex\skills\tidy-skill"
+```
+
+也可以使用安装脚本同时预览 Codex 和 Claude 安装：
+
+```powershell
+.\skills\tidy-skill\scripts\install-local.ps1
+```
+
+真正复制需要显式关闭 DryRun：
+
+```powershell
+.\skills\tidy-skill\scripts\install-local.ps1 -DryRun:$false -Force
 ```
 
 ---
@@ -133,7 +151,13 @@ python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-pa
 .\skills\tidy-skill\scripts\audit-workspace-hygiene.ps1 -Root "D:\Projects" -ReportPath .\.agent_reports\workspace_hygiene.md
 ```
 
-### 本机开发环境审计
+### 本机开发环境审计，优先用 Python 做通用基线
+
+```powershell
+python .\skills\tidy-skill\scripts\audit_dev_environment.py --root "D:\Projects" --report-path .\.agent_reports\dev_environment.md
+```
+
+### Windows / WSL2 / Docker 深度审计
 
 ```powershell
 .\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots "D:\Projects" -IncludeUserProfile -ReportPath .\.agent_reports\dev_environment.md
@@ -146,6 +170,28 @@ python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-pa
 ```
 
 默认只预览，不删除。真正清理需要显式确认。
+
+---
+
+## 报告预览
+
+```markdown
+## Overview Cards
+
+| Card | Status | Evidence | Next step |
+|---|---|---|---|
+| Environment hygiene | Watch | 82 / 100 - Mostly controlled | Review the Top 10 optimization plan before changing anything. |
+| C-drive risk | Watch | 14.20 GB detected on C drive | Prioritize package and model cache owners before touching tool state. |
+| WSL/Docker risk | Manual deep audit | 2 distros, 28.40 GB VHDX footprint | Treat migration, compaction, and Docker data moves as manual operations. |
+| Model cache risk | Controlled | 2.10 GB total, 0 B on C drive | Move future models only through tool-supported settings. |
+
+## Top 10 Optimization Plan
+
+| # | Area | Size | Why it matters | Can touch? | Next step |
+|---:|---|---:|---|---|---|
+| 1 | WSL/Docker VHDX | 28.40 GB | Virtual disks can grow even after data is deleted inside WSL or Docker. | Manual | Use documented WSL/Docker maintenance steps; do not delete or move the VHDX file directly. |
+| 2 | Browser runtimes | 5.30 GB | Playwright/Puppeteer browser binaries are often rebuildable but can be shared by tests. | Safe to review | Check active projects first, then use the browser tool's supported reinstall/cleanup flow. |
+```
 
 ---
 
@@ -171,11 +217,14 @@ python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-pa
 |---|---|---|
 | `score_repo_hygiene.py` | 通用仓库洁癖评分 | Python，无依赖，只读 |
 | `audit_agent_artifacts.py` | 通用 Agent 产物审计 | Python，无依赖，只读 |
+| `audit_dev_environment.py` | 通用本机环境审计基线 | Python，无依赖，只读 |
 | `score-repo-hygiene.ps1` | Windows 版仓库评分 | 只读 |
 | `audit-agent-artifacts.ps1` | Windows 版 Agent 产物审计 | 只读 |
 | `audit-workspace-hygiene.ps1` | 批量扫描多个 Git 仓库 | 只读，必须指定根目录 |
 | `audit-dev-environment.ps1` | 审计 WSL2、Docker、包缓存、模型缓存、Agent/IDE 状态 | 只读，必须指定扫描范围 |
 | `clean-agent-artifacts.ps1` | 清理过期 `.agent_tmp/` 和 `.agent_reports/` | DryRun 优先 |
+| `install-local.ps1` | 安装到本地 Codex / Claude skill 目录并自检 | DryRun 优先 |
+| `install-rule-template.ps1` | 安装 AGENTS / CLAUDE / Cursor 规则模板 | DryRun 优先 |
 
 更详细的脚本说明见 [script-usage.md](skills/tidy-skill/references/script-usage.md)。
 
@@ -196,13 +245,18 @@ python .\skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --report-pa
 
 ## 规则模板
 
-可以把模板复制到目标项目，让不同 Agent 共享同一套文件治理规则：
+可以把模板安装到目标项目，让不同 Agent 共享同一套文件治理规则：
 
 | 目标 | 模板 |
 |---|---|
 | Claude Code | [templates/CLAUDE.md](skills/tidy-skill/templates/CLAUDE.md) |
 | Codex / 通用 Agent | [templates/AGENTS.md](skills/tidy-skill/templates/AGENTS.md) |
 | Cursor | [templates/cursor-rule.mdc](skills/tidy-skill/templates/cursor-rule.mdc) |
+
+```powershell
+.\skills\tidy-skill\scripts\install-rule-template.ps1 -TargetRoot "D:\Projects\MyApp"
+.\skills\tidy-skill\scripts\install-rule-template.ps1 -TargetRoot "D:\Projects\MyApp" -Template AGENTS -DryRun:$false
+```
 
 ---
 

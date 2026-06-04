@@ -19,6 +19,10 @@ jobs:
         run: python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
       - name: Run portable artifact audit
         run: python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
+      - name: Run portable dev environment audit
+        run: python skills/tidy-skill/scripts/audit_dev_environment.py --root . --report-path /tmp/tidy_skill_dev_environment.md --json
+      - name: Run Python unit tests
+        run: python -m unittest discover -s tests -p "test_*.py"
 
   windows-smoke:
     name: Windows PowerShell smoke tests
@@ -36,6 +40,18 @@ jobs:
       - name: Audit artifacts
         shell: pwsh
         run: .\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath "$env:TEMP\tidy_skill_artifacts.md"
+      - name: Audit dev environment
+        shell: pwsh
+        run: .\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots . -ReportPath "$env:TEMP\tidy_skill_dev_environment.md"
       - name: Cleanup dry run
         shell: pwsh
         run: .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
+      - name: Local install dry run
+        shell: pwsh
+        run: .\skills\tidy-skill\scripts\install-local.ps1 -SelfCheckOnly
+      - name: Template install dry run
+        shell: pwsh
+        run: .\skills\tidy-skill\scripts\install-rule-template.ps1 -TargetRoot . -Template all
+      - name: Cleanup safety tests
+        shell: pwsh
+        run: .\tests\test-clean-agent-artifacts.ps1
