@@ -114,7 +114,7 @@ function Get-GitTrackedMap {
 function Test-GitTracked {
     param([string]$RelativePath)
     $key = $RelativePath.Replace('\', '/').ToLowerInvariant()
-    return $gitTracked.ContainsKey($key)
+    return $script:gitTracked.ContainsKey($key)
 }
 
 # ---- Resolve ----
