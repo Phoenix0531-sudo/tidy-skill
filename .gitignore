@@ -37,3 +37,4 @@ obj/
 packages/
 
 # Keep the packaged skill resources tracked under skills/tidy-skill/.
+tasks/
