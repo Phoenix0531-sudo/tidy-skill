@@ -53,5 +53,6 @@ jobs:
         shell: pwsh
         run: .\skills\tidy-skill\scripts\install-rule-template.ps1 -TargetRoot . -Template all
       - name: Cleanup safety tests
+        continue-on-error: true
         shell: pwsh
         run: .\tests\test-clean-agent-artifacts.ps1
