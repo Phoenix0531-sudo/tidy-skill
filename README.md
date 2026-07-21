@@ -18,6 +18,12 @@
 
 ## 一句话
 
+**Make AI agent artifacts intentional, scoped, and disposable when needed**
+
+[English](README.md) | [中文](README.zh-CN.md)
+
+![CI](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml/badge.svg)
+
 洁癖.skill 不是 Markdown 删除器，也不只是仓库清理工具。它是一套本地 Agent 环境洁癖规则和审计工具，让 Agent 的文件、缓存、虚拟化环境和模型存储都能被解释、被归位、被安全回收。
 
 ---
