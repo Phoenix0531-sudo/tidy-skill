@@ -1,0 +1,25 @@
+[project]
+name = "tidy-skill"
+version = "0.1.0"
+description = "让 AI Agent 在干净、可解释、可回收的本地环境里工作"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Phoenix0531-sudo" }]
+dependencies = [
+    
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
