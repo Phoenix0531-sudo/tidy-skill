@@ -1,48 +1,31 @@
 # Tidy Skill
 
-**Skills and tools that keep AI agents in clean, explainable, reclaimable local environments.**
+**Skills and tools that keep AI agent workspaces clean, explainable, and reclaimable.**
 
 [English](README.md) | [中文](README.zh-CN.md)
 
 [![CI](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Workspace hygiene meta-tooling for agents.
-
 ## Preview
 
 ![Tidy Skill](docs/screenshots/preview.png)
 
-## Features
+## Layout
 
-- Workspace hygiene oriented skills
-- tools/ helpers
-- CI for packaging / smoke
+```
+skills/ tools/ tests/ docs/
+```
 
 ## Get started
-
-### Install
 
 ```bash
 git clone https://github.com/Phoenix0531-sudo/tidy-skill.git
 cd tidy-skill
+# browse skills/ and install into your agent hub
+pytest tests/ 2>/dev/null || true
 ```
-
-### Usage
-
-Browse skills/ and tools/. Install into your agent skill hub as documented.
-
-## Project layout
-
-```
-skills/  tools/
-tests/
-```
-
-## Notes
-
-Meta-tooling for agents, not an end-user consumer app.
 
 ## License
 
-MIT. Free for commercial use with attribution where applicable. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
