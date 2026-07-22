@@ -15,61 +15,66 @@ concurrency:
 
 jobs:
   test:
-    name: Lint & tests
+    name: Lint & tests (uv)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       QT_QPA_PLATFORM: offscreen
       MPLBACKEND: Agg
+      ZDEM_FORCE_PYQTGRAPH: "1"
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          # only cache when lock/deps files exist (avoids setup-python hard fail)
-          cache: ${{ hashFiles('**/requirements*.txt', '**/pyproject.toml', '**/uv.lock') != '' && 'pip' || '' }}
-          cache-dependency-path: |
-            **/requirements*.txt
-            **/pyproject.toml
-            **/uv.lock
 
-
-      - name: Install dependencies
+      - name: System libs (headless Qt / OpenGL)
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          while IFS= read -r f; do
-            pip install -r "$f" || true
-          done < <(find . -maxdepth 3 -name 'requirements*.txt' -not -path './.venv/*' | head -8)
-          if [ -f pyproject.toml ]; then
-            pip install -e ".[dev]" || pip install -e . || pip install . || true
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libxkbcommon0 libdbus-1-3 \
+            libxcb-cursor0 libxcb-xinerama0 libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 || true
+
+      - name: Sync dependencies (frozen)
+        run: |
+          if [ -f uv.lock ]; then
+            uv sync --frozen --extra dev || uv sync --frozen
+          else
+            uv sync --extra dev || uv sync
           fi
-          pip install pytest ruff
 
       - name: Required project files
         run: |
           test -f README.md
           test -f LICENSE || test -f LICENSE.md
 
-      - name: Ruff (non-blocking)
-        run: ruff check . || true
+      - name: Ruff (hard — critical rules)
+        run: |
+          uv run ruff check . --select E9,F63,F7,F82
 
       - name: Pytest (hard, tests/ only)
         run: |
           set -e
           if [ -d tests ]; then
-            python -m pytest -q tests
+            uv run pytest -q tests
           elif [ -d Test ]; then
-            python -m pytest -q Test
-          elif [ -d test ]; then
-            python -m pytest -q test
+            uv run pytest -q Test
           else
-            mapfile -t roots < <(ls test_*.py 2>/dev/null || true)
-            if [ ${#roots[@]} -gt 0 ]; then
-              python -m pytest -q "${roots[@]}"
-            else
-              echo "No tests directory; structure checks only"
-            fi
+            echo "No tests/ directory"
+            exit 1
           fi
+
+      - name: pip-audit (advisory)
+        continue-on-error: true
+        run: |
+          uv run pip install pip-audit
+          uv run pip-audit || true
