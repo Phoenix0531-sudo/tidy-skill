@@ -1,52 +1,49 @@
-# 洁癖.skill（Tidy Skill）
+# Tidy Skill
 
-**让 AI Agent 少留痕，留下的都有用、可解释、可回收**
+**让 AI Agent 在干净、可解释、可回收的本地环境里工作。**
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-![CI](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml/badge.svg)
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+[![CI](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 
-**洁癖.skill** 教编程 Agent 少堆垃圾文件，并让每一份残留产物都「有意、可解释、可回收」。
+让 AI Agent 在干净、可解释、可回收的本地环境里工作。
 
-以 skill 包布局（`skills/`）为主，`tools/` 提供辅助脚本，可离线使用，面向 CC Switch / 多 Agent 卫生。
+围绕 Agent 工作区卫生的 skills + tools。
 
-## 为什么做这个
-
-Agent 容易留下 `tmp_`、调试 dump、半截笔记。本 skill 固化清理策略与检查，让仓库可审阅。
 
 ## 功能
 
-- `skills/` 技能文档  
-- `tools/` 辅助脚本  
-- 核心文本离线可用  
-- 打包期望的测试  
+- 🧹 工作区卫生向 skills
+- 🧰 tools/ 辅助
+- ✅ skill 打包 / 冒烟 CI
 
-## 安装
+## 快速开始
+
+### 安装
 
 ```bash
 git clone https://github.com/Phoenix0531-sudo/tidy-skill.git
-cd Tidy_Skill
-# 将 skills/ 拷贝或链接到你的 Agent skill 根目录
+cd tidy-skill
+pip install -r requirements.txt  # if present
 ```
 
-## 使用
+### 使用
 
-让 Agent 的 skill 加载器指向 `skills/`（或 skill 内文档写明的路径）。
+浏览 `skills/` 与 `tools/`。按文档安装到你的 Agent skill 中心。
 
-```bash
-pytest tests/
-```
-
-## 目录结构
+## 项目结构
 
 ```
-skills/
-tools/
-tests/
-docs/
+skills/  tools/
+tests/  docs/
 ```
+
+## 说明
+
+面向 Agent 的元工具 — 非普通消费者应用。
 
 ## 许可证
 
-MIT。可在署名前提下商用。见 [LICENSE](LICENSE)。
+MIT。在注明出处的前提下可商业使用（以 LICENSE 为准）。详见 [LICENSE](LICENSE)。
