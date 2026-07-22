@@ -1,52 +1,52 @@
-# 洁癖.skill / Tidy Skill
+# 洁癖.skill（Tidy Skill）
 
-**让 AI Agent 在干净、可解释、可回收的本地环境里工作**
+**让 AI Agent 少留痕，留下的都有用、可解释、可回收**
 
 [English](README.md) | [中文](README.zh-CN.md)
 
 ![CI](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
-让 AI Agent 少留痕，留下的都有用：技能包、工具脚本与环境洁癖策略。
+**洁癖.skill** 教编程 Agent 少堆垃圾文件，并让每一份残留产物都「有意、可解释、可回收」。
 
-> 作者：[Phoenix0531-sudo](https://github.com/Phoenix0531-sudo) · 欢迎学习、二次开发与**商业使用**，请保留本仓库署名与许可证声明。
+以 skill 包布局（`skills/`）为主，`tools/` 提供辅助脚本，可离线使用，面向 CC Switch / 多 Agent 卫生。
 
-## 技术栈
+## 为什么做这个
 
-Markdown skills · Python tools
+Agent 容易留下 `tmp_`、调试 dump、半截笔记。本 skill 固化清理策略与检查，让仓库可审阅。
 
-## 功能特性
+## 功能
 
-- 面向 Agent 的「洁癖」技能与约定
-- 可回收、可解释的本地工作区策略
-- tools/ 辅助脚本与 skills/ 技能包
+- `skills/` 技能文档  
+- `tools/` 辅助脚本  
+- 核心文本离线可用  
+- 打包期望的测试  
 
-## 快速开始
+## 安装
 
 ```bash
 git clone https://github.com/Phoenix0531-sudo/tidy-skill.git
-cd tidy-skill
+cd Tidy_Skill
+# 将 skills/ 拷贝或链接到你的 Agent skill 根目录
 ```
 
-将 `skills/` 下的技能安装/链接到你的 Agent 技能目录（Claude / Codex / Hermes 等），按各 skill 说明启用。
+## 使用
+
+让 Agent 的 skill 加载器指向 `skills/`（或 skill 内文档写明的路径）。
 
 ```bash
-pip install pytest
-pytest -q
+pytest tests/
 ```
 
-## 测试
+## 目录结构
 
-`tests/test_smoke.py` 提供基础 smoke；有更多测试时以 CI 为准。
-
-## CI
-
-push / pull_request 会安装依赖并 **硬失败** 运行 pytest。
+```
+skills/
+tools/
+tests/
+docs/
+```
 
 ## 许可证
 
-[MIT](LICENSE) — 可自由使用、修改、分发与**商用**，需保留版权与许可声明。
-
-## 关于
-
-维护者：[Phoenix0531-sudo](https://github.com/Phoenix0531-sudo)
+MIT。可在署名前提下商用。见 [LICENSE](LICENSE)。
