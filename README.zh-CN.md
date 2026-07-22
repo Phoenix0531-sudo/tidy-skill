@@ -1,23 +1,23 @@
 # Tidy Skill
 
-**让 AI Agent 在干净、可解释、可回收的本地环境里工作。**
+**让 AI Agent 在干净、可解释、可回收的本地环境中工作的 skills 与工具。**
 
 [English](README.md) | [中文](README.zh-CN.md)
 
 [![CI](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-让 AI Agent 在干净、可解释、可回收的本地环境里工作。
+面向 Agent 的工作区卫生元工具。
 
-围绕 Agent 工作区卫生的 skills + tools。
+## 预览
 
+![Tidy Skill](docs/screenshots/preview.png)
 
 ## 功能
 
-- 🧹 工作区卫生向 skills
-- 🧰 tools/ 辅助
-- ✅ skill 打包 / 冒烟 CI
+- 工作区卫生向 skills
+- tools/ 辅助
+- 打包 / 冒烟 CI
 
 ## 快速开始
 
@@ -26,23 +26,22 @@
 ```bash
 git clone https://github.com/Phoenix0531-sudo/tidy-skill.git
 cd tidy-skill
-pip install -r requirements.txt  # if present
 ```
 
 ### 使用
 
-浏览 `skills/` 与 `tools/`。按文档安装到你的 Agent skill 中心。
+浏览 skills/ 与 tools/。按文档安装到 Agent skill 中心。
 
 ## 项目结构
 
 ```
 skills/  tools/
-tests/  docs/
+tests/
 ```
 
 ## 说明
 
-面向 Agent 的元工具 — 非普通消费者应用。
+面向 Agent 的元工具，非普通消费者应用。
 
 ## 许可证
 

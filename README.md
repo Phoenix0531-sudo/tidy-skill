@@ -1,23 +1,23 @@
 # Tidy Skill
 
-**Keep AI agents working in clean, explainable, reclaimable local environments.**
+**Skills and tools that keep AI agents in clean, explainable, reclaimable local environments.**
 
 [English](README.md) | [中文](README.zh-CN.md)
 
 [![CI](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Keep AI agents working in clean, explainable, reclaimable local environments.
+Workspace hygiene meta-tooling for agents.
 
-Skills + tools for hygiene around agent workspaces.
+## Preview
 
+![Tidy Skill](docs/screenshots/preview.png)
 
 ## Features
 
-- 🧹 Workspace hygiene oriented skills
-- 🧰 tools/ helpers
-- ✅ CI for skill packaging / smoke
+- Workspace hygiene oriented skills
+- tools/ helpers
+- CI for packaging / smoke
 
 ## Get started
 
@@ -26,23 +26,22 @@ Skills + tools for hygiene around agent workspaces.
 ```bash
 git clone https://github.com/Phoenix0531-sudo/tidy-skill.git
 cd tidy-skill
-pip install -r requirements.txt  # if present
 ```
 
 ### Usage
 
-Browse `skills/` and `tools/`. Install into your agent skill hub as documented.
+Browse skills/ and tools/. Install into your agent skill hub as documented.
 
 ## Project layout
 
 ```
 skills/  tools/
-tests/  docs/
+tests/
 ```
 
 ## Notes
 
-Meta-tooling for agents — not an end-user consumer app.
+Meta-tooling for agents, not an end-user consumer app.
 
 ## License
 
