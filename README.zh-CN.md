@@ -205,7 +205,7 @@ Python 负责跨平台、无依赖的仓库检查与环境基线。PowerShell �
 ## 目录结构
 
 ```text
-Tidy_Skill/
+tidy-skill/
 ├─ skills/tidy-skill/
 │  ├─ SKILL.md                 # skill 定义（三层模型、A–E 分类）
 │  ├─ scripts/                 # Python + PowerShell 工具

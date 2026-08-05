@@ -205,7 +205,7 @@ Do not use it as a general disk cleaner, security scanner, or replacement for ba
 ## Layout
 
 ```text
-Tidy_Skill/
+tidy-skill/
 ├─ skills/tidy-skill/
 │  ├─ SKILL.md                 # skill definition (three-layer model, classes A–E)
 │  ├─ scripts/                 # Python + PowerShell tools
