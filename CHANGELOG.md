@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - `audit_workspace_hygiene.py` uses shared policy (per-repo discovery or shared `--policy`)
 - `validate_skill.py` / `install-local.ps1` self-check require the new policy modules
 - Fixture evals expanded to 7 cases (policy, classify, doctor)
+- CI matrix: Python 3.10/3.11/3.12 for lint+tests and package validation; Windows smoke hard-fails safety tests and covers `Policy.ps1`
+- CI runs doctor / fixture evals / score gate; drops leftover Qt system packages from the generic CI template
 - Package version `1.4.0`
 - SKILL / script-usage / README document policy, doctor, classify, and snapshots
 

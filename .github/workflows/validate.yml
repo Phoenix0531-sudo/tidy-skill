@@ -3,56 +3,103 @@ name: Validate
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   python-validation:
-    name: Python validation
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+
       - name: Validate skill package
         run: python tools/validate_skill.py --skill-dir skills/tidy-skill
-      - name: Run portable repo score
+
+      - name: Score repo hygiene
         run: python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
-      - name: Run portable artifact audit
+
+      - name: Audit agent artifacts
         run: python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
-      - name: Run portable dev environment audit
+
+      - name: Audit dev environment
         run: python skills/tidy-skill/scripts/audit_dev_environment.py --root . --report-path /tmp/tidy_skill_dev_environment.md --json
-      - name: Run Python unit tests
+
+      - name: Doctor (package + hygiene)
+        run: python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
+      - name: Score gate (min 80)
+        run: python skills/tidy-skill/scripts/hygiene_snapshot.py gate --root . --min-score 80 --json
+
+      - name: Classify sample path
+        run: python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
+
+      - name: Fixture evals
+        run: python tools/run_evals.py
+
+      - name: Unit tests
         run: python -m unittest discover -s tests -p "test_*.py"
 
   windows-smoke:
-    name: Windows PowerShell smoke tests
+    name: Windows PowerShell smoke
     runs-on: windows-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Validate skill package
         run: python tools/validate_skill.py --skill-dir skills/tidy-skill
+
+      - name: Doctor (Python)
+        run: python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
       - name: Score repo
         shell: pwsh
         run: .\skills\tidy-skill\scripts\score-repo-hygiene.ps1 -Root . -ReportPath "$env:TEMP\tidy_skill_score.md"
+
       - name: Audit artifacts
         shell: pwsh
         run: .\skills\tidy-skill\scripts\audit-agent-artifacts.ps1 -Root . -ReportPath "$env:TEMP\tidy_skill_artifacts.md"
+
       - name: Audit dev environment
         shell: pwsh
         run: .\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots . -ReportPath "$env:TEMP\tidy_skill_dev_environment.md"
+
       - name: Cleanup dry run
         shell: pwsh
         run: .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
-      - name: Local install dry run
+
+      - name: Local install self-check
         shell: pwsh
         run: .\skills\tidy-skill\scripts\install-local.ps1 -SelfCheckOnly
+
       - name: Template install dry run
         shell: pwsh
         run: .\skills\tidy-skill\scripts\install-rule-template.ps1 -TargetRoot . -Template all
+
+      - name: Policy.ps1 smoke tests
+        shell: pwsh
+        run: .\tests\test-policy-ps1.ps1
+
       - name: Cleanup safety tests
-        continue-on-error: true
         shell: pwsh
         run: .\tests\test-clean-agent-artifacts.ps1

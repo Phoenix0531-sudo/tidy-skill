@@ -12,7 +12,7 @@
   <a href="https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Phoenix0531-sudo/tidy-skill/ci.yml?label=CI" alt="CI"></a>
   <a href="https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/Phoenix0531-sudo/tidy-skill/validate.yml?label=Validate" alt="Validate"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/Python-3.11-3776AB.svg" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB.svg" alt="Python">
   <img src="https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg" alt="PowerShell">
   <img src="https://img.shields.io/badge/network-offline-lightgrey.svg" alt="offline">
 </p>

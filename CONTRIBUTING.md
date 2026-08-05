@@ -23,6 +23,13 @@ Keep the skill self-contained. Do not add `README.md` inside the skill folder. H
 
 ## Validation
 
+CI runs two workflows:
+
+| Workflow | Matrix / runner | Covers |
+|---|---|---|
+| `ci.yml` | Python **3.10 / 3.11 / 3.12** on Ubuntu | ruff, pytest, fixture evals, doctor |
+| `validate.yml` | Python **3.10 / 3.11 / 3.12** + Windows smoke | package validate, score/audit/doctor/gate/classify, PS1 policy + cleanup safety |
+
 Run these checks before opening a pull request:
 
 ```powershell
