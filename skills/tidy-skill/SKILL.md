@@ -220,13 +220,25 @@ When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_r
 
 **Dimensions:** root cleanliness, artifact placement, protected docs clarity, Git hygiene, agent state isolation, cleanup readiness. Optional weight factors: `--weights references/score-weights.example.json`.
 
+Optional project policy: place `.tidy-skill.json` (or `tidy-skill.policy.json`) at the repo root, or pass `--policy`. Schema example: `references/tidy-skill.policy.example.json`. Policy can extend forbidden/protected root patterns, set `min_score`, and require `.agent_tmp/` + `.agent_reports/`.
+
+### Doctor, classify, snapshots
+
+| Need | Script |
+|---|---|
+| One-shot install + hygiene doctor / CI gate | `${CLAUDE_SKILL_DIR}/scripts/tidy_doctor.py` |
+| Classify a path before writing (Classes A–E) | `${CLAUDE_SKILL_DIR}/scripts/classify_artifact.py` |
+| Save/compare score history; gate on `min_score` | `${CLAUDE_SKILL_DIR}/scripts/hygiene_snapshot.py` |
+
+`hygiene_snapshot.py save` writes under `.agent_reports/hygiene-history/` by default (Class B deliverable history, not root litter). `gate` and doctor exit `2` on hygiene/policy failure.
+
 ---
 
 ## 11. Workspace Hygiene Audit
 
 When asked to scan multiple repos, prefer `${CLAUDE_SKILL_DIR}/scripts/audit_workspace_hygiene.py` for a portable baseline. On Windows-only workflows, `${CLAUDE_SKILL_DIR}/scripts/audit-workspace-hygiene.ps1` is also fine. The user must explicitly specify a root directory. Never default to scanning entire drives.
 
-For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audit_agent_artifacts.py` when Python is available. Use `${CLAUDE_SKILL_DIR}/scripts/audit-agent-artifacts.ps1` when staying in a PowerShell workflow.
+For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audit_agent_artifacts.py` when Python is available. Use `${CLAUDE_SKILL_DIR}/scripts/audit-agent-artifacts.ps1` when staying in a PowerShell workflow. Both audit and score accept optional `--policy`.
 
 Optional end-of-task read-only check: `${CLAUDE_SKILL_DIR}/hooks/stop-hygiene-check.py` (reports only; never deletes). Trigger phrases live in `commands/TRIGGERS.md`.
 
@@ -327,6 +339,7 @@ This Skill and its scripts:
 1. Use `${CLAUDE_SKILL_DIR}/scripts/install-local.ps1 -SelfCheckOnly` to validate local package metadata.
 2. Use `install-local.ps1` in DryRun mode before copying into `.codex/skills` or `.claude/skills`.
 3. Preserve display name `洁癖.skill` and machine slug `tidy-skill`.
+4. Prefer `${CLAUDE_SKILL_DIR}/scripts/tidy_doctor.py --root .` after install for package + hygiene gate.
 
 ### For Rule Template Install:
 1. Use `${CLAUDE_SKILL_DIR}/scripts/install-rule-template.ps1` in DryRun mode first.
@@ -346,3 +359,4 @@ This Skill and its scripts:
 - For read-only hooks, read `hooks/HOOKS.md`.
 - For host install routes, see the repository `docs/installation.md` and `docs/platforms/`.
 - For optional host hook samples, see repository `docs/host-samples/`.
+- For optional project policy schema, read `references/tidy-skill.policy.example.json`.

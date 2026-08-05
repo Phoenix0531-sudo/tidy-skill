@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "forbidden_root_globs": ["scratch.md", "tmp_*.md"],
+  "forbidden_root_regex": ["^wip_.+\\.md$"],
+  "protected_root_globs": ["OWNERS.md"],
+  "ignore_root_globs": ["vendor_plan.md"],
+  "min_score": 80,
+  "require_agent_dirs": true
+}

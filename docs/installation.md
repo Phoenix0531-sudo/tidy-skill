@@ -94,13 +94,22 @@ pwsh skills/tidy-skill/scripts/install-rule-template.ps1 -TargetRoot <project> -
 After install, from a project root:
 
 ```bash
-python path/to/tidy-skill/hooks/stop-hygiene-check.py --root .
+# Preferred one-shot doctor (package + score + suspicious root)
+python path/to/tidy-skill/scripts/tidy_doctor.py --root . --json
 # or from this repo:
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
+# Lighter stop check / score only
 uv run python skills/tidy-skill/hooks/stop-hygiene-check.py --root .
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
+
+# Optional CI gate (uses .tidy-skill.json min_score when present)
+uv run python skills/tidy-skill/scripts/hygiene_snapshot.py gate --root . --json
 ```
 
-Expected healthy baseline: `suspicious_root: 0` and a documented score (this repo self-scores 100 when layout dirs exist).
+Expected healthy baseline: doctor `failed: false`, `suspicious_root: 0`, and a documented score (this repo self-scores 100 when layout dirs exist).
+
+Optional project policy: copy `skills/tidy-skill/references/tidy-skill.policy.example.json` to `.tidy-skill.json` at the repo root.
 
 ## Safety reminder
 

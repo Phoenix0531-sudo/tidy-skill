@@ -159,6 +159,14 @@ These are files and directories created and managed by AI coding tools, IDEs, an
 | Is this a tool state directory or file? | E — Tool State (out of scope) |
 | Do I not know what this is? | Stop and ask the user |
 
+Machine-check a proposed path before writing:
+
+```bash
+python scripts/classify_artifact.py path/to/proposed.md --root . --json
+```
+
+Optional project overrides: `.tidy-skill.json` (see `tidy-skill.policy.example.json`).
+
 ---
 
 ## Change Log
@@ -166,3 +174,4 @@ These are files and directories created and managed by AI coding tools, IDEs, an
 | Date | Change |
 |---|---|
 | 2026-06-03 | Initial version |
+| 2026-08-05 | Document `classify_artifact.py` + project policy hook |

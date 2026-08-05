@@ -82,6 +82,12 @@ uv sync --extra dev
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
 # {"score": 100, "rating": "Clean", ...}
 
+# One-shot doctor (package + hygiene gate)
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
+# Classify a path before writing (Classes A–E)
+uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
+
 # Audit agent artifacts
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
 
@@ -141,6 +147,7 @@ This repository runs its own scripts against itself. Latest author-run reports:
 | Repo hygiene score | [docs/self-audit/repo_hygiene_score.md](docs/self-audit/repo_hygiene_score.md) | **100 / 100** — Clean |
 | Agent artifact audit | [docs/self-audit/agent_artifacts_audit.md](docs/self-audit/agent_artifacts_audit.md) | **0** suspicious root files |
 | Dev environment audit | [docs/self-audit/dev_environment_audit.md](docs/self-audit/dev_environment_audit.md) | **90 / 100** — Highly controlled |
+| Doctor | [docs/self-audit/tidy_doctor.md](docs/self-audit/tidy_doctor.md) | Package + hygiene pass |
 | Fixture evals | [docs/evals/latest.md](docs/evals/latest.md) | Author-run deterministic cases |
 | Case studies | [docs/cases/](docs/cases/) | Synthetic dirty→clean + this-repo self |
 
@@ -150,6 +157,7 @@ Regenerate:
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --report-path docs/self-audit/repo_hygiene_score.md
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --max-depth 3 --report-path docs/self-audit/agent_artifacts_audit.md
 uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --report-path docs/self-audit/dev_environment_audit.md
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --report-path docs/self-audit/tidy_doctor.md
 uv run python tools/run_evals.py
 ```
 
@@ -171,7 +179,10 @@ Five-level placement model (see [SKILL.md](skills/tidy-skill/SKILL.md)):
 
 | Script | Purpose | Invoke |
 |---|---|---|
-| `score_repo_hygiene.py` | Score repo hygiene 0–100 (optional `--weights`) | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
+| `score_repo_hygiene.py` | Score repo hygiene 0–100 (optional `--weights` / `--policy`) | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
+| `tidy_doctor.py` | One-shot package + hygiene doctor / CI gate | `uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json` |
+| `classify_artifact.py` | Pre-write Class A–E path classifier | `uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json` |
+| `hygiene_snapshot.py` | Score history + CI `gate` on `min_score` | `uv run python skills/tidy-skill/scripts/hygiene_snapshot.py gate --root . --json` |
 | `audit_agent_artifacts.py` | List suspicious root files and protected docs | `uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json` |
 | `audit_dev_environment.py` | Portable local cache / env baseline | `uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --json` |
 | `audit_workspace_hygiene.py` | Multi-repo workspace audit (explicit root) | `uv run python skills/tidy-skill/scripts/audit_workspace_hygiene.py --root <path> --json` |
@@ -188,6 +199,7 @@ Python scripts are pure stdlib (no network, no third-party runtime deps). Cleanu
 **In scope**
 
 - Read-only audits of agent artifacts, repo hygiene, workspace repos, and local cache footprints
+- Optional project policy (`.tidy-skill.json`), doctor, pre-write classifier, and score history/gate
 - DryRun cleanup previews for `.agent_tmp/` / `.agent_reports/`
 - Optional read-only stop hooks and pre-commit root-process-md guard
 - Rule templates so multiple agents share the same placement policy

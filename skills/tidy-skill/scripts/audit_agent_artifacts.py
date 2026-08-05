@@ -11,43 +11,21 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
-FORBIDDEN_ROOT_PATTERNS = [
-    r"^todo\.md$",
-    r"^plan\.md$",
-    r"^notes\.md$",
-    r"^lessons\.md$",
-    r"^summary\.md$",
-    r"^report\.md$",
-    r"^final_report\.md$",
-    r"^implementation_plan\.md$",
-    r"^migration_plan\.md$",
-    r"^audit_report\.md$",
-    r"^cleanup_report\.md$",
-    r"^task_list\.md$",
-    r"^progress\.md$",
-    r"^work_summary\.md$",
-    r"^changes_summary\.md$",
-    r"^.+_summary\.md$",
-    r"^.+_report\.md$",
-    r"^.+_plan\.md$",
-]
-
-PROTECTED_DOC_PATTERNS = [
-    r"^readme\.md$",
-    r"^readme\..+\.md$",
-    r"^changelog\.md$",
-    r"^license$",
-    r"^license\..+$",
-    r"^contributing\.md$",
-    r"^code_of_conduct\.md$",
-    r"^security\.md$",
-]
+from policy_loader import (  # noqa: E402
+    Policy,
+    discover_policy,
+    is_forbidden_name,
+    is_protected_name,
+)
 
 SKIP_DIRS = {
     ".git",
@@ -83,11 +61,6 @@ def rel(path: Path, root: Path) -> str:
         return str(path)
 
 
-def matches(patterns: list[str], name: str) -> bool:
-    lowered = name.lower()
-    return any(re.match(pattern, lowered) for pattern in patterns)
-
-
 def is_layout_marker(path: Path) -> bool:
     """Directory placeholders are not agent process artifacts."""
     return path.name.lower() in {".gitkeep", ".keep"}
@@ -107,8 +80,14 @@ def iter_files(root: Path, max_depth: int) -> list[Path]:
     return files
 
 
-def audit(root: Path, max_depth: int, report_path: Path | None) -> AuditResult:
+def audit(
+    root: Path,
+    max_depth: int,
+    report_path: Path | None,
+    policy: Policy | None = None,
+) -> AuditResult:
     root = root.resolve()
+    active_policy = policy or Policy()
     files = iter_files(root, max_depth)
     suspicious_root: list[Path] = []
     agent_tmp: list[Path] = []
@@ -118,13 +97,15 @@ def audit(root: Path, max_depth: int, report_path: Path | None) -> AuditResult:
     for file_path in files:
         relative_parts = file_path.relative_to(root).parts
         first = relative_parts[0] if relative_parts else ""
-        if len(relative_parts) == 1 and matches(FORBIDDEN_ROOT_PATTERNS, file_path.name):
+        if len(relative_parts) == 1 and is_forbidden_name(file_path.name, active_policy):
             suspicious_root.append(file_path)
         if first == ".agent_tmp" and not is_layout_marker(file_path):
             agent_tmp.append(file_path)
         if first == ".agent_reports" and not is_layout_marker(file_path):
             agent_reports.append(file_path)
-        if first == "docs" or (len(relative_parts) == 1 and matches(PROTECTED_DOC_PATTERNS, file_path.name)):
+        if first == "docs" or (
+            len(relative_parts) == 1 and is_protected_name(file_path.name, active_policy)
+        ):
             protected_docs.append(file_path)
 
     return AuditResult(
@@ -176,6 +157,7 @@ def main() -> int:
     parser.add_argument("--root", default=".", help="Repository root to audit.")
     parser.add_argument("--report-path", help="Optional Markdown report path.")
     parser.add_argument("--max-depth", type=int, default=3, help="Maximum directory depth to scan.")
+    parser.add_argument("--policy", help="Optional policy JSON (.tidy-skill.json schema).")
     parser.add_argument("--json", action="store_true", help="Print JSON output.")
     args = parser.parse_args()
 
@@ -186,7 +168,11 @@ def main() -> int:
         parser.error("--max-depth must be non-negative")
 
     report_path = Path(args.report_path) if args.report_path else None
-    result = audit(root, args.max_depth, report_path)
+    try:
+        policy = discover_policy(root, Path(args.policy) if args.policy else None)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        parser.error(f"invalid --policy file: {exc}")
+    result = audit(root, args.max_depth, report_path, policy=policy)
     if report_path:
         write_report(result, report_path)
 

@@ -8,6 +8,10 @@
 | `audit_agent_artifacts.py` | Portable agent artifact audit | Python, dependency-free, read-only |
 | `audit_dev_environment.py` | Portable dev environment audit | Python, dependency-free, read-only |
 | `audit_workspace_hygiene.py` | Portable multi-repo workspace audit | Python, dependency-free, read-only, explicit root |
+| `policy_loader.py` | Shared policy defaults + `.tidy-skill.json` loader | Library module (no CLI) |
+| `classify_artifact.py` | Pre-write Class A–E path classifier | Python, dependency-free, read-only |
+| `hygiene_snapshot.py` | Score history save/compare + CI gate | Writes only under history dir (default `.agent_reports/hygiene-history/`) |
+| `tidy_doctor.py` | One-shot skill + hygiene doctor / gate | Python, dependency-free, read-only |
 | `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
 | `score-repo-hygiene.ps1` | Windows repo hygiene score (0-100) | Read-only |
 | `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
@@ -35,6 +39,76 @@ python score_repo_hygiene.py --root "C:\path\to\project" --report-path "C:\repor
 | `--root` | No | `.` | Project root path |
 | `--report-path` | No | none | Optional Markdown report path |
 | `--weights` | No | none | Optional JSON dimension weight factors |
+| `--policy` | No | auto | Optional policy JSON; else discovers `.tidy-skill.json` |
+| `--json` | No | false | Print JSON output |
+
+---
+
+## Project policy (`.tidy-skill.json`)
+
+Optional project file discovered automatically by scoring, audit, doctor, classify, and gate:
+
+| Field | Effect |
+|---|---|
+| `forbidden_root_globs` / `forbidden_root_regex` | Extra root process-Markdown patterns |
+| `protected_root_globs` / `protected_root_regex` | Extra protected formal docs |
+| `ignore_root_globs` | Root names that must **not** count as forbidden |
+| `min_score` | CI gate threshold for `hygiene_snapshot.py gate` / doctor |
+| `require_agent_dirs` | Require `.agent_tmp/` and `.agent_reports/` for gate/doctor |
+
+Example: `references/tidy-skill.policy.example.json`. Copy to repo root as `.tidy-skill.json` or `tidy-skill.policy.json`.
+
+---
+
+## classify_artifact.py
+
+Classify a path into Classes A–E **before** writing. Does not create files.
+
+```powershell
+python classify_artifact.py plan.md --root "." --json
+```
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `path` | Yes | — | File or directory path (may not exist yet) |
+| `--root` | No | `.` | Repository root for relative classification |
+| `--policy` | No | auto | Optional policy JSON |
+| `--json` | No | false | Print JSON output |
+
+---
+
+## hygiene_snapshot.py
+
+Save score snapshots, compare deltas, and gate CI on `min_score`.
+
+```powershell
+python hygiene_snapshot.py save --root "." --label baseline
+python hygiene_snapshot.py compare --root "."
+python hygiene_snapshot.py list --root "." --json
+python hygiene_snapshot.py gate --root "." --min-score 80 --json
+```
+
+Default history dir: `.agent_reports/hygiene-history/`. Subcommands: `save`, `list`, `compare`, `gate` (exit `2` on fail).
+
+---
+
+## tidy_doctor.py
+
+One-shot package + hygiene doctor. Exit `0` healthy/warnings, `1` usage error, `2` hygiene/policy fail.
+
+```powershell
+python tidy_doctor.py --root "." --json
+python tidy_doctor.py --root "." --min-score 80 --report-path ".agent_reports/doctor.md"
+```
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `--root` | No | `.` | Repository root |
+| `--skill-dir` | No | package parent | Installed or source skill directory |
+| `--policy` | No | auto | Optional policy JSON |
+| `--min-score` | No | policy/`none` | Fail if score below this |
+| `--report-path` | No | none | Optional Markdown report |
+| `--strict` | No | false | Treat warnings as failures |
 | `--json` | No | false | Print JSON output |
 
 ---
@@ -51,6 +125,7 @@ python audit_workspace_hygiene.py --root "D:\Projects" --report-path ".agent_rep
 |---|---|---|---|
 | `--root` | Yes | — | Parent directory containing Git repos |
 | `--max-depth` | No | 2 | How deep to search for `.git` |
+| `--policy` | No | per-repo | Shared policy JSON; else each repo discovers its own |
 | `--report-path` | No | none | Optional Markdown report path |
 | `--json` | No | false | Print JSON output |
 
@@ -71,6 +146,7 @@ python audit_agent_artifacts.py --root "C:\path\to\project" --report-path "C:\re
 | `--root` | No | `.` | Project root path |
 | `--report-path` | No | none | Optional Markdown report path |
 | `--max-depth` | No | 3 | Maximum directory depth |
+| `--policy` | No | auto | Optional policy JSON; else discovers `.tidy-skill.json` |
 | `--json` | No | false | Print JSON output |
 
 ---

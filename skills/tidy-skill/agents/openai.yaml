@@ -1,10 +1,13 @@
 interface:
   display_name: "洁癖.skill"
   short_description: "Keep local agent environments clean"
-  default_prompt: "Use $tidy-skill to score this repo, audit agent artifacts read-only, and recommend DryRun-safe cleanup boundaries. Prefer chat over root plan.md/todo.md."
+  default_prompt: "Use $tidy-skill to score this repo, audit agent artifacts read-only, and recommend DryRun-safe cleanup boundaries. Prefer chat over root plan.md/todo.md. Run tidy_doctor when install health or CI gates matter."
   extra_prompt_suggestions:
     - "Score this repository hygiene 0-100 and list suspicious root Markdown."
     - "Audit agent artifacts under the current repo; do not delete anything."
+    - "Run tidy doctor on this repo and fail if score is below policy min_score."
+    - "Classify whether a proposed root Markdown path is allowed before creating it."
+    - "Save a hygiene snapshot and gate CI on .tidy-skill.json min_score."
     - "Map local package/model caches and separate safe suggestions from risky operations."
     - "Scan every Git repo under an explicit parent folder for plan.md pollution."
     - "Run the read-only stop hygiene check before finishing."

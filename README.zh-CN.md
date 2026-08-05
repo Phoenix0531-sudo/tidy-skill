@@ -82,6 +82,12 @@ uv sync --extra dev
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
 # {"score": 100, "rating": "Clean", ...}
 
+# 一键 doctor（包完整性 + 卫生门禁）
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
+# 写文件前做 A–E 路径分类
+uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
+
 # 审计 agent 产物
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
 
@@ -141,6 +147,7 @@ pwsh skills/tidy-skill/scripts/install-local.ps1 -All -DryRun:$false -Force
 | 仓库卫生打分 | [docs/self-audit/repo_hygiene_score.md](docs/self-audit/repo_hygiene_score.md) | **100 / 100** — Clean |
 | Agent 产物审计 | [docs/self-audit/agent_artifacts_audit.md](docs/self-audit/agent_artifacts_audit.md) | **0** 可疑根文件 |
 | 开发环境审计 | [docs/self-audit/dev_environment_audit.md](docs/self-audit/dev_environment_audit.md) | **90 / 100** — Highly controlled |
+| Doctor | [docs/self-audit/tidy_doctor.md](docs/self-audit/tidy_doctor.md) | 包完整性 + 卫生通过 |
 | Fixture evals | [docs/evals/latest.md](docs/evals/latest.md) | 作者本地确定性用例 |
 | 案例 | [docs/cases/](docs/cases/) | 合成脏仓→干净 + 本仓库自审 |
 
@@ -150,6 +157,7 @@ pwsh skills/tidy-skill/scripts/install-local.ps1 -All -DryRun:$false -Force
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --report-path docs/self-audit/repo_hygiene_score.md
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --max-depth 3 --report-path docs/self-audit/agent_artifacts_audit.md
 uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --report-path docs/self-audit/dev_environment_audit.md
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --report-path docs/self-audit/tidy_doctor.md
 uv run python tools/run_evals.py
 ```
 
@@ -171,7 +179,10 @@ uv run python tools/run_evals.py
 
 | 脚本 | 用途 | 调用 |
 |---|---|---|
-| `score_repo_hygiene.py` | 仓库卫生 0–100（可选 `--weights`） | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
+| `score_repo_hygiene.py` | 仓库卫生 0–100（可选 `--weights` / `--policy`） | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
+| `tidy_doctor.py` | 一键包完整性 + 卫生 doctor / CI 门禁 | `uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json` |
+| `classify_artifact.py` | 写文件前 A–E 路径分类 | `uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json` |
+| `hygiene_snapshot.py` | 分数历史 + CI `gate`（`min_score`） | `uv run python skills/tidy-skill/scripts/hygiene_snapshot.py gate --root . --json` |
 | `audit_agent_artifacts.py` | 列出可疑根文件与受保护文档 | `uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json` |
 | `audit_dev_environment.py` | 可移植本机缓存 / 环境基线 | `uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --json` |
 | `audit_workspace_hygiene.py` | 多仓库工作区审计（必须显式 root） | `uv run python skills/tidy-skill/scripts/audit_workspace_hygiene.py --root <path> --json` |
@@ -188,6 +199,7 @@ Python 脚本纯标准库。清理与安装默认 DryRun。触发语与命令 st
 **在范围内**
 
 - 对 agent 产物、仓库卫生、多仓工作区、本机缓存足迹的只读审计
+- 可选项目策略（`.tidy-skill.json`）、doctor、写前分类器、分数历史/门禁
 - 对 `.agent_tmp/` / `.agent_reports/` 的 DryRun 清理预览
 - 可选只读 stop hook 与 pre-commit 根目录过程文档拦截
 - 让多个 Agent 共享同一放置策略的规则模板

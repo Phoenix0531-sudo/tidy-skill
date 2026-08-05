@@ -10,32 +10,16 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
-FORBIDDEN_ROOT_PATTERNS = [
-    r"^todo\.md$",
-    r"^plan\.md$",
-    r"^notes\.md$",
-    r"^lessons\.md$",
-    r"^summary\.md$",
-    r"^report\.md$",
-    r"^final_report\.md$",
-    r"^implementation_plan\.md$",
-    r"^migration_plan\.md$",
-    r"^audit_report\.md$",
-    r"^cleanup_report\.md$",
-    r"^task_list\.md$",
-    r"^progress\.md$",
-    r"^work_summary\.md$",
-    r"^changes_summary\.md$",
-    r"^.+_summary\.md$",
-    r"^.+_report\.md$",
-    r"^.+_plan\.md$",
-]
+from policy_loader import Policy, discover_policy, is_forbidden_name  # noqa: E402
 
 STATE_DIRS = [".codex", ".claude", ".cursor", ".vscode", ".idea"]
 
@@ -56,9 +40,8 @@ class ScoreResult:
     report_path: Path | None
 
 
-def is_forbidden_root_file(path: Path) -> bool:
-    name = path.name.lower()
-    return any(re.match(pattern, name) for pattern in FORBIDDEN_ROOT_PATTERNS)
+def is_forbidden_root_file(path: Path, policy: Policy | None = None) -> bool:
+    return is_forbidden_name(path.name, policy)
 
 
 def is_layout_marker(path: Path) -> bool:
@@ -89,10 +72,14 @@ def score_repo(
     root: Path,
     report_path: Path | None,
     weights: dict[str, float] | None = None,
+    policy: Policy | None = None,
 ) -> ScoreResult:
     root = root.resolve()
+    active_policy = policy or Policy()
     root_files = [path for path in root.iterdir() if path.is_file()]
-    suspicious_root_files = [path for path in root_files if is_forbidden_root_file(path)]
+    suspicious_root_files = [
+        path for path in root_files if is_forbidden_root_file(path, active_policy)
+    ]
 
     suspicious_count = len(suspicious_root_files)
     if suspicious_count == 0:
@@ -285,6 +272,7 @@ def main() -> int:
         "--weights",
         help="Optional JSON file of dimension weight factors (default 1.0 each).",
     )
+    parser.add_argument("--policy", help="Optional policy JSON (.tidy-skill.json schema).")
     parser.add_argument("--json", action="store_true", help="Print JSON instead of text.")
     args = parser.parse_args()
 
@@ -295,9 +283,10 @@ def main() -> int:
     report_path = Path(args.report_path) if args.report_path else None
     try:
         weights = load_weights(Path(args.weights) if args.weights else None)
+        policy = discover_policy(root, Path(args.policy) if args.policy else None)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        parser.error(f"invalid --weights file: {exc}")
-    result = score_repo(root, report_path, weights=weights)
+        parser.error(f"invalid --weights/--policy file: {exc}")
+    result = score_repo(root, report_path, weights=weights, policy=policy)
     if report_path:
         write_report(result, report_path)
 

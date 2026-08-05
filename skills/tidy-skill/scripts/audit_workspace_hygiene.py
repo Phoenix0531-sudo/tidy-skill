@@ -9,31 +9,16 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 
-FORBIDDEN_ROOT_PATTERNS = [
-    r"^todo\.md$",
-    r"^plan\.md$",
-    r"^notes\.md$",
-    r"^lessons\.md$",
-    r"^summary\.md$",
-    r"^report\.md$",
-    r"^final_report\.md$",
-    r"^implementation_plan\.md$",
-    r"^migration_plan\.md$",
-    r"^audit_report\.md$",
-    r"^cleanup_report\.md$",
-    r"^task_list\.md$",
-    r"^progress\.md$",
-    r"^work_summary\.md$",
-    r"^changes_summary\.md$",
-    r"^.+_summary\.md$",
-    r"^.+_report\.md$",
-    r"^.+_plan\.md$",
-]
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from policy_loader import Policy, discover_policy, is_forbidden_name  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -48,11 +33,6 @@ class RepoScore:
     has_readme: bool
     has_license: bool
     has_docs: bool
-
-
-def is_forbidden(name: str) -> bool:
-    lowered = name.lower()
-    return any(re.match(pattern, lowered) for pattern in FORBIDDEN_ROOT_PATTERNS)
 
 
 def find_repos(root: Path, max_depth: int) -> list[Path]:
@@ -72,10 +52,11 @@ def find_repos(root: Path, max_depth: int) -> list[Path]:
     return sorted(repos, key=lambda item: str(item).lower())
 
 
-def score_one(repo: Path) -> RepoScore:
+def score_one(repo: Path, policy: Policy | None = None) -> RepoScore:
+    active_policy = policy or discover_policy(repo)
     suspicious: list[str] = []
     for file_path in repo.iterdir():
-        if file_path.is_file() and is_forbidden(file_path.name):
+        if file_path.is_file() and is_forbidden_name(file_path.name, active_policy):
             suspicious.append(file_path.name)
 
     has_tmp = (repo / ".agent_tmp").is_dir()
@@ -210,6 +191,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Audit multiple Git repos under an explicit root.")
     parser.add_argument("--root", required=True, help="Workspace root containing Git repositories.")
     parser.add_argument("--max-depth", type=int, default=2, help="Max depth below root to search for repos.")
+    parser.add_argument(
+        "--policy",
+        help="Optional shared policy JSON applied to every repo (else per-repo discovery).",
+    )
     parser.add_argument("--report-path", help="Optional Markdown report path.")
     parser.add_argument("--json", action="store_true", help="Print JSON summary.")
     args = parser.parse_args()
@@ -220,8 +205,15 @@ def main() -> int:
     if args.max_depth < 1 or args.max_depth > 5:
         parser.error("--max-depth must be between 1 and 5")
 
+    shared_policy: Policy | None = None
+    if args.policy:
+        try:
+            shared_policy = discover_policy(root, Path(args.policy))
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            parser.error(f"invalid --policy file: {exc}")
+
     repos = find_repos(root, args.max_depth)
-    results = [score_one(repo) for repo in repos]
+    results = [score_one(repo, policy=shared_policy) for repo in repos]
     report_path = Path(args.report_path) if args.report_path else None
     if report_path:
         write_report(root.resolve(), results, report_path)

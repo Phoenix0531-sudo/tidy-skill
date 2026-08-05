@@ -93,6 +93,10 @@ function Test-SkillPackage {
         "agents\openai.yaml",
         "scripts\score_repo_hygiene.py",
         "scripts\audit_agent_artifacts.py",
+        "scripts\policy_loader.py",
+        "scripts\classify_artifact.py",
+        "scripts\hygiene_snapshot.py",
+        "scripts\tidy_doctor.py",
         "references\script-usage.md"
     )
     foreach ($relative in $required) {

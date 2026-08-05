@@ -13,6 +13,7 @@ Portfolio and operator notes for **Tidy Skill** (`洁癖.skill`).
 | [../skills/tidy-skill/SKILL.md](../skills/tidy-skill/SKILL.md) | Skill definition (three-layer model, classes A–E) |
 | [../skills/tidy-skill/commands/TRIGGERS.md](../skills/tidy-skill/commands/TRIGGERS.md) | Slash / natural-language triggers |
 | [../skills/tidy-skill/hooks/HOOKS.md](../skills/tidy-skill/hooks/HOOKS.md) | Read-only stop hook notes |
+| [../skills/tidy-skill/references/tidy-skill.policy.example.json](../skills/tidy-skill/references/tidy-skill.policy.example.json) | Optional project policy schema |
 | [../CHANGELOG.md](../CHANGELOG.md) | Release history |
 
 ## Platforms
@@ -34,6 +35,7 @@ Optional host wiring samples: [host-samples/](host-samples/).
 | [self-audit/repo_hygiene_score.md](self-audit/repo_hygiene_score.md) | Repo hygiene score |
 | [self-audit/agent_artifacts_audit.md](self-audit/agent_artifacts_audit.md) | Agent artifact audit |
 | [self-audit/dev_environment_audit.md](self-audit/dev_environment_audit.md) | Portable dev-environment audit |
+| [self-audit/tidy_doctor.md](self-audit/tidy_doctor.md) | One-shot doctor (v1.4.0) |
 | [evals/latest.md](evals/latest.md) | Deterministic fixture evals |
 | [cases/](cases/) | Before/after case studies |
 
@@ -53,6 +55,7 @@ These reports are produced by this repository’s own scripts. They are **not** 
 uv run python tools/validate_skill.py --skill-dir skills/tidy-skill
 uv run python tools/run_evals.py
 uv run pytest tests/
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
 ```
 
 ## License

@@ -30,6 +30,9 @@ def load(name: str, path: Path):
 score_mod = load("score_repo_hygiene_eval", SCRIPTS / "score_repo_hygiene.py")
 audit_mod = load("audit_agent_artifacts_eval", SCRIPTS / "audit_agent_artifacts.py")
 workspace_mod = load("audit_workspace_hygiene_eval", SCRIPTS / "audit_workspace_hygiene.py")
+policy_mod = load("policy_loader_eval", SCRIPTS / "policy_loader.py")
+classify_mod = load("classify_artifact_eval", SCRIPTS / "classify_artifact.py")
+doctor_mod = load("tidy_doctor_eval", SCRIPTS / "tidy_doctor.py")
 
 
 @dataclass
@@ -107,12 +110,55 @@ def case_workspace_average() -> CaseResult:
         return CaseResult("workspace_two_repos_scored", ok, f"n={len(results)} average={average:.1f}")
 
 
+def case_policy_extends_forbidden() -> CaseResult:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "scratch.md").write_text("x", encoding="utf-8")
+        (root / "vendor_plan.md").write_text("ok", encoding="utf-8")
+        (root / ".tidy-skill.json").write_text(
+            '{"forbidden_root_globs": ["scratch.md"], "ignore_root_globs": ["vendor_plan.md"]}',
+            encoding="utf-8",
+        )
+        policy = policy_mod.discover_policy(root)
+        result = audit_mod.audit(root, max_depth=1, report_path=None, policy=policy)
+        names = sorted(path.name for path in result.suspicious_root)
+        ok = names == ["scratch.md"] and "vendor_plan.md" not in names
+        return CaseResult("policy_extends_forbidden_patterns", ok, f"suspicious={names}")
+
+
+def case_classify_classes() -> CaseResult:
+    root = Path(".")
+    a = classify_mod.classify_path(Path("README.md"), root=root).class_id
+    d = classify_mod.classify_path(Path("mission_complete.md"), root=root).class_id
+    e = classify_mod.classify_path(Path(".claude/state.json"), root=root).class_id
+    c = classify_mod.classify_path(Path("plan.md"), root=root).class_id
+    ok = a == "A" and d == "D" and e == "E" and c == "C"
+    return CaseResult("classify_artifact_a_d_e_c", ok, f"A={a} D={d} E={e} C={c}")
+
+
+def case_doctor_detects_dirty() -> CaseResult:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        build_dirty_repo(root)
+        skill_dir = REPO_ROOT / "skills" / "tidy-skill"
+        report = doctor_mod.run_doctor(root=root, skill_dir=skill_dir, min_score=90)
+        ok = report.failed and "plan.md" in report.suspicious_root
+        return CaseResult(
+            "doctor_fails_on_dirty_repo",
+            ok,
+            f"failed={report.failed} score={report.score} files={report.suspicious_root}",
+        )
+
+
 def main() -> int:
     cases = [
         case_dirty_score,
         case_clean_score,
         case_gitkeep_ignored,
         case_workspace_average,
+        case_policy_extends_forbidden,
+        case_classify_classes,
+        case_doctor_detects_dirty,
     ]
     results: list[CaseResult] = []
     for case in cases:

@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-08-05
+
+### Added
+- Shared `policy_loader.py` with optional `.tidy-skill.json` / `tidy-skill.policy.json` project policy
+- `classify_artifact.py` — pre-write Class A–E path classifier (read-only)
+- `hygiene_snapshot.py` — save/compare score history + CI `gate` against `min_score`
+- `tidy_doctor.py` — one-shot install + hygiene doctor (exit 2 on policy/hygiene fail)
+- Policy-aware `--policy` on `audit_agent_artifacts.py`, `score_repo_hygiene.py`, and `audit_workspace_hygiene.py`
+- Example policy template `references/tidy-skill.policy.example.json`
+- Command stubs / triggers for doctor, classify, and score gate
+
+### Changed
+- Forbidden/protected root patterns centralized in `policy_loader` (defaults unchanged)
+- `audit_workspace_hygiene.py` uses shared policy (per-repo discovery or shared `--policy`)
+- `validate_skill.py` / `install-local.ps1` self-check require the four new Python modules
+- Fixture evals expanded to 7 cases (policy, classify, doctor)
+- Package version `1.4.0`
+- SKILL / script-usage / README document policy, doctor, classify, and snapshots
+
 ## [1.3.0] - 2026-08-05
 
 ### Added
