@@ -1,0 +1,8 @@
+{
+  "Root cleanliness": 1.0,
+  "Artifact placement": 1.0,
+  "Protected docs clarity": 1.0,
+  "Git hygiene": 1.0,
+  "Agent state isolation": 1.0,
+  "Cleanup readiness": 1.0
+}

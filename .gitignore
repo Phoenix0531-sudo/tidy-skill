@@ -11,6 +11,7 @@
 !.agent_tmp/.gitkeep
 .agent_reports/*
 !.agent_reports/.gitkeep
+# Allow tracked docs under agent_tmp only if explicitly force-added; default ignore all.
 
 # Editor / OS artifacts
 .vscode/

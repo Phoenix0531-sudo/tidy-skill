@@ -7,14 +7,16 @@
 | `score_repo_hygiene.py` | Portable repo hygiene score (0-100) | Python, dependency-free, read-only |
 | `audit_agent_artifacts.py` | Portable agent artifact audit | Python, dependency-free, read-only |
 | `audit_dev_environment.py` | Portable dev environment audit | Python, dependency-free, read-only |
+| `audit_workspace_hygiene.py` | Portable multi-repo workspace audit | Python, dependency-free, read-only, explicit root |
 | `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
 | `score-repo-hygiene.ps1` | Windows repo hygiene score (0-100) | Read-only |
 | `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
 | `audit-dev-environment.ps1` | Windows development environment audit | Read-only, explicit scope |
 | `clean-agent-artifacts.ps1` | Conservative cleanup | Defaults to DryRun |
 | `clean-agent-artifacts.bat` | Windows double-click wrapper | DryRun by default |
-| `install-local.ps1` | Local skill install and self-check | DryRun by default |
+| `install-local.ps1` | Local skill install and self-check (Codex/Claude/Cursor/Pi/OpenCode) | DryRun by default |
 | `install-rule-template.ps1` | Rule template installer | DryRun by default |
+| `hooks/stop-hygiene-check.py` | End-of-task read-only stop check | Reports only |
 
 ---
 
@@ -31,6 +33,24 @@ python score_repo_hygiene.py --root "C:\path\to\project" --report-path "C:\repor
 | Parameter | Required | Default | Description |
 |---|---|---|---|
 | `--root` | No | `.` | Project root path |
+| `--report-path` | No | none | Optional Markdown report path |
+| `--weights` | No | none | Optional JSON dimension weight factors |
+| `--json` | No | false | Print JSON output |
+
+---
+
+## audit_workspace_hygiene.py
+
+Portable multi-repo scan. Requires an explicit root that contains Git repositories.
+
+```powershell
+python audit_workspace_hygiene.py --root "D:\Projects" --report-path ".agent_reports\workspace.md" --json
+```
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `--root` | Yes | — | Parent directory containing Git repos |
+| `--max-depth` | No | 2 | How deep to search for `.git` |
 | `--report-path` | No | none | Optional Markdown report path |
 | `--json` | No | false | Print JSON output |
 

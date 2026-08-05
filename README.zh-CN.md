@@ -103,16 +103,24 @@ uv run ruff check . --select E9,F63,F7,F82
 
 | 档位 | 你得到什么 | 怎么做 |
 |---|---|---|
-| **Enhanced** | Windows 深度审计：WSL2、Docker VHDX、包/模型缓存 + DryRun 清理 | `skills/tidy-skill/scripts/*.ps1` |
-| **Standard** | 可移植的仓库打分 + 产物审计 + 环境基线（跨平台） | `uv run python skills/tidy-skill/scripts/*.py` |
-| **Manual** | 多 Agent 项目共用的卫生规则模板 | `install-rule-template.ps1` 或复制 `templates/AGENTS.md`、`CLAUDE.md`、`cursor-rule.mdc` |
+| **Enhanced** | Windows 深度审计 + DryRun 清理 + 可选只读 stop hook | PowerShell 脚本 + `hooks/stop-hygiene-check.py` |
+| **Standard** | 可移植打分 / 产物 / 环境 / 多仓工作区审计 | `uv run python skills/tidy-skill/scripts/*.py` |
+| **Manual** | 多 Agent 共用卫生规则模板 | `install-rule-template.ps1` 或复制 templates |
 
-把 skill 包安装到本地 Agent 目录（先预览）：
+**Skills CLI 兼容布局：** 本仓库提供标准 `skills/tidy-skill/SKILL.md` 包。若宿主支持开放 skills 安装器：
+
+```bash
+npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill
+```
+
+仅声明布局兼容，不声称已在公共注册表上架或拥有安装量徽章。
+
+本地拷贝到 Agent 目录（先预览）：
 
 ```powershell
 pwsh skills/tidy-skill/scripts/install-local.ps1
-# 真正复制需要显式确认：
-pwsh skills/tidy-skill/scripts/install-local.ps1 -DryRun:$false -Force
+# 默认 Codex + Claude；可加 -Cursor -Pi -OpenCode 或 -All
+pwsh skills/tidy-skill/scripts/install-local.ps1 -All -DryRun:$false -Force
 ```
 
 ## 自审证据
@@ -124,6 +132,7 @@ pwsh skills/tidy-skill/scripts/install-local.ps1 -DryRun:$false -Force
 | 仓库卫生打分 | [docs/self-audit/repo_hygiene_score.md](docs/self-audit/repo_hygiene_score.md) | **100 / 100** — Clean |
 | Agent 产物审计 | [docs/self-audit/agent_artifacts_audit.md](docs/self-audit/agent_artifacts_audit.md) | **0** 可疑根文件 |
 | 开发环境审计 | [docs/self-audit/dev_environment_audit.md](docs/self-audit/dev_environment_audit.md) | **90 / 100** — Highly controlled |
+| Fixture evals | [docs/evals/latest.md](docs/evals/latest.md) | 作者本地确定性用例 |
 
 重新生成：
 
@@ -131,9 +140,10 @@ pwsh skills/tidy-skill/scripts/install-local.ps1 -DryRun:$false -Force
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --report-path docs/self-audit/repo_hygiene_score.md
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --max-depth 3 --report-path docs/self-audit/agent_artifacts_audit.md
 uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --report-path docs/self-audit/dev_environment_audit.md
+uv run python tools/run_evals.py
 ```
 
-> **方法学注脚。** 自审由本仓库脚本完成，不是独立第三方审计。Internal v1，作者在单台 Windows 机器上跑通；不是独立对照实验，也不是第三方基准。
+> **方法学注脚。** 自审与 fixture evals 均由本仓库脚本完成。Internal v1，作者本地跑通；不是独立第三方基准。
 
 ## 产物分类
 
@@ -151,23 +161,25 @@ uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --repo
 
 | 脚本 | 用途 | 调用 |
 |---|---|---|
-| `score_repo_hygiene.py` | 仓库卫生 0–100 分（6 维度） | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
+| `score_repo_hygiene.py` | 仓库卫生 0–100（可选 `--weights`） | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
 | `audit_agent_artifacts.py` | 列出可疑根文件与受保护文档 | `uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json` |
 | `audit_dev_environment.py` | 可移植本机缓存 / 环境基线 | `uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --json` |
+| `audit_workspace_hygiene.py` | 多仓库工作区审计（必须显式 root） | `uv run python skills/tidy-skill/scripts/audit_workspace_hygiene.py --root <path> --json` |
 | `audit-dev-environment.ps1` | Windows 深度审计（WSL2 / Docker / VHDX） | `pwsh skills/tidy-skill/scripts/audit-dev-environment.ps1 -Roots .` |
-| `audit-workspace-hygiene.ps1` | 多仓库工作区缓存扫描 | `pwsh skills/tidy-skill/scripts/audit-workspace-hygiene.ps1 -Root <path>` |
 | `clean-agent-artifacts.ps1` | 清理过期 agent 临时/报告文件 | `pwsh skills/tidy-skill/scripts/clean-agent-artifacts.ps1 -Root . -DryRun` |
-| `install-local.ps1` | 安装 skill 到 Codex / Claude 目录 | `pwsh skills/tidy-skill/scripts/install-local.ps1` |
+| `hooks/stop-hygiene-check.py` | 任务结束只读检查 | `uv run python skills/tidy-skill/hooks/stop-hygiene-check.py --root .` |
+| `install-local.ps1` | 安装到 Codex / Claude / Cursor / Pi / OpenCode | `pwsh skills/tidy-skill/scripts/install-local.ps1 -All` |
 | `install-rule-template.ps1` | 安装 AGENTS / CLAUDE / Cursor 模板 | `pwsh skills/tidy-skill/scripts/install-rule-template.ps1 -TargetRoot <path>` |
 
-Python 脚本纯标准库（无网络、无第三方运行时依赖）。清理与安装脚本默认 DryRun。
+Python 脚本纯标准库。清理与安装默认 DryRun。触发语见 `skills/tidy-skill/commands/TRIGGERS.md`。
 
 ## 范围
 
 **在范围内**
 
-- 对 agent 产物、仓库卫生、本机缓存足迹的只读审计
+- 对 agent 产物、仓库卫生、多仓工作区、本机缓存足迹的只读审计
 - 对 `.agent_tmp/` / `.agent_reports/` 的 DryRun 清理预览
+- 可选只读 stop hook 与 pre-commit 根目录过程文档拦截
 - 让多个 Agent 共享同一放置策略的规则模板
 - 纯本地、离线运行
 
@@ -209,14 +221,18 @@ tidy-skill/
 ├─ skills/tidy-skill/
 │  ├─ SKILL.md                 # skill 定义（三层模型、A–E 分类）
 │  ├─ scripts/                 # Python + PowerShell 工具
+│  ├─ hooks/                   # 只读 stop 检查
+│  ├─ commands/                # 触发语
 │  ├─ templates/               # AGENTS.md / CLAUDE.md / cursor-rule
 │  ├─ references/              # 更细的使用说明
 │  └─ examples/
-├─ tools/validate_skill.py     # skill 包校验
+├─ tools/                      # validate_skill、run_evals、pre-commit 辅助
+├─ evals/                      # fixture eval 说明
 ├─ tests/                      # pytest + PowerShell 安全测试
 ├─ docs/
 │  ├─ screenshots/             # banner + 终端预览
-│  └─ self-audit/              # 作者本地自审报告
+│  ├─ self-audit/              # 作者本地自审报告
+│  └─ evals/                   # 最近一次 fixture eval
 ├─ .github/workflows/          # ci.yml + validate.yml
 ├─ pyproject.toml
 └─ README.md / README.zh-CN.md

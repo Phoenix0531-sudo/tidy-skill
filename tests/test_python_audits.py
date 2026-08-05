@@ -23,6 +23,7 @@ def load_module(name: str, path: Path):
 artifact_audit = load_module("audit_agent_artifacts", SCRIPTS_DIR / "audit_agent_artifacts.py")
 repo_score = load_module("score_repo_hygiene", SCRIPTS_DIR / "score_repo_hygiene.py")
 dev_audit = load_module("audit_dev_environment", SCRIPTS_DIR / "audit_dev_environment.py")
+workspace_audit = load_module("audit_workspace_hygiene", SCRIPTS_DIR / "audit_workspace_hygiene.py")
 
 
 class PythonAuditTests(unittest.TestCase):
@@ -56,6 +57,35 @@ class PythonAuditTests(unittest.TestCase):
 
             self.assertLess(result.total, 100)
             self.assertEqual(["plan.md"], [path.name for path in result.suspicious_root_files])
+
+    def test_gitkeep_markers_are_ignored_in_artifact_counts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".agent_tmp").mkdir()
+            (root / ".agent_reports").mkdir()
+            (root / ".agent_tmp" / ".gitkeep").write_text("", encoding="utf-8")
+            (root / ".agent_reports" / ".gitkeep").write_text("", encoding="utf-8")
+            (root / ".agent_tmp" / "scratch.md").write_text("tmp", encoding="utf-8")
+
+            result = artifact_audit.audit(root, max_depth=2, report_path=None)
+
+            self.assertEqual(["scratch.md"], [path.name for path in result.agent_tmp])
+            self.assertEqual([], [path.name for path in result.agent_reports])
+
+    def test_workspace_audit_finds_nested_git_repos(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = root / "demo"
+            repo.mkdir()
+            (repo / ".git").mkdir()
+            (repo / "plan.md").write_text("plan", encoding="utf-8")
+            (repo / "README.md").write_text("readme", encoding="utf-8")
+
+            repos = workspace_audit.find_repos(root, max_depth=2)
+            self.assertEqual(1, len(repos))
+            scored = workspace_audit.score_one(repos[0])
+            self.assertEqual(["plan.md"], scored.suspicious_files)
+            self.assertLess(scored.score, 100)
 
     def test_dev_environment_report_has_required_action_buckets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

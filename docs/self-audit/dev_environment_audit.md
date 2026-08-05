@@ -1,7 +1,7 @@
 # tidy-skill - Portable Dev Environment Audit
 
 **Score:** 90 / 100 - **Highly controlled**
-**Generated:** 2026-08-05 19:01:37
+**Generated:** 2026-08-05 19:26:47
 **Platform:** Windows-10-10.0.19045-SP0
 
 ## Overview Cards
@@ -32,7 +32,7 @@
 
 - Total detected cache footprint: 18.59 GB.
 - Model cache footprint: 0 B.
-- Project-local cache footprint: 37.64 MB.
+- Project-local cache footprint: 37.65 MB.
 
 ## Safe Suggestions
 

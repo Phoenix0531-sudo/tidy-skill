@@ -1,14 +1,14 @@
 # tidy-skill - Artifact Audit Report
 
 **Root:** `<repo-root>`
-**Generated:** 2026-08-05 19:00:29
+**Generated:** 2026-08-05 19:26:09
 
 | Category | Count |
 |---|---:|
 | Suspicious root files | 0 |
-| Temporary artifacts | 1 |
-| Persistent reports | 1 |
-| Protected docs | 14 |
+| Temporary artifacts | 15 |
+| Persistent reports | 0 |
+| Protected docs | 15 |
 
 ## Suspicious Root Files
 
@@ -16,16 +16,31 @@ _None found._
 
 ## Temporary Artifacts
 
-- `.agent_tmp/.gitkeep`
+- `.agent_tmp/addy-readme.md`
+- `.agent_tmp/addy.json`
+- `.agent_tmp/anthropic-readme.md`
+- `.agent_tmp/anthropic-skills.json`
+- `.agent_tmp/gh-hygiene.json`
+- `.agent_tmp/gh-search.json`
+- `.agent_tmp/gh-skills.json`
+- `.agent_tmp/parse_more.py`
+- `.agent_tmp/parse_refs.py`
+- `.agent_tmp/pwf-contents.json`
+- `.agent_tmp/pwf-readme.md`
+- `.agent_tmp/pwf-repo.json`
+- `.agent_tmp/pwf-skills.json`
+- `.agent_tmp/superpowers-readme.md`
+- `.agent_tmp/superpowers.json`
 
 ## Persistent Reports
 
-- `.agent_reports/.gitkeep`
+_None found._
 
 ## Protected Docs
 
 - `CHANGELOG.md`
 - `CONTRIBUTING.md`
+- `docs/evals/latest.md`
 - `docs/index.md`
 - `docs/screenshots/.gitkeep`
 - `docs/screenshots/banner.png`

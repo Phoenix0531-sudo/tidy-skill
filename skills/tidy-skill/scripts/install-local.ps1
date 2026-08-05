@@ -1,11 +1,10 @@
 <#
 .SYNOPSIS
-    Install tidy-skill into local Codex and Claude skill directories.
+    Install tidy-skill into local agent skill directories.
 
 .DESCRIPTION
-    Copies the packaged skill folder into ~/.codex/skills/tidy-skill and/or
-    ~/.claude/skills/tidy-skill. Defaults to DryRun. Also validates SKILL.md
-    and agents/openai.yaml so local detection failures are easier to catch.
+    Copies the packaged skill folder into one or more local agent hubs.
+    Defaults to DryRun. Also validates SKILL.md and agents/openai.yaml.
 
 .PARAMETER SkillDir
     Source skill directory. Defaults to the parent directory of this script.
@@ -15,6 +14,18 @@
 
 .PARAMETER Claude
     Install to ~/.claude/skills/tidy-skill.
+
+.PARAMETER Cursor
+    Install to ~/.cursor/skills/tidy-skill.
+
+.PARAMETER Pi
+    Install to ~/.pi/agent/skills/tidy-skill.
+
+.PARAMETER OpenCode
+    Install to ~/.config/opencode/skills/tidy-skill.
+
+.PARAMETER All
+    Install to every supported target.
 
 .PARAMETER DryRun
     Preview only by default. Pass -DryRun:$false to copy files.
@@ -35,6 +46,18 @@ param(
 
     [Parameter(Mandatory = $false)]
     [switch]$Claude = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$Cursor = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$Pi = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$OpenCode = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$All = $false,
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun = $true,
@@ -155,13 +178,26 @@ if ($SelfCheckOnly) {
     exit 0
 }
 
-$installBoth = (-not $Codex -and -not $Claude)
+$anyExplicit = $Codex -or $Claude -or $Cursor -or $Pi -or $OpenCode -or $All
+# Default pair remains Codex + Claude for backward compatibility.
+$useDefaultPair = -not $anyExplicit
+
 $targets = @()
-if ($Codex -or $installBoth) {
+if ($Codex -or $All -or $useDefaultPair) {
     $targets += @{ Name = "Codex"; Destination = (Join-Path $env:USERPROFILE ".codex\skills\tidy-skill") }
 }
-if ($Claude -or $installBoth) {
+if ($Claude -or $All -or $useDefaultPair) {
     $targets += @{ Name = "Claude"; Destination = (Join-Path $env:USERPROFILE ".claude\skills\tidy-skill") }
+}
+if ($Cursor -or $All) {
+    $targets += @{ Name = "Cursor"; Destination = (Join-Path $env:USERPROFILE ".cursor\skills\tidy-skill") }
+}
+if ($Pi -or $All) {
+    $targets += @{ Name = "Pi"; Destination = (Join-Path $env:USERPROFILE ".pi\agent\skills\tidy-skill") }
+}
+if ($OpenCode -or $All) {
+    $configHome = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { Join-Path $env:USERPROFILE ".config" }
+    $targets += @{ Name = "OpenCode"; Destination = (Join-Path $configHome "opencode\skills\tidy-skill") }
 }
 
 foreach ($target in $targets) {

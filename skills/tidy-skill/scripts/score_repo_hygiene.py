@@ -61,6 +61,10 @@ def is_forbidden_root_file(path: Path) -> bool:
     return any(re.match(pattern, name) for pattern in FORBIDDEN_ROOT_PATTERNS)
 
 
+def is_layout_marker(path: Path) -> bool:
+    return path.name.lower() in {".gitkeep", ".keep"}
+
+
 def rating_for(score: int) -> str:
     if score >= 90:
         return "Clean"
@@ -71,7 +75,21 @@ def rating_for(score: int) -> str:
     return "Artifact landfill"
 
 
-def score_repo(root: Path, report_path: Path | None) -> ScoreResult:
+DEFAULT_WEIGHTS = {
+    "Root cleanliness": 1.0,
+    "Artifact placement": 1.0,
+    "Protected docs clarity": 1.0,
+    "Git hygiene": 1.0,
+    "Agent state isolation": 1.0,
+    "Cleanup readiness": 1.0,
+}
+
+
+def score_repo(
+    root: Path,
+    report_path: Path | None,
+    weights: dict[str, float] | None = None,
+) -> ScoreResult:
     root = root.resolve()
     root_files = [path for path in root.iterdir() if path.is_file()]
     suspicious_root_files = [path for path in root_files if is_forbidden_root_file(path)]
@@ -137,10 +155,16 @@ def score_repo(root: Path, report_path: Path | None) -> ScoreResult:
     if has_agent_tmp or has_agent_reports:
         tmp_files = list((root / ".agent_tmp").glob("*")) if has_agent_tmp else []
         report_files = list((root / ".agent_reports").glob("*")) if has_agent_reports else []
-        if any(path.is_file() for path in tmp_files + report_files):
+        real_files = [
+            path
+            for path in tmp_files + report_files
+            if path.is_file() and not is_layout_marker(path)
+        ]
+        # Layout dirs alone (with optional .gitkeep) count as cleanup-ready.
+        if real_files or (has_agent_tmp and has_agent_reports):
             score_cleanup += 2
 
-    dimensions = {
+    raw_dimensions = {
         "Root cleanliness": score_root,
         "Artifact placement": score_placement,
         "Protected docs clarity": score_docs,
@@ -148,13 +172,36 @@ def score_repo(root: Path, report_path: Path | None) -> ScoreResult:
         "Agent state isolation": score_isolation,
         "Cleanup readiness": score_cleanup,
     }
-    total = max(0, min(100, sum(dimensions.values())))
+    active_weights = dict(DEFAULT_WEIGHTS)
+    if weights:
+        for key, value in weights.items():
+            if key in active_weights:
+                active_weights[key] = float(value)
+    weighted = {
+        name: int(round(score * active_weights.get(name, 1.0)))
+        for name, score in raw_dimensions.items()
+    }
+    # Renormalize to 0-100 so optional weights stay comparable.
+    raw_total = sum(raw_dimensions.values()) or 1
+    weighted_total = sum(weighted.values())
+    if weights:
+        total = max(0, min(100, int(round(weighted_total * 100 / max(raw_total, 1)))))
+        # Prefer simple clamp of weighted sum when weights are near 1.0.
+        simple = max(0, min(100, weighted_total))
+        # Use simple sum when all weights are 1.0-ish scale (max raw is 100).
+        if abs(sum(active_weights.values()) - len(active_weights)) < 1e-6:
+            total = simple
+        else:
+            total = simple if weighted_total <= 100 else total
+    else:
+        total = max(0, min(100, raw_total))
+        weighted = raw_dimensions
 
     return ScoreResult(
         root=root,
         total=total,
         rating=rating_for(total),
-        dimensions=dimensions,
+        dimensions=weighted,
         suspicious_root_files=suspicious_root_files,
         has_agent_tmp=has_agent_tmp,
         has_agent_reports=has_agent_reports,
@@ -221,10 +268,23 @@ def write_report(result: ScoreResult, path: Path) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def load_weights(path: Path | None) -> dict[str, float] | None:
+    if path is None:
+        return None
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError("weights file must be a JSON object of dimension -> factor")
+    return {str(key): float(value) for key, value in raw.items()}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Score repository hygiene.")
     parser.add_argument("--root", default=".", help="Repository root to score.")
     parser.add_argument("--report-path", help="Optional Markdown report path.")
+    parser.add_argument(
+        "--weights",
+        help="Optional JSON file of dimension weight factors (default 1.0 each).",
+    )
     parser.add_argument("--json", action="store_true", help="Print JSON instead of text.")
     args = parser.parse_args()
 
@@ -233,7 +293,11 @@ def main() -> int:
         parser.error(f"--root is not a directory: {root}")
 
     report_path = Path(args.report_path) if args.report_path else None
-    result = score_repo(root, report_path)
+    try:
+        weights = load_weights(Path(args.weights) if args.weights else None)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        parser.error(f"invalid --weights file: {exc}")
+    result = score_repo(root, report_path, weights=weights)
     if report_path:
         write_report(result, report_path)
 

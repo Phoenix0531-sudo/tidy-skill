@@ -88,6 +88,11 @@ def matches(patterns: list[str], name: str) -> bool:
     return any(re.match(pattern, lowered) for pattern in patterns)
 
 
+def is_layout_marker(path: Path) -> bool:
+    """Directory placeholders are not agent process artifacts."""
+    return path.name.lower() in {".gitkeep", ".keep"}
+
+
 def iter_files(root: Path, max_depth: int) -> list[Path]:
     files: list[Path] = []
     root_depth = len(root.parts)
@@ -115,9 +120,9 @@ def audit(root: Path, max_depth: int, report_path: Path | None) -> AuditResult:
         first = relative_parts[0] if relative_parts else ""
         if len(relative_parts) == 1 and matches(FORBIDDEN_ROOT_PATTERNS, file_path.name):
             suspicious_root.append(file_path)
-        if first == ".agent_tmp":
+        if first == ".agent_tmp" and not is_layout_marker(file_path):
             agent_tmp.append(file_path)
-        if first == ".agent_reports":
+        if first == ".agent_reports" and not is_layout_marker(file_path):
             agent_reports.append(file_path)
         if first == "docs" or (len(relative_parts) == 1 and matches(PROTECTED_DOC_PATTERNS, file_path.name)):
             protected_docs.append(file_path)

@@ -103,16 +103,24 @@ uv run ruff check . --select E9,F63,F7,F82
 
 | Tier | What you get | How |
 |---|---|---|
-| **Enhanced** | Windows deep audit: WSL2, Docker VHDX, package/model caches + DryRun cleanup | PowerShell scripts under `skills/tidy-skill/scripts/*.ps1` |
-| **Standard** | Portable repo scoring + artifact audit + env baseline (cross-platform) | `uv run python skills/tidy-skill/scripts/*.py` |
-| **Manual** | Shared hygiene rules for multi-agent projects | `install-rule-template.ps1` or copy `templates/AGENTS.md`, `CLAUDE.md`, `cursor-rule.mdc` |
+| **Enhanced** | Windows deep audit + DryRun cleanup + optional read-only stop hook | PowerShell scripts + `hooks/stop-hygiene-check.py` |
+| **Standard** | Portable scoring / artifact / env / workspace audits | `uv run python skills/tidy-skill/scripts/*.py` |
+| **Manual** | Shared hygiene rules for multi-agent projects | `install-rule-template.ps1` or copy templates |
 
-Install the skill package into local agent hubs (preview first):
+**Skills CLI layout (compatible):** this repo ships a standard `skills/tidy-skill/SKILL.md` package. If your agent supports the open skills installer:
+
+```bash
+npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill
+```
+
+Compatible layout only — listing on public registries is optional and not claimed here.
+
+Local copy into agent hubs (preview first):
 
 ```powershell
 pwsh skills/tidy-skill/scripts/install-local.ps1
-# actual copy requires explicit confirmation:
-pwsh skills/tidy-skill/scripts/install-local.ps1 -DryRun:$false -Force
+# Codex + Claude by default; add -Cursor -Pi -OpenCode or -All
+pwsh skills/tidy-skill/scripts/install-local.ps1 -All -DryRun:$false -Force
 ```
 
 ## Self-Audit
@@ -124,6 +132,7 @@ This repository runs its own scripts against itself. Latest author-run reports:
 | Repo hygiene score | [docs/self-audit/repo_hygiene_score.md](docs/self-audit/repo_hygiene_score.md) | **100 / 100** — Clean |
 | Agent artifact audit | [docs/self-audit/agent_artifacts_audit.md](docs/self-audit/agent_artifacts_audit.md) | **0** suspicious root files |
 | Dev environment audit | [docs/self-audit/dev_environment_audit.md](docs/self-audit/dev_environment_audit.md) | **90 / 100** — Highly controlled |
+| Fixture evals | [docs/evals/latest.md](docs/evals/latest.md) | Author-run deterministic cases |
 
 Regenerate:
 
@@ -131,9 +140,10 @@ Regenerate:
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --report-path docs/self-audit/repo_hygiene_score.md
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --max-depth 3 --report-path docs/self-audit/agent_artifacts_audit.md
 uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --report-path docs/self-audit/dev_environment_audit.md
+uv run python tools/run_evals.py
 ```
 
-> **Methodology note.** Self-audit by own scripts, not independent. Internal v1, author-run on a single Windows machine; not an independent comparison and not a third-party benchmark.
+> **Methodology note.** Self-audit and fixture evals use this repository's own scripts. Internal v1, author-run; not an independent third-party benchmark.
 
 ## Artifact Classification
 
@@ -151,23 +161,25 @@ Five-level placement model (see [SKILL.md](skills/tidy-skill/SKILL.md)):
 
 | Script | Purpose | Invoke |
 |---|---|---|
-| `score_repo_hygiene.py` | Score repo hygiene 0–100 across 6 dimensions | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
+| `score_repo_hygiene.py` | Score repo hygiene 0–100 (optional `--weights`) | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
 | `audit_agent_artifacts.py` | List suspicious root files and protected docs | `uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json` |
 | `audit_dev_environment.py` | Portable local cache / env baseline | `uv run python skills/tidy-skill/scripts/audit_dev_environment.py --root . --json` |
+| `audit_workspace_hygiene.py` | Multi-repo workspace audit (explicit root) | `uv run python skills/tidy-skill/scripts/audit_workspace_hygiene.py --root <path> --json` |
 | `audit-dev-environment.ps1` | Windows deep audit (WSL2 / Docker / VHDX) | `pwsh skills/tidy-skill/scripts/audit-dev-environment.ps1 -Roots .` |
-| `audit-workspace-hygiene.ps1` | Multi-repo workspace cache scan | `pwsh skills/tidy-skill/scripts/audit-workspace-hygiene.ps1 -Root <path>` |
 | `clean-agent-artifacts.ps1` | Clean expired agent temp/report files | `pwsh skills/tidy-skill/scripts/clean-agent-artifacts.ps1 -Root . -DryRun` |
-| `install-local.ps1` | Install skill into Codex / Claude dirs | `pwsh skills/tidy-skill/scripts/install-local.ps1` |
+| `hooks/stop-hygiene-check.py` | Read-only end-of-task stop check | `uv run python skills/tidy-skill/hooks/stop-hygiene-check.py --root .` |
+| `install-local.ps1` | Install into Codex / Claude / Cursor / Pi / OpenCode | `pwsh skills/tidy-skill/scripts/install-local.ps1 -All` |
 | `install-rule-template.ps1` | Install AGENTS / CLAUDE / Cursor templates | `pwsh skills/tidy-skill/scripts/install-rule-template.ps1 -TargetRoot <path>` |
 
-Python scripts are pure stdlib (no network, no third-party runtime deps). Cleanup and install scripts default to DryRun.
+Python scripts are pure stdlib (no network, no third-party runtime deps). Cleanup and install scripts default to DryRun. Trigger phrases: `skills/tidy-skill/commands/TRIGGERS.md`.
 
 ## Scope
 
 **In scope**
 
-- Read-only audits of agent artifacts, repo hygiene, and local cache footprints
+- Read-only audits of agent artifacts, repo hygiene, workspace repos, and local cache footprints
 - DryRun cleanup previews for `.agent_tmp/` / `.agent_reports/`
+- Optional read-only stop hooks and pre-commit root-process-md guard
 - Rule templates so multiple agents share the same placement policy
 - Offline, local-only operation
 
@@ -209,14 +221,18 @@ tidy-skill/
 ├─ skills/tidy-skill/
 │  ├─ SKILL.md                 # skill definition (three-layer model, classes A–E)
 │  ├─ scripts/                 # Python + PowerShell tools
+│  ├─ hooks/                   # read-only stop check
+│  ├─ commands/                # trigger phrases
 │  ├─ templates/               # AGENTS.md / CLAUDE.md / cursor-rule
 │  ├─ references/              # deeper usage notes
 │  └─ examples/
-├─ tools/validate_skill.py     # skill package validation
+├─ tools/                      # validate_skill, run_evals, pre-commit helper
+├─ evals/                      # fixture eval notes
 ├─ tests/                      # pytest + PowerShell safety tests
 ├─ docs/
 │  ├─ screenshots/             # banner + terminal preview
-│  └─ self-audit/              # author-run reports
+│  ├─ self-audit/              # author-run reports
+│  └─ evals/                   # latest fixture eval report
 ├─ .github/workflows/          # ci.yml + validate.yml
 ├─ pyproject.toml
 └─ README.md / README.zh-CN.md

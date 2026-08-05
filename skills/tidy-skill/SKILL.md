@@ -218,15 +218,17 @@ When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_r
 | 50–69 | Needs tidy-up | 需要整理 |
 | 0–49 | Artifact landfill | Agent 产物垃圾场 |
 
-**Dimensions:** root cleanliness, artifact placement, protected docs clarity, Git hygiene, agent state isolation, cleanup readiness.
+**Dimensions:** root cleanliness, artifact placement, protected docs clarity, Git hygiene, agent state isolation, cleanup readiness. Optional weight factors: `--weights references/score-weights.example.json`.
 
 ---
 
 ## 11. Workspace Hygiene Audit
 
-When asked to scan multiple repos, use `${CLAUDE_SKILL_DIR}/scripts/audit-workspace-hygiene.ps1`. The user must explicitly specify a root directory. Never default to scanning entire drives.
+When asked to scan multiple repos, prefer `${CLAUDE_SKILL_DIR}/scripts/audit_workspace_hygiene.py` for a portable baseline. On Windows-only workflows, `${CLAUDE_SKILL_DIR}/scripts/audit-workspace-hygiene.ps1` is also fine. The user must explicitly specify a root directory. Never default to scanning entire drives.
 
 For a single-repo agent artifact audit, prefer `${CLAUDE_SKILL_DIR}/scripts/audit_agent_artifacts.py` when Python is available. Use `${CLAUDE_SKILL_DIR}/scripts/audit-agent-artifacts.ps1` when staying in a PowerShell workflow.
+
+Optional end-of-task read-only check: `${CLAUDE_SKILL_DIR}/hooks/stop-hygiene-check.py` (reports only; never deletes). Trigger phrases live in `commands/TRIGGERS.md`.
 
 ---
 
@@ -340,3 +342,5 @@ This Skill and its scripts:
 - For safety guarantees, read `references/safety-boundaries.md`.
 - For score details, read `references/hygiene-scoring-model.md`.
 - For WSL2 and Docker hygiene, read `references/wsl2-docker-hygiene.md`.
+- For trigger phrases, read `commands/TRIGGERS.md`.
+- For read-only hooks, read `hooks/HOOKS.md`.

@@ -27,9 +27,11 @@ Run these checks before opening a pull request:
 
 ```powershell
 python tools\validate_skill.py --skill-dir skills\tidy-skill
+python tools\run_evals.py
 python skills\tidy-skill\scripts\score_repo_hygiene.py --root . --json
 python skills\tidy-skill\scripts\audit_agent_artifacts.py --root . --json
 python skills\tidy-skill\scripts\audit_dev_environment.py --root . --json
+python skills\tidy-skill\scripts\audit_workspace_hygiene.py --root . --json
 python -m unittest discover -s tests -p "test_*.py"
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
 ```

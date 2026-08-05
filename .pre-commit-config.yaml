@@ -1,0 +1,12 @@
+# Optional local guard: block committing common agent process files at repo root.
+# Install: pip/uv add pre-commit && pre-commit install
+# This does not delete files; it only fails the commit when staged root junk is present.
+
+repos:
+  - repo: local
+    hooks:
+      - id: tidy-skill-no-root-process-md
+        name: block root agent process markdown
+        entry: python tools/pre_commit_no_root_process_md.py
+        language: system
+        pass_filenames: true
