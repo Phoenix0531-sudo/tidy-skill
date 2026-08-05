@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "$comment": "EXAMPLE ONLY for Cursor project hooks. Copy to .cursor/hooks.json after editing the python path. Read-only.",
+  "hooks": {
+    "stop": [
+      {
+        "command": [
+          "python",
+          "${workspaceFolder}/.agents/skills/tidy-skill/hooks/stop-hygiene-check.py",
+          "--root",
+          "${workspaceFolder}"
+        ]
+      }
+    ]
+  },
+  "fallback": {
+    "ifSkillMissing": "Use the global install path ~/.cursor/skills/tidy-skill/hooks/stop-hygiene-check.py"
+  }
+}

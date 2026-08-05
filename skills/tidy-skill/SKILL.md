@@ -342,5 +342,7 @@ This Skill and its scripts:
 - For safety guarantees, read `references/safety-boundaries.md`.
 - For score details, read `references/hygiene-scoring-model.md`.
 - For WSL2 and Docker hygiene, read `references/wsl2-docker-hygiene.md`.
-- For trigger phrases, read `commands/TRIGGERS.md`.
+- For trigger phrases and command stubs, read `commands/TRIGGERS.md`.
 - For read-only hooks, read `hooks/HOOKS.md`.
+- For host install routes, see the repository `docs/installation.md` and `docs/platforms/`.
+- For optional host hook samples, see repository `docs/host-samples/`.

@@ -1,0 +1,16 @@
+{
+  "$comment": "EXAMPLE ONLY. Host hook schema varies by Claude Code version. Read-only stop check; never deletes.",
+  "hooks": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python \"${CLAUDE_SKILL_DIR}/hooks/stop-hygiene-check.py\" --root \"${CLAUDE_PROJECT_DIR}\""
+      }
+    ]
+  },
+  "notes": [
+    "Replace CLAUDE_SKILL_DIR with the real installed skill path if your host does not expand it.",
+    "If Python is not on PATH, use an absolute interpreter path.",
+    "Prefer pasting session-hygiene-reminder.md into CLAUDE.md when hooks are unavailable."
+  ]
+}

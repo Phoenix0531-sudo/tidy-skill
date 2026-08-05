@@ -34,4 +34,11 @@ Point the host stop hook at:
 python <skill>/hooks/stop-hygiene-check.py --root $CLAUDE_PROJECT_DIR
 ```
 
+Ready-to-edit JSON/Markdown samples (not auto-installed):
+
+- `docs/host-samples/claude-stop-hook.example.json`
+- `docs/host-samples/codex-stop-hook.example.json`
+- `docs/host-samples/cursor-hooks.example.json`
+- `docs/host-samples/session-start.example.md`
+
 If the host cannot run Python, paste the contents of `session-hygiene-reminder.md` into the project `AGENTS.md` / `CLAUDE.md` instead.

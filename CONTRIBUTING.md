@@ -34,7 +34,11 @@ python skills\tidy-skill\scripts\audit_dev_environment.py --root . --json
 python skills\tidy-skill\scripts\audit_workspace_hygiene.py --root . --json
 python -m unittest discover -s tests -p "test_*.py"
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun
+# Optional: skills CLI discovery smoke (needs network)
+# npx.cmd skills add Phoenix0531-sudo/tidy-skill --list -y
 ```
+
+Platform install docs live under `docs/platforms/`. Host hook samples under `docs/host-samples/` are examples only — do not present them as auto-registered.
 
 On Windows, also smoke-test the PowerShell scoring and audit scripts:
 

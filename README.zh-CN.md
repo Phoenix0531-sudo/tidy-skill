@@ -107,13 +107,20 @@ uv run ruff check . --select E9,F63,F7,F82
 | **Standard** | 可移植打分 / 产物 / 环境 / 多仓工作区审计 | `uv run python skills/tidy-skill/scripts/*.py` |
 | **Manual** | 多 Agent 共用卫生规则模板 | `install-rule-template.ps1` 或复制 templates |
 
-**Skills CLI 兼容布局：** 本仓库提供标准 `skills/tidy-skill/SKILL.md` 包。若宿主支持开放 skills 安装器：
+**Skills CLI（已实测可发现）：** 标准 `skills/tidy-skill/SKILL.md` 包。作者于 2026-08-05 验证：
 
 ```bash
+npx skills add Phoenix0531-sudo/tidy-skill --list
+# Found 1 skill: tidy-skill
+
 npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill
 ```
 
-仅声明布局兼容，不声称已在公共注册表上架或拥有安装量徽章。
+完整矩阵、静默失败与 doctor：[docs/installation.md](docs/installation.md) · 验证记录：[docs/skills-cli-verify.md](docs/skills-cli-verify.md)。
+
+分平台说明：[Claude](docs/platforms/claude.md) · [Codex](docs/platforms/codex.md) · [Cursor](docs/platforms/cursor.md) · [Pi](docs/platforms/pi.md) · [OpenCode](docs/platforms/opencode.md)。
+
+可选宿主 hook 样例（不会自动注册）：[docs/host-samples/](docs/host-samples/)。
 
 本地拷贝到 Agent 目录（先预览）：
 
@@ -122,6 +129,8 @@ pwsh skills/tidy-skill/scripts/install-local.ps1
 # 默认 Codex + Claude；可加 -Cursor -Pi -OpenCode 或 -All
 pwsh skills/tidy-skill/scripts/install-local.ps1 -All -DryRun:$false -Force
 ```
+
+**不声称** Claude/Codex 官方 marketplace 插件上架或安装量徽章。
 
 ## 自审证据
 
@@ -133,6 +142,7 @@ pwsh skills/tidy-skill/scripts/install-local.ps1 -All -DryRun:$false -Force
 | Agent 产物审计 | [docs/self-audit/agent_artifacts_audit.md](docs/self-audit/agent_artifacts_audit.md) | **0** 可疑根文件 |
 | 开发环境审计 | [docs/self-audit/dev_environment_audit.md](docs/self-audit/dev_environment_audit.md) | **90 / 100** — Highly controlled |
 | Fixture evals | [docs/evals/latest.md](docs/evals/latest.md) | 作者本地确定性用例 |
+| 案例 | [docs/cases/](docs/cases/) | 合成脏仓→干净 + 本仓库自审 |
 
 重新生成：
 
@@ -171,7 +181,7 @@ uv run python tools/run_evals.py
 | `install-local.ps1` | 安装到 Codex / Claude / Cursor / Pi / OpenCode | `pwsh skills/tidy-skill/scripts/install-local.ps1 -All` |
 | `install-rule-template.ps1` | 安装 AGENTS / CLAUDE / Cursor 模板 | `pwsh skills/tidy-skill/scripts/install-rule-template.ps1 -TargetRoot <path>` |
 
-Python 脚本纯标准库。清理与安装默认 DryRun。触发语见 `skills/tidy-skill/commands/TRIGGERS.md`。
+Python 脚本纯标准库。清理与安装默认 DryRun。触发语与命令 stub 见 `skills/tidy-skill/commands/`。
 
 ## 范围
 
@@ -222,7 +232,7 @@ tidy-skill/
 │  ├─ SKILL.md                 # skill 定义（三层模型、A–E 分类）
 │  ├─ scripts/                 # Python + PowerShell 工具
 │  ├─ hooks/                   # 只读 stop 检查
-│  ├─ commands/                # 触发语
+│  ├─ commands/                # 触发语 + 命令 stub
 │  ├─ templates/               # AGENTS.md / CLAUDE.md / cursor-rule
 │  ├─ references/              # 更细的使用说明
 │  └─ examples/
@@ -230,6 +240,10 @@ tidy-skill/
 ├─ evals/                      # fixture eval 说明
 ├─ tests/                      # pytest + PowerShell 安全测试
 ├─ docs/
+│  ├─ installation.md          # 安装矩阵 + doctor
+│  ├─ platforms/               # Claude / Codex / Cursor / Pi / OpenCode
+│  ├─ host-samples/            # 可选 hook JSON 样例
+│  ├─ cases/                   # before/after 案例
 │  ├─ screenshots/             # banner + 终端预览
 │  ├─ self-audit/              # 作者本地自审报告
 │  └─ evals/                   # 最近一次 fixture eval

@@ -107,13 +107,20 @@ uv run ruff check . --select E9,F63,F7,F82
 | **Standard** | Portable scoring / artifact / env / workspace audits | `uv run python skills/tidy-skill/scripts/*.py` |
 | **Manual** | Shared hygiene rules for multi-agent projects | `install-rule-template.ps1` or copy templates |
 
-**Skills CLI layout (compatible):** this repo ships a standard `skills/tidy-skill/SKILL.md` package. If your agent supports the open skills installer:
+**Skills CLI (verified discoverable):** standard `skills/tidy-skill/SKILL.md` package. Author-verified on 2026-08-05:
 
 ```bash
+npx skills add Phoenix0531-sudo/tidy-skill --list
+# Found 1 skill: tidy-skill
+
 npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill
 ```
 
-Compatible layout only — listing on public registries is optional and not claimed here.
+Full matrix, silent failure modes, and doctor steps: [docs/installation.md](docs/installation.md) · verification log: [docs/skills-cli-verify.md](docs/skills-cli-verify.md).
+
+Per-platform notes: [Claude](docs/platforms/claude.md) · [Codex](docs/platforms/codex.md) · [Cursor](docs/platforms/cursor.md) · [Pi](docs/platforms/pi.md) · [OpenCode](docs/platforms/opencode.md).
+
+Optional host hook samples (not auto-wired): [docs/host-samples/](docs/host-samples/).
 
 Local copy into agent hubs (preview first):
 
@@ -122,6 +129,8 @@ pwsh skills/tidy-skill/scripts/install-local.ps1
 # Codex + Claude by default; add -Cursor -Pi -OpenCode or -All
 pwsh skills/tidy-skill/scripts/install-local.ps1 -All -DryRun:$false -Force
 ```
+
+Marketplace plugin listings (Claude/Codex official stores) are **not** claimed.
 
 ## Self-Audit
 
@@ -133,6 +142,7 @@ This repository runs its own scripts against itself. Latest author-run reports:
 | Agent artifact audit | [docs/self-audit/agent_artifacts_audit.md](docs/self-audit/agent_artifacts_audit.md) | **0** suspicious root files |
 | Dev environment audit | [docs/self-audit/dev_environment_audit.md](docs/self-audit/dev_environment_audit.md) | **90 / 100** — Highly controlled |
 | Fixture evals | [docs/evals/latest.md](docs/evals/latest.md) | Author-run deterministic cases |
+| Case studies | [docs/cases/](docs/cases/) | Synthetic dirty→clean + this-repo self |
 
 Regenerate:
 
@@ -171,7 +181,7 @@ Five-level placement model (see [SKILL.md](skills/tidy-skill/SKILL.md)):
 | `install-local.ps1` | Install into Codex / Claude / Cursor / Pi / OpenCode | `pwsh skills/tidy-skill/scripts/install-local.ps1 -All` |
 | `install-rule-template.ps1` | Install AGENTS / CLAUDE / Cursor templates | `pwsh skills/tidy-skill/scripts/install-rule-template.ps1 -TargetRoot <path>` |
 
-Python scripts are pure stdlib (no network, no third-party runtime deps). Cleanup and install scripts default to DryRun. Trigger phrases: `skills/tidy-skill/commands/TRIGGERS.md`.
+Python scripts are pure stdlib (no network, no third-party runtime deps). Cleanup and install scripts default to DryRun. Trigger phrases and command stubs: `skills/tidy-skill/commands/`.
 
 ## Scope
 
@@ -222,7 +232,7 @@ tidy-skill/
 │  ├─ SKILL.md                 # skill definition (three-layer model, classes A–E)
 │  ├─ scripts/                 # Python + PowerShell tools
 │  ├─ hooks/                   # read-only stop check
-│  ├─ commands/                # trigger phrases
+│  ├─ commands/                # trigger phrases + command stubs
 │  ├─ templates/               # AGENTS.md / CLAUDE.md / cursor-rule
 │  ├─ references/              # deeper usage notes
 │  └─ examples/
@@ -230,6 +240,10 @@ tidy-skill/
 ├─ evals/                      # fixture eval notes
 ├─ tests/                      # pytest + PowerShell safety tests
 ├─ docs/
+│  ├─ installation.md          # install matrix + doctor
+│  ├─ platforms/               # Claude / Codex / Cursor / Pi / OpenCode
+│  ├─ host-samples/            # optional hook JSON samples
+│  ├─ cases/                   # before/after case studies
 │  ├─ screenshots/             # banner + terminal preview
 │  ├─ self-audit/              # author-run reports
 │  └─ evals/                   # latest fixture eval report

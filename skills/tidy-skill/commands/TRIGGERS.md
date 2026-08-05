@@ -2,6 +2,12 @@
 
 These are **documentation triggers** for hosts that map natural language or slash commands to skills. They do not install a runtime server.
 
+Command stubs (markdown playbooks hosts can map):
+
+- [tidy.md](tidy.md) — full read-only pass
+- [tidy-score.md](tidy-score.md) — score only
+- [audit-artifacts.md](audit-artifacts.md) — artifact scan
+
 | Trigger | Intent | Preferred tool |
 |---|---|---|
 | `/tidy` or "run tidy-skill" | Full local hygiene pass (read-only first) | score + artifact audit |

@@ -8,12 +8,26 @@ Portfolio and operator notes for **Tidy Skill** (`洁癖.skill`).
 |---|---|
 | [../README.md](../README.md) | English product README |
 | [../README.zh-CN.md](../README.zh-CN.md) | Chinese product README |
+| [installation.md](installation.md) | Install matrix, doctor, silent failures |
+| [skills-cli-verify.md](skills-cli-verify.md) | Author-run `npx skills add` verification |
 | [../skills/tidy-skill/SKILL.md](../skills/tidy-skill/SKILL.md) | Skill definition (three-layer model, classes A–E) |
 | [../skills/tidy-skill/commands/TRIGGERS.md](../skills/tidy-skill/commands/TRIGGERS.md) | Slash / natural-language triggers |
 | [../skills/tidy-skill/hooks/HOOKS.md](../skills/tidy-skill/hooks/HOOKS.md) | Read-only stop hook notes |
 | [../CHANGELOG.md](../CHANGELOG.md) | Release history |
 
-## Self-audit and evals (author-run)
+## Platforms
+
+| Platform | Guide |
+|---|---|
+| Claude Code | [platforms/claude.md](platforms/claude.md) |
+| Codex | [platforms/codex.md](platforms/codex.md) |
+| Cursor | [platforms/cursor.md](platforms/cursor.md) |
+| Pi | [platforms/pi.md](platforms/pi.md) |
+| OpenCode | [platforms/opencode.md](platforms/opencode.md) |
+
+Optional host wiring samples: [host-samples/](host-samples/).
+
+## Self-audit, evals, cases (author-run)
 
 | Report | Snapshot |
 |---|---|
@@ -21,6 +35,7 @@ Portfolio and operator notes for **Tidy Skill** (`洁癖.skill`).
 | [self-audit/agent_artifacts_audit.md](self-audit/agent_artifacts_audit.md) | Agent artifact audit |
 | [self-audit/dev_environment_audit.md](self-audit/dev_environment_audit.md) | Portable dev-environment audit |
 | [evals/latest.md](evals/latest.md) | Deterministic fixture evals |
+| [cases/](cases/) | Before/after case studies |
 
 These reports are produced by this repository’s own scripts. They are **not** an independent third-party audit.
 

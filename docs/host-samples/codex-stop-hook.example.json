@@ -1,0 +1,16 @@
+{
+  "$comment": "EXAMPLE ONLY. Codex hook registration differs by app/CLI build. Read-only; never deletes.",
+  "name": "tidy-skill-stop-check",
+  "event": "stop",
+  "command": [
+    "python",
+    "%USERPROFILE%/.codex/skills/tidy-skill/hooks/stop-hygiene-check.py",
+    "--root",
+    "."
+  ],
+  "notes": [
+    "On macOS/Linux use $HOME/.codex/skills/tidy-skill/hooks/stop-hygiene-check.py",
+    "If the skill was installed project-locally, point at .agents/skills/tidy-skill/hooks/stop-hygiene-check.py",
+    "This sample reports suspicious root Markdown only."
+  ]
+}

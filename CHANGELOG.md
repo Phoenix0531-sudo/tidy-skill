@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-08-05
+
+### Added
+- Full install guide `docs/installation.md` with route matrix and doctor steps
+- Per-platform setup: Claude, Codex, Cursor, Pi, OpenCode under `docs/platforms/`
+- Optional host wiring samples under `docs/host-samples/` (read-only; not auto-installed)
+- Command stubs `commands/tidy.md`, `tidy-score.md`, `audit-artifacts.md`
+- Case studies: synthetic dirty→clean + this-repo self-audit under `docs/cases/`
+- Author-run skills CLI verification log `docs/skills-cli-verify.md`
+
+### Changed
+- README (EN/zh) links install matrix, platforms, cases; states CLI is **verified discoverable**
+- `validate_skill.py` requires command stub files
+- Package version `1.3.0`
+
 ## [1.2.0] - 2026-08-05
 
 ### Added
