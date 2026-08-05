@@ -51,6 +51,7 @@ powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\audit-agent
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\audit-dev-environment.ps1 -Roots . -ReportPath "$env:TEMP\tidy_skill_dev_environment.md"
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\install-local.ps1 -SelfCheckOnly
 powershell -ExecutionPolicy Bypass -File .\tests\test-clean-agent-artifacts.ps1
+powershell -ExecutionPolicy Bypass -File .\tests\test-policy-ps1.ps1
 ```
 
 ## Pull Request Checklist

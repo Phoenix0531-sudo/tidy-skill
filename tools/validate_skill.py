@@ -17,6 +17,7 @@ REQUIRED_SKILL_FILES = [
     "scripts/audit_dev_environment.py",
     "scripts/audit_workspace_hygiene.py",
     "scripts/policy_loader.py",
+    "scripts/Policy.ps1",
     "scripts/classify_artifact.py",
     "scripts/hygiene_snapshot.py",
     "scripts/tidy_doctor.py",

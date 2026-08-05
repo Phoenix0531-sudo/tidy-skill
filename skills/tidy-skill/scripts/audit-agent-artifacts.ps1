@@ -17,6 +17,10 @@
 .PARAMETER MaxDepth
     Maximum subdirectory depth to scan. Default 3. Use 0 for current dir only.
 
+.PARAMETER Policy
+    Optional policy JSON path. When omitted, discovers .tidy-skill.json
+    or tidy-skill.policy.json under Root.
+
 .EXAMPLE
     .\audit-agent-artifacts.ps1 -Root "C:\Projects\MyApp"
 
@@ -38,8 +42,13 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateRange(0, 10)]
-    [int]$MaxDepth = 3
+    [int]$MaxDepth = 3,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Policy
 )
+
+. (Join-Path $PSScriptRoot 'Policy.ps1')
 
 # ---- Helpers ----
 
@@ -83,21 +92,6 @@ function Get-FilesRecursive {
 
 # ---- Patterns ----
 
-$forbiddenRootPatterns = @(
-    '^todo\.md$', '^plan\.md$', '^notes\.md$', '^lessons\.md$',
-    '^summary\.md$', '^report\.md$', '^final_report\.md$',
-    '^implementation_plan\.md$', '^migration_plan\.md$',
-    '^audit_report\.md$', '^cleanup_report\.md$', '^task_list\.md$',
-    '^progress\.md$', '^work_summary\.md$', '^changes_summary\.md$',
-    '^.+_summary\.md$', '^.+_report\.md$', '^.+_plan\.md$'
-)
-
-$protectedDocPatterns = @(
-    '^README\.md$', '^README\..+\.md$',
-    '^CHANGELOG\.md$', '^LICENSE$', '^LICENSE\..+$',
-    '^CONTRIBUTING\.md$', '^CODE_OF_CONDUCT\.md$', '^SECURITY\.md$'
-)
-
 $skipDirPatterns = @(
     '\.git', 'node_modules', 'dist', 'build', 'target',
     '\.venv', 'venv', '__pycache__', '\.next', '\.nuxt',
@@ -106,10 +100,14 @@ $skipDirPatterns = @(
 
 # ---- Resolve ----
 $Root = (Resolve-Path -LiteralPath $Root).Path
+$tidyPolicy = Get-TidyPolicy -Root $Root -PolicyPath $Policy
 
 Write-Host "tidy-skill - Artifact Audit" -ForegroundColor Cyan
 Write-Host "Scanning: $Root" -ForegroundColor Cyan
 Write-Host "Max depth: $MaxDepth" -ForegroundColor Cyan
+if ($tidyPolicy.Source) {
+    Write-Host "Policy: $($tidyPolicy.Source)" -ForegroundColor DarkGray
+}
 Write-Host ""
 
 # ---- Scan ----
@@ -144,21 +142,11 @@ foreach ($file in $allFiles) {
     }
     elseif ($relDir -eq '' -or $relDir -eq '.') {
         $name = $file.Name
-        $isProtected = $false
-        foreach ($p in $protectedDocPatterns) {
-            if ($name -match $p) { $isProtected = $true; break }
-        }
-        if ($isProtected) {
+        if (Test-TidyProtectedName -Name $name -Policy $tidyPolicy) {
             [void]$results.ProtectedDocs.Add($file)
         }
-        else {
-            $isSuspicious = $false
-            foreach ($p in $forbiddenRootPatterns) {
-                if ($name -match $p) { $isSuspicious = $true; break }
-            }
-            if ($isSuspicious) {
-                [void]$results.RootSuspicious.Add($file)
-            }
+        elseif (Test-TidyForbiddenName -Name $name -Policy $tidyPolicy) {
+            [void]$results.RootSuspicious.Add($file)
         }
     }
 }

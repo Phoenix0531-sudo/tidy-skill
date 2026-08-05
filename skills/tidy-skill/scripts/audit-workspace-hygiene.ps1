@@ -20,6 +20,10 @@
 .PARAMETER MaxDepth
     How deep to search for repo directories. Default 2.
 
+.PARAMETER Policy
+    Optional shared policy JSON applied to every repo. When omitted,
+    each repo discovers its own .tidy-skill.json / tidy-skill.policy.json.
+
 .EXAMPLE
     .\audit-workspace-hygiene.ps1 -Root "E:\1_Code\Projects"
 
@@ -39,8 +43,13 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateRange(1, 5)]
-    [int]$MaxDepth = 2
+    [int]$MaxDepth = 2,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Policy
 )
+
+. (Join-Path $PSScriptRoot 'Policy.ps1')
 
 $skipDirPatterns = @(
     '\.git', 'node_modules', 'dist', 'build', 'target',
@@ -48,19 +57,17 @@ $skipDirPatterns = @(
     'bin', 'obj', 'packages'
 )
 
-$forbiddenRootPatterns = @(
-    '^todo\.md$', '^plan\.md$', '^notes\.md$', '^lessons\.md$',
-    '^summary\.md$', '^report\.md$', '^final_report\.md$',
-    '^implementation_plan\.md$', '^migration_plan\.md$',
-    '^audit_report\.md$', '^cleanup_report\.md$', '^task_list\.md$',
-    '^progress\.md$', '^work_summary\.md$', '^changes_summary\.md$',
-    '^.+_summary\.md$', '^.+_report\.md$', '^.+_plan\.md$'
-)
-
 $Root = (Resolve-Path -LiteralPath $Root).Path
+$sharedPolicy = $null
+if ($Policy) {
+    $sharedPolicy = Get-TidyPolicy -Root $Root -PolicyPath $Policy
+}
 Write-Host "tidy-skill - Workspace Hygiene Audit" -ForegroundColor Cyan
 Write-Host "Workspace root: $Root" -ForegroundColor Cyan
 Write-Host "Max depth: $MaxDepth" -ForegroundColor Cyan
+if ($sharedPolicy -and $sharedPolicy.Source) {
+    Write-Host "Shared policy: $($sharedPolicy.Source)" -ForegroundColor DarkGray
+}
 Write-Host ""
 
 # Find repo directories (those containing .git/)
@@ -91,18 +98,16 @@ foreach ($repo in $repos) {
     Write-Host "  Scoring: $repoName" -ForegroundColor Gray
 
     # Root-level suspicious
+    $repoPolicy = if ($sharedPolicy) { $sharedPolicy } else { Get-TidyPolicy -Root $repo }
     $rootFiles = Get-ChildItem -LiteralPath $repo -File -ErrorAction SilentlyContinue
     $suspicious = @()
     foreach ($f in $rootFiles) {
-        foreach ($p in $forbiddenRootPatterns) {
-            if ($f.Name -match $p) {
-                $suspicious += $f.Name
-                if ($allSuspiciousFiles.ContainsKey($f.Name)) {
-                    $allSuspiciousFiles[$f.Name]++
-                } else {
-                    $allSuspiciousFiles[$f.Name] = 1
-                }
-                break
+        if (Test-TidyForbiddenName -Name $f.Name -Policy $repoPolicy) {
+            $suspicious += $f.Name
+            if ($allSuspiciousFiles.ContainsKey($f.Name)) {
+                $allSuspiciousFiles[$f.Name]++
+            } else {
+                $allSuspiciousFiles[$f.Name] = 1
             }
         }
     }

@@ -20,6 +20,10 @@
     Path for the Markdown report. Defaults to
     "$Root\.agent_reports\hygiene_score_<timestamp>.md".
 
+.PARAMETER Policy
+    Optional policy JSON path. When omitted, discovers .tidy-skill.json
+    or tidy-skill.policy.json under Root.
+
 .EXAMPLE
     .\score-repo-hygiene.ps1 -Root "C:\Projects\MyApp"
 
@@ -33,8 +37,13 @@ param(
     [string]$Root,
 
     [Parameter(Mandatory = $false)]
-    [string]$ReportPath
+    [string]$ReportPath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Policy
 )
+
+. (Join-Path $PSScriptRoot 'Policy.ps1')
 
 $skipDirPatterns = @(
     '\.git', 'node_modules', 'dist', 'build', 'target',
@@ -42,18 +51,13 @@ $skipDirPatterns = @(
     'bin', 'obj', 'packages'
 )
 
-$forbiddenRootPatterns = @(
-    '^todo\.md$', '^plan\.md$', '^notes\.md$', '^lessons\.md$',
-    '^summary\.md$', '^report\.md$', '^final_report\.md$',
-    '^implementation_plan\.md$', '^migration_plan\.md$',
-    '^audit_report\.md$', '^cleanup_report\.md$', '^task_list\.md$',
-    '^progress\.md$', '^work_summary\.md$', '^changes_summary\.md$',
-    '^.+_summary\.md$', '^.+_report\.md$', '^.+_plan\.md$'
-)
-
 $Root = (Resolve-Path -LiteralPath $Root).Path
+$tidyPolicy = Get-TidyPolicy -Root $Root -PolicyPath $Policy
 Write-Host "tidy-skill - Repo Hygiene Score" -ForegroundColor Cyan
 Write-Host "Scoring: $Root" -ForegroundColor Cyan
+if ($tidyPolicy.Source) {
+    Write-Host "Policy: $($tidyPolicy.Source)" -ForegroundColor DarkGray
+}
 
 # Helper: check if path matches skip pattern
 function Is-SkipDir {
@@ -64,14 +68,21 @@ function Is-SkipDir {
     return $false
 }
 
+function Format-FileSize {
+    param([long]$Bytes)
+    if ($Bytes -ge 1MB) { return "{0:N1} MB" -f ($Bytes / 1MB) }
+    if ($Bytes -ge 1KB) { return "{0:N1} KB" -f ($Bytes / 1KB) }
+    return "$Bytes B"
+}
+
 # ---- Dimension 1: Root cleanliness (25 pts) ----
 $rootFiles = Get-ChildItem -LiteralPath $Root -File -ErrorAction SilentlyContinue
 $rootSuspiciousCount = 0
 $rootMarkdownCount = 0
 foreach ($f in $rootFiles) {
     if ($f.Extension -eq '.md') { $rootMarkdownCount++ }
-    foreach ($p in $forbiddenRootPatterns) {
-        if ($f.Name -match $p) { $rootSuspiciousCount++; break }
+    if (Test-TidyForbiddenName -Name $f.Name -Policy $tidyPolicy) {
+        $rootSuspiciousCount++
     }
 }
 if ($rootSuspiciousCount -eq 0) { $scoreRoot = 25 }
@@ -85,7 +96,7 @@ $hasAgentReports = Test-Path (Join-Path $Root '.agent_reports')
 $rootOnly = 0
 # Check if temp files incorrectly in root
 foreach ($f in $rootFiles) {
-    if ($forbiddenRootPatterns | Where-Object { $f.Name -match $_ }) { $rootOnly++ }
+    if (Test-TidyForbiddenName -Name $f.Name -Policy $tidyPolicy) { $rootOnly++ }
 }
 $scorePlacement = 0
 if ($hasAgentTmp) { $scorePlacement += 8 }
@@ -184,11 +195,8 @@ if ($rootSuspiciousCount -gt 0) {
     [void]$lines.Add("## Suspicious Files in Root")
     [void]$lines.Add("")
     foreach ($f in $rootFiles) {
-        foreach ($p in $forbiddenRootPatterns) {
-            if ($f.Name -match $p) {
-                [void]$lines.Add("- `$($f.Name)` ($(Format-FileSize $f.Length), modified $($f.LastWriteTime.ToString('yyyy-MM-dd')))")
-                break
-            }
+        if (Test-TidyForbiddenName -Name $f.Name -Policy $tidyPolicy) {
+            [void]$lines.Add("- `$($f.Name)` ($(Format-FileSize $f.Length), modified $($f.LastWriteTime.ToString('yyyy-MM-dd')))")
         }
     }
     [void]$lines.Add("")
@@ -207,13 +215,6 @@ if (-not $hasDocs) { [void]$lines.Add("- Create a `docs/` directory for formal d
 
 Write-Host "`nScore: $totalScore / 100 - $rating ($ratingDetail)" -ForegroundColor $(if ($totalScore -ge 70) { 'Green' } elseif ($totalScore -ge 50) { 'Yellow' } else { 'Red' })
 Write-Host "Report: $ReportPath" -ForegroundColor Cyan
-
-function Format-FileSize {
-    param([long]$Bytes)
-    if ($Bytes -ge 1MB) { return "{0:N1} MB" -f ($Bytes / 1MB) }
-    if ($Bytes -ge 1KB) { return "{0:N1} KB" -f ($Bytes / 1KB) }
-    return "$Bytes B"
-}
 
 return @{
     Score = $totalScore

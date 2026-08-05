@@ -22,6 +22,10 @@
 .PARAMETER ConfirmClean
     When specified, also cleans root-level suspicious Markdown files.
 
+.PARAMETER Policy
+    Optional policy JSON path. When omitted, discovers .tidy-skill.json
+    or tidy-skill.policy.json under Root.
+
 .EXAMPLE
     .\clean-agent-artifacts.ps1 -Root "C:\Projects\MyApp"
 
@@ -53,8 +57,13 @@ param(
     [switch]$DryRun = $true,
 
     [Parameter(Mandatory = $false)]
-    [switch]$ConfirmClean = $false
+    [switch]$ConfirmClean = $false,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Policy
 )
+
+. (Join-Path $PSScriptRoot 'Policy.ps1')
 
 # ---- Helpers ----
 
@@ -64,14 +73,8 @@ $skipDirPatterns = @(
     'bin', 'obj', 'packages'
 )
 
-$forbiddenRootPatterns = @(
-    '^todo\.md$', '^plan\.md$', '^notes\.md$', '^lessons\.md$',
-    '^summary\.md$', '^report\.md$', '^final_report\.md$',
-    '^implementation_plan\.md$', '^migration_plan\.md$',
-    '^audit_report\.md$', '^cleanup_report\.md$', '^task_list\.md$',
-    '^progress\.md$', '^work_summary\.md$', '^changes_summary\.md$',
-    '^.+_summary\.md$', '^.+_report\.md$', '^.+_plan\.md$'
-)
+$Root = (Resolve-Path -LiteralPath $Root).Path
+$tidyPolicy = Get-TidyPolicy -Root $Root -PolicyPath $Policy
 
 function Get-RelativePath {
     param([string]$FullPath)
@@ -118,7 +121,7 @@ function Test-GitTracked {
 }
 
 # ---- Resolve ----
-$Root = (Resolve-Path -LiteralPath $Root).Path
+# $Root already resolved above for policy loading.
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
@@ -212,10 +215,7 @@ if ($ConfirmClean) {
     $rootFiles = Get-ChildItem -LiteralPath $Root -File -ErrorAction SilentlyContinue
     $found = $false
     foreach ($f in $rootFiles) {
-        $match = $false
-        foreach ($p in $forbiddenRootPatterns) {
-            if ($f.Name -match $p) { $match = $true; break }
-        }
+        $match = Test-TidyForbiddenName -Name $f.Name -Policy $tidyPolicy
         if ($match) {
             $found = $true
             $rel = Get-RelativePath -FullPath $f.FullName

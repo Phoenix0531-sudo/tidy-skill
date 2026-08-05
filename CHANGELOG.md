@@ -6,17 +6,20 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Shared `policy_loader.py` with optional `.tidy-skill.json` / `tidy-skill.policy.json` project policy
+- Shared PowerShell `Policy.ps1` (same schema) for Windows hygiene scripts
 - `classify_artifact.py` — pre-write Class A–E path classifier (read-only)
 - `hygiene_snapshot.py` — save/compare score history + CI `gate` against `min_score`
 - `tidy_doctor.py` — one-shot install + hygiene doctor (exit 2 on policy/hygiene fail)
 - Policy-aware `--policy` on `audit_agent_artifacts.py`, `score_repo_hygiene.py`, and `audit_workspace_hygiene.py`
+- Policy-aware `-Policy` on `score-repo-hygiene.ps1`, `audit-agent-artifacts.ps1`, `audit-workspace-hygiene.ps1`, `clean-agent-artifacts.ps1`
 - Example policy template `references/tidy-skill.policy.example.json`
 - Command stubs / triggers for doctor, classify, and score gate
+- PowerShell policy smoke test `tests/test-policy-ps1.ps1`
 
 ### Changed
-- Forbidden/protected root patterns centralized in `policy_loader` (defaults unchanged)
+- Forbidden/protected root patterns centralized in `policy_loader` / `Policy.ps1` (defaults unchanged)
 - `audit_workspace_hygiene.py` uses shared policy (per-repo discovery or shared `--policy`)
-- `validate_skill.py` / `install-local.ps1` self-check require the four new Python modules
+- `validate_skill.py` / `install-local.ps1` self-check require the new policy modules
 - Fixture evals expanded to 7 cases (policy, classify, doctor)
 - Package version `1.4.0`
 - SKILL / script-usage / README document policy, doctor, classify, and snapshots

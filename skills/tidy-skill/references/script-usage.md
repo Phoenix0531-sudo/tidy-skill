@@ -9,6 +9,7 @@
 | `audit_dev_environment.py` | Portable dev environment audit | Python, dependency-free, read-only |
 | `audit_workspace_hygiene.py` | Portable multi-repo workspace audit | Python, dependency-free, read-only, explicit root |
 | `policy_loader.py` | Shared policy defaults + `.tidy-skill.json` loader | Library module (no CLI) |
+| `Policy.ps1` | PowerShell policy helpers (dot-sourced by hygiene scripts) | Library module (no CLI) |
 | `classify_artifact.py` | Pre-write Class A–E path classifier | Python, dependency-free, read-only |
 | `hygiene_snapshot.py` | Score history save/compare + CI gate | Writes only under history dir (default `.agent_reports/hygiene-history/`) |
 | `tidy_doctor.py` | One-shot skill + hygiene doctor / gate | Python, dependency-free, read-only |
@@ -57,6 +58,8 @@ Optional project file discovered automatically by scoring, audit, doctor, classi
 | `require_agent_dirs` | Require `.agent_tmp/` and `.agent_reports/` for gate/doctor |
 
 Example: `references/tidy-skill.policy.example.json`. Copy to repo root as `.tidy-skill.json` or `tidy-skill.policy.json`.
+
+Python and PowerShell hygiene scripts both honor the same schema via `policy_loader.py` / `Policy.ps1`.
 
 ---
 
@@ -166,6 +169,7 @@ powershell -ExecutionPolicy Bypass -File audit-agent-artifacts.ps1 -Root "C:\pat
 | `-Root` | Yes | — | Project root path |
 | `-ReportPath` | No | `.agent_reports/audit_<timestamp>.md` | Output report path |
 | `-MaxDepth` | No | 3 | Maximum scan depth |
+| `-Policy` | No | auto | Optional policy JSON; else discovers `.tidy-skill.json` |
 
 ---
 
@@ -196,9 +200,10 @@ Windows PowerShell version of repo scoring. Use it when Python is unavailable or
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File score-repo-hygiene.ps1 -Root "C:\path\to\project"
+powershell -ExecutionPolicy Bypass -File score-repo-hygiene.ps1 -Root "C:\path\to\project" -Policy ".tidy-skill.json"
 ```
 
-See [hygiene-scoring-model.md](hygiene-scoring-model.md) for details.
+Optional `-Policy` discovers the same schema as the Python scorer. See [hygiene-scoring-model.md](hygiene-scoring-model.md) for details.
 
 ---
 

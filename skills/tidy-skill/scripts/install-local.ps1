@@ -94,6 +94,7 @@ function Test-SkillPackage {
         "scripts\score_repo_hygiene.py",
         "scripts\audit_agent_artifacts.py",
         "scripts\policy_loader.py",
+        "scripts\Policy.ps1",
         "scripts\classify_artifact.py",
         "scripts\hygiene_snapshot.py",
         "scripts\tidy_doctor.py",

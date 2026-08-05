@@ -33,6 +33,8 @@ REQUIRED_RELATIVE = [
     "scripts/tidy_doctor.py",
     "scripts/classify_artifact.py",
     "scripts/hygiene_snapshot.py",
+    "scripts/policy_loader.py",
+    "scripts/Policy.ps1",
     "hooks/stop-hygiene-check.py",
     "commands/TRIGGERS.md",
 ]
