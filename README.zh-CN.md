@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Phoenix0531-sudo/Tidy_Skill/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Phoenix0531-sudo/Tidy_Skill/ci.yml?label=CI" alt="CI"></a>
-  <a href="https://github.com/Phoenix0531-sudo/Tidy_Skill/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/Phoenix0531-sudo/Tidy_Skill/validate.yml?label=Validate" alt="Validate"></a>
+  <a href="https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Phoenix0531-sudo/tidy-skill/ci.yml?label=CI" alt="CI"></a>
+  <a href="https://github.com/Phoenix0531-sudo/tidy-skill/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/Phoenix0531-sudo/tidy-skill/validate.yml?label=Validate" alt="Validate"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Python-3.11-3776AB.svg" alt="Python">
   <img src="https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg" alt="PowerShell">
@@ -74,13 +74,13 @@
 ## 快速开始
 
 ```bash
-git clone https://github.com/Phoenix0531-sudo/Tidy_Skill.git
-cd Tidy_Skill
+git clone https://github.com/Phoenix0531-sudo/tidy-skill.git
+cd tidy-skill
 uv sync --extra dev
 
 # 给本仓库打卫生分
 uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
-# {"score": 77, "rating": "Mostly clean", ...}
+# {"score": 100, "rating": "Clean", ...}
 
 # 审计 agent 产物
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
@@ -121,7 +121,7 @@ pwsh skills/tidy-skill/scripts/install-local.ps1 -DryRun:$false -Force
 
 | 报告 | 路径 | 快照 |
 |---|---|---|
-| 仓库卫生打分 | [docs/self-audit/repo_hygiene_score.md](docs/self-audit/repo_hygiene_score.md) | **77 / 100** — Mostly clean |
+| 仓库卫生打分 | [docs/self-audit/repo_hygiene_score.md](docs/self-audit/repo_hygiene_score.md) | **100 / 100** — Clean |
 | Agent 产物审计 | [docs/self-audit/agent_artifacts_audit.md](docs/self-audit/agent_artifacts_audit.md) | **0** 可疑根文件 |
 | 开发环境审计 | [docs/self-audit/dev_environment_audit.md](docs/self-audit/dev_environment_audit.md) | **90 / 100** — Highly controlled |
 

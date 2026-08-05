@@ -1,4 +1,4 @@
-# tidy-skill — default ignore rules
+﻿# tidy-skill — default ignore rules
 #
 # Agent-generated artifacts should never be committed to Git.
 # These directories hold working state from AI coding agents.
@@ -6,8 +6,11 @@
 # to docs/ and track it explicitly.
 
 # Artifact directories managed by 洁癖.skill
-.agent_tmp/
-.agent_reports/
+# Keep directory markers tracked so a fresh clone stays score-reproducible.
+.agent_tmp/*
+!.agent_tmp/.gitkeep
+.agent_reports/*
+!.agent_reports/.gitkeep
 
 # Editor / OS artifacts
 .vscode/
@@ -26,7 +29,7 @@ node_modules/
 venv/
 __pycache__/
 
-# Build output
+# Build / packaging / test caches
 dist/
 build/
 target/
@@ -35,6 +38,11 @@ obj/
 .next/
 .nuxt/
 packages/
+*.egg-info/
+.eggs/
+*.egg
+.pytest_cache/
+.ruff_cache/
 
 # Keep the packaged skill resources tracked under skills/tidy-skill/.
 tasks/
