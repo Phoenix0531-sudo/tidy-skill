@@ -6,7 +6,7 @@ These hooks **report only**. They never delete files, never compact disks, and n
 
 | Hook | When | Action |
 |---|---|---|
-| `stop-hygiene-check.py` | Agent stop / end of task | Run `audit_agent_artifacts.py --json` on the current repo and print suspicious root files |
+| `stop-hygiene-check.py` | Agent stop / end of task | Run `audit_agent_artifacts.py --json` on the current repo and print suspicious root files. Honors `--policy` / `TIDY_SKILL_POLICY` env. |
 | `session-hygiene-reminder.md` | Session start (manual paste or host hook) | Remind the agent of Classes A–E and DryRun defaults |
 
 ## Safety
@@ -15,6 +15,7 @@ These hooks **report only**. They never delete files, never compact disks, and n
 - No network
 - No cleanup invocation
 - Scope is the current working directory unless `TIDY_SKILL_ROOT` is set
+- Optional `--policy` / `TIDY_SKILL_POLICY` env forwards to the audit script
 
 ## Wire-up examples
 

@@ -1,43 +1,36 @@
 #!/usr/bin/env python3
-"""Fail when staged root-level agent process Markdown files are present."""
+"""Fail when staged root-level agent process Markdown files are present.
+
+Uses the shared policy_loader so that forbidden patterns stay in sync with
+audit_agent_artifacts.py and the rest of the tidy-skill surface.
+"""
 
 from __future__ import annotations
 
-import re
 import sys
+from pathlib import Path
 
-FORBIDDEN = [
-    r"^todo\.md$",
-    r"^plan\.md$",
-    r"^notes\.md$",
-    r"^lessons\.md$",
-    r"^summary\.md$",
-    r"^report\.md$",
-    r"^final_report\.md$",
-    r"^implementation_plan\.md$",
-    r"^migration_plan\.md$",
-    r"^audit_report\.md$",
-    r"^cleanup_report\.md$",
-    r"^task_list\.md$",
-    r"^progress\.md$",
-    r"^work_summary\.md$",
-    r"^changes_summary\.md$",
-    r"^.+_summary\.md$",
-    r"^.+_report\.md$",
-    r"^.+_plan\.md$",
-]
+SCRIPT_DIR = Path(__file__).resolve().parent
+SKILL_SCRIPTS = SCRIPT_DIR.parent / "skills" / "tidy-skill" / "scripts"
+if str(SKILL_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SKILL_SCRIPTS))
+
+from policy_loader import discover_policy, is_forbidden_name  # noqa: E402
 
 
-def is_forbidden_root(path: str) -> bool:
+def is_forbidden_root(path: str, repo_root: Path | None = None) -> bool:
+    """True when *path* is a root-level file matching a forbidden pattern."""
     normalized = path.replace("\\", "/")
     if "/" in normalized:
         return False
-    name = normalized.lower()
-    return any(re.match(pattern, name) for pattern in FORBIDDEN)
+    root = repo_root or Path.cwd()
+    policy = discover_policy(root)
+    return is_forbidden_name(normalized, policy)
 
 
 def main(argv: list[str]) -> int:
-    offenders = [path for path in argv[1:] if is_forbidden_root(path)]
+    repo_root = Path.cwd()
+    offenders = [path for path in argv[1:] if is_forbidden_root(path, repo_root)]
     if not offenders:
         return 0
     print("tidy-skill pre-commit: refusing root agent process Markdown:")

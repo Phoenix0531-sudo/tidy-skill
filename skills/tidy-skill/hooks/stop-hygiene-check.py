@@ -33,6 +33,11 @@ def main() -> int:
         help="Repository root to audit.",
     )
     parser.add_argument("--max-depth", type=int, default=2)
+    parser.add_argument(
+        "--policy",
+        default=os.environ.get("TIDY_SKILL_POLICY"),
+        help="Optional policy JSON path (default: discover .tidy-skill.json).",
+    )
     args = parser.parse_args()
 
     root = Path(args.root)
@@ -41,16 +46,19 @@ def main() -> int:
         return 2
 
     script = find_audit_script()
+    cmd = [
+        sys.executable,
+        str(script),
+        "--root",
+        str(root),
+        "--max-depth",
+        str(args.max_depth),
+        "--json",
+    ]
+    if args.policy:
+        cmd.extend(["--policy", args.policy])
     proc = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--root",
-            str(root),
-            "--max-depth",
-            str(args.max_depth),
-            "--json",
-        ],
+        cmd,
         check=False,
         capture_output=True,
         text=True,
