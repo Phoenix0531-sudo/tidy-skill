@@ -2,19 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.5.0] - 2026-08-07
 
 ### Added
 - `planning_root_globs` policy field (Python + PowerShell) for intentional planning-layout root names
 - `is_planning_root_name` / `is_suspicious_root_name` helpers in `policy_loader.py`
 - `classify_artifact.py` recognizes `.planning/**` and policy-opted planning root files as Class C working memory
+- `audit_agent_artifacts.py` reports a `planning_working_memory` bucket (files under `.planning/` + opted root plan files)
 - PWF coexistence policy example `references/tidy-skill.policy.pwf.example.json`
 - Peer positioning doc `docs/comparison.md` (planning-with-files, superpowers, addy, anthropic)
+- Fixture eval case `planning_with_files_coexistence` (8/8)
+- README + README.zh-CN FAQ on planning-with-files coexistence
 
 ### Changed
 - Score / artifact / workspace audits use `is_suspicious_root_name` so planning opt-ins are not root litter
 - `Test-TidyForbiddenName` honors `PlanningRootGlobs` so PowerShell cleanup/score paths match Python
-- README FAQ + docs hub link coexistence guidance
+- Fixture evals expanded to 8 cases
+- Package version `1.5.0`
+- docs hub, SKILL, script-usage document coexistence policy and `.planning/` recognition
 
 ## [1.4.0] - 2026-08-05
 

@@ -1,13 +1,13 @@
 # tidy-skill doctor
 
-**Root:** `<repo-root>`
-**Skill:** `<repo-root>/skills/tidy-skill`
-**Generated:** 2026-08-05T12:45:00Z
+**Root:** `D:\3_Code_Projects\Tidy_Skill`
+**Skill:** `D:\3_Code_Projects\Tidy_Skill\skills\tidy-skill`
+**Generated:** 2026-08-07T12:14:15Z
 **Score:** 100 / 100 — Clean
 
 | Check | Status | Detail |
 |---|---|---|
-| `skill_package` | PASS | core files present under skills/tidy-skill |
+| `skill_package` | PASS | core files present under D:\3_Code_Projects\Tidy_Skill\skills\tidy-skill |
 | `skill_frontmatter` | PASS | frontmatter present |
 | `policy` | PASS | using built-in defaults |
 | `repo_score` | PASS | 100/100 (Clean) |

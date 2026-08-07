@@ -23,6 +23,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from policy_loader import (  # noqa: E402
     Policy,
     discover_policy,
+    is_planning_root_name,
     is_protected_name,
     is_suspicious_root_name,
 )
@@ -51,6 +52,7 @@ class AuditResult:
     agent_tmp: list[Path]
     agent_reports: list[Path]
     protected_docs: list[Path]
+    planning_working_memory: list[Path]
     report_path: Path | None
 
 
@@ -93,6 +95,7 @@ def audit(
     agent_tmp: list[Path] = []
     agent_reports: list[Path] = []
     protected_docs: list[Path] = []
+    planning_working_memory: list[Path] = []
 
     for file_path in files:
         relative_parts = file_path.relative_to(root).parts
@@ -107,6 +110,12 @@ def audit(
             len(relative_parts) == 1 and is_protected_name(file_path.name, active_policy)
         ):
             protected_docs.append(file_path)
+        # Intentional planning working memory (planning-with-files):
+        # everything under .planning/, plus any policy-opted root plan file.
+        if first == ".planning":
+            planning_working_memory.append(file_path)
+        elif len(relative_parts) == 1 and is_planning_root_name(file_path.name, active_policy):
+            planning_working_memory.append(file_path)
 
     return AuditResult(
         root=root,
@@ -114,6 +123,7 @@ def audit(
         agent_tmp=sorted(agent_tmp),
         agent_reports=sorted(agent_reports),
         protected_docs=sorted(protected_docs),
+        planning_working_memory=sorted(planning_working_memory),
         report_path=report_path,
     )
 
@@ -131,6 +141,7 @@ def write_report(result: AuditResult, path: Path) -> None:
         f"| Temporary artifacts | {len(result.agent_tmp)} |",
         f"| Persistent reports | {len(result.agent_reports)} |",
         f"| Protected docs | {len(result.protected_docs)} |",
+        f"| Planning working memory | {len(result.planning_working_memory)} |",
         "",
     ]
     sections = [
@@ -138,6 +149,7 @@ def write_report(result: AuditResult, path: Path) -> None:
         ("Temporary Artifacts", result.agent_tmp),
         ("Persistent Reports", result.agent_reports),
         ("Protected Docs", result.protected_docs),
+        ("Planning Working Memory", result.planning_working_memory),
     ]
     for title, paths in sections:
         lines.extend([f"## {title}", ""])
@@ -183,8 +195,10 @@ def main() -> int:
             "agent_tmp": len(result.agent_tmp),
             "agent_reports": len(result.agent_reports),
             "protected_docs": len(result.protected_docs),
+            "planning_working_memory": len(result.planning_working_memory),
         },
         "suspicious_root_files": [rel(path, result.root) for path in result.suspicious_root],
+        "planning_working_memory": [rel(path, result.root) for path in result.planning_working_memory],
         "report_path": str(report_path) if report_path else None,
     }
     if args.json:
@@ -196,6 +210,7 @@ def main() -> int:
         print(f"Temporary artifacts: {len(result.agent_tmp)}")
         print(f"Persistent reports: {len(result.agent_reports)}")
         print(f"Protected docs: {len(result.protected_docs)}")
+        print(f"Planning working memory: {len(result.planning_working_memory)}")
         if report_path:
             print(f"Report: {report_path}")
     return 0

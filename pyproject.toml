@@ -1,6 +1,6 @@
 [project]
 name = "tidy-skill"
-version = "1.4.0"
+version = "1.5.0"
 description = "让 AI Agent 在干净、可解释、可回收的本地环境里工作"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -27,6 +27,7 @@ pythonpath = ["."]
 [tool.ruff]
 line-length = 120
 target-version = "py311"
+
 
 [tool.ruff.lint]
 select = ["E9", "F63", "F7", "F82"]

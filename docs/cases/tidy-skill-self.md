@@ -22,7 +22,7 @@ Early public docs state was effectively:
 | [Agent artifact audit](../self-audit/agent_artifacts_audit.md) | **0** suspicious root files |
 | [Dev environment audit](../self-audit/dev_environment_audit.md) | **90 / 100 — Highly controlled** |
 | [Doctor](../self-audit/tidy_doctor.md) | Package + hygiene pass (v1.4.0) |
-| [Fixture evals](../evals/latest.md) | **7 / 7 PASS** |
+| [Fixture evals](../evals/latest.md) | **8 / 8 PASS** |
 
 Additional product surface now present:
 
@@ -30,7 +30,8 @@ Additional product surface now present:
 - `npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill` verified discoverable
 - Optional host samples under `docs/host-samples/`
 - Per-platform install notes under `docs/platforms/`
-- v1.4.0: project policy, doctor, classify, score snapshots/gate |
+- v1.5.0: planning-with-files coexistence (`planning_root_globs`, `.planning/`), peer comparison doc
+- v1.4.0: project policy, doctor, classify, score snapshots/gate
 
 ## What changed operationally
 

@@ -132,8 +132,48 @@ def case_classify_classes() -> CaseResult:
     d = classify_mod.classify_path(Path("mission_complete.md"), root=root).class_id
     e = classify_mod.classify_path(Path(".claude/state.json"), root=root).class_id
     c = classify_mod.classify_path(Path("plan.md"), root=root).class_id
-    ok = a == "A" and d == "D" and e == "E" and c == "C"
-    return CaseResult("classify_artifact_a_d_e_c", ok, f"A={a} D={d} E={e} C={c}")
+    pwf_planning = classify_mod.classify_path(
+        Path(".planning/2026-08-07-demo/task_plan.md"), root=root
+    )
+    ok = a == "A" and d == "D" and e == "E" and c == "C" and pwf_planning.class_id == "C"
+    return CaseResult(
+        "classify_artifact_a_d_e_c",
+        ok,
+        f"A={a} D={d} E={e} C={c} planning={pwf_planning.class_id}",
+    )
+
+
+def case_pwf_coexistence() -> CaseResult:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / ".tidy-skill.json").write_text(
+            '{"planning_root_globs": ["task_plan.md", "findings.md", "progress.md"]}',
+            encoding="utf-8",
+        )
+        for name in ("task_plan.md", "findings.md", "progress.md"):
+            (root / name).write_text("working memory", encoding="utf-8")
+        (root / "plan.md").write_text("still bad", encoding="utf-8")
+        (root / "README.md").write_text("readme", encoding="utf-8")
+
+        policy = policy_mod.discover_policy(root)
+        audit = audit_mod.audit(root, max_depth=1, report_path=None, policy=policy)
+        scored = score_mod.score_repo(root, report_path=None, policy=policy)
+        cls = classify_mod.classify_path(Path("task_plan.md"), root=root, policy=policy)
+
+        suspicious = [p.name for p in audit.suspicious_root]
+        ok = (
+            suspicious == ["plan.md"]
+            and scored.suspicious_root_files
+            and [p.name for p in scored.suspicious_root_files] == ["plan.md"]
+            and cls.class_id == "C"
+            and cls.allowed
+            and "Planning" in cls.class_name
+        )
+        return CaseResult(
+            "planning_with_files_coexistence",
+            ok,
+            f"suspicious={suspicious} score={scored.total} classify={cls.class_id}:{cls.class_name}",
+        )
 
 
 def case_doctor_detects_dirty() -> CaseResult:
@@ -158,6 +198,7 @@ def main() -> int:
         case_workspace_average,
         case_policy_extends_forbidden,
         case_classify_classes,
+        case_pwf_coexistence,
         case_doctor_detects_dirty,
     ]
     results: list[CaseResult] = []
