@@ -21,10 +21,11 @@ All notable changes to this project will be documented in this file.
 - `docs/cases/README.md` indexes the PWF case
 - `README.zh-CN.md` links the Chinese comparison doc
 
-### Known limitations
-- `docs/skills-cli-verify.md` still covers only Codex (skills CLI multi-agent
-  re-verification for claude/cursor/pi is blocked when github.com is
-  unreachable; retry after network recovery)
+### Fixed
+- `docs/skills-cli-verify.md` now covers **four** agent targets —
+  codex, claude-code, cursor, and pi (copy mode); records the
+  `claude` → `claude-code` adapter-name quirk and the per-adapter landing
+  path difference (`.claude/` vs `.agents/` vs `.pi/`)
 
 ## [1.5.0] - 2026-08-07
 
