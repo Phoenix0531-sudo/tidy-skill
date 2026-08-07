@@ -19,7 +19,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from policy_loader import Policy, discover_policy, is_forbidden_name  # noqa: E402
+from policy_loader import Policy, discover_policy, is_suspicious_root_name  # noqa: E402
 
 STATE_DIRS = [".codex", ".claude", ".cursor", ".vscode", ".idea"]
 
@@ -41,7 +41,7 @@ class ScoreResult:
 
 
 def is_forbidden_root_file(path: Path, policy: Policy | None = None) -> bool:
-    return is_forbidden_name(path.name, policy)
+    return is_suspicious_root_name(path.name, policy)
 
 
 def is_layout_marker(path: Path) -> bool:

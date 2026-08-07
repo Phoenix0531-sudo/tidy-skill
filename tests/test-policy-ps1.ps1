@@ -90,4 +90,40 @@ try {
     if ($auditReport) { Remove-Item -LiteralPath $auditReport -Force -ErrorAction SilentlyContinue }
 }
 
-Write-Host "[OK] Policy.ps1 defaults, discovery, score, and audit checks passed."
+# Planning-layout opt-in (planning-with-files coexistence).
+$pwfRoot = Join-Path $env:TEMP ("tidy-policy-pwf-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Force -Path $pwfRoot | Out-Null
+try {
+    "phases" | Out-File -FilePath (Join-Path $pwfRoot "task_plan.md") -Encoding utf8
+    "notes" | Out-File -FilePath (Join-Path $pwfRoot "findings.md") -Encoding utf8
+    "log" | Out-File -FilePath (Join-Path $pwfRoot "progress.md") -Encoding utf8
+    "bad" | Out-File -FilePath (Join-Path $pwfRoot "plan.md") -Encoding utf8
+    '{"planning_root_globs":["task_plan.md","findings.md","progress.md"]}' |
+        Out-File -FilePath (Join-Path $pwfRoot ".tidy-skill.json") -Encoding utf8
+
+    $pwfPolicy = Get-TidyPolicy -Root $pwfRoot
+    if (Test-TidyForbiddenName -Name "task_plan.md" -Policy $pwfPolicy) {
+        throw "task_plan.md should not be forbidden under planning_root_globs"
+    }
+    if (Test-TidyForbiddenName -Name "progress.md" -Policy $pwfPolicy) {
+        throw "progress.md should not be forbidden under planning_root_globs"
+    }
+    if (-not (Test-TidyForbiddenName -Name "plan.md" -Policy $pwfPolicy)) {
+        throw "plan.md should remain forbidden even with PWF opt-in"
+    }
+
+    $pwfReport = Join-Path $env:TEMP ("tidy-pwf-score-" + [guid]::NewGuid().ToString("N") + ".md")
+    & $scorePath -Root $pwfRoot -ReportPath $pwfReport | Out-Null
+    $pwfText = Get-Content -LiteralPath $pwfReport -Raw
+    if ($pwfText -match "task_plan\.md") {
+        throw "score report should not list opted-in task_plan.md as suspicious"
+    }
+    if ($pwfText -notmatch "plan\.md") {
+        throw "score report should still list plan.md as suspicious"
+    }
+} finally {
+    Remove-Item -LiteralPath $pwfRoot -Recurse -Force -ErrorAction SilentlyContinue
+    if ($pwfReport) { Remove-Item -LiteralPath $pwfReport -Force -ErrorAction SilentlyContinue }
+}
+
+Write-Host "[OK] Policy.ps1 defaults, discovery, score, audit, and planning opt-in checks passed."

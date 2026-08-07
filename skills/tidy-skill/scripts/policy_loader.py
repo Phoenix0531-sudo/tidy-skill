@@ -9,6 +9,7 @@ Policy file schema (.tidy-skill.json or --policy path):
   "forbidden_root_regex": ["^wip_.+\\.md$"],
   "protected_root_globs": ["OWNERS.md"],
   "ignore_root_globs": ["vendor_plan.md"],
+  "planning_root_globs": ["task_plan.md", "findings.md", "progress.md"],
   "min_score": 80,
   "require_agent_dirs": true
 }
@@ -66,6 +67,10 @@ class Policy:
     forbidden_globs: list[str] = field(default_factory=list)
     protected_globs: list[str] = field(default_factory=list)
     ignore_globs: list[str] = field(default_factory=list)
+    # Intentional planning-layout root filenames (e.g. planning-with-files).
+    # When a name is forbidden *and* listed here, classifiers treat it as
+    # recognized working memory instead of root pollution. Use with .gitignore.
+    planning_root_globs: list[str] = field(default_factory=list)
     min_score: int | None = None
     require_agent_dirs: bool = False
     source: str | None = None
@@ -107,6 +112,9 @@ def load_policy(path: Path | None) -> Policy:
     policy.forbidden_globs = _as_str_list(raw.get("forbidden_root_globs"), "forbidden_root_globs")
     policy.protected_globs = _as_str_list(raw.get("protected_root_globs"), "protected_root_globs")
     policy.ignore_globs = _as_str_list(raw.get("ignore_root_globs"), "ignore_root_globs")
+    policy.planning_root_globs = _as_str_list(
+        raw.get("planning_root_globs"), "planning_root_globs"
+    )
 
     extra_protected = _as_str_list(raw.get("protected_root_regex"), "protected_root_regex")
     if extra_protected:
@@ -142,6 +150,31 @@ def is_forbidden_name(name: str, policy: Policy | None = None) -> bool:
     if any(fnmatch(lowered, pattern.lower()) for pattern in active.forbidden_globs):
         return True
     return any(re.match(pattern, lowered) for pattern in active.forbidden_regex)
+
+
+def is_planning_root_name(name: str, policy: Policy | None = None) -> bool:
+    """True when name is an intentional planning-layout opt-in (e.g. PWF)."""
+    active = policy or Policy()
+    if not active.planning_root_globs:
+        return False
+    lowered = name.lower()
+    return any(
+        lowered == pattern.lower() or fnmatch(lowered, pattern.lower())
+        for pattern in active.planning_root_globs
+    )
+
+
+def is_suspicious_root_name(name: str, policy: Policy | None = None) -> bool:
+    """Forbidden root process name that is *not* an intentional planning opt-in.
+
+    Use this for scoring, artifact audit, and cleanup decisions. Classification
+    still consults is_forbidden_name + is_planning_root_name so opt-in names can
+    be labeled as planning working memory rather than silent ignore.
+    """
+    active = policy or Policy()
+    if is_planning_root_name(name, active):
+        return False
+    return is_forbidden_name(name, active)
 
 
 def is_protected_name(name: str, policy: Policy | None = None) -> bool:

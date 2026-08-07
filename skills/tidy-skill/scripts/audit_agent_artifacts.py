@@ -23,8 +23,8 @@ if str(SCRIPT_DIR) not in sys.path:
 from policy_loader import (  # noqa: E402
     Policy,
     discover_policy,
-    is_forbidden_name,
     is_protected_name,
+    is_suspicious_root_name,
 )
 
 SKIP_DIRS = {
@@ -97,7 +97,7 @@ def audit(
     for file_path in files:
         relative_parts = file_path.relative_to(root).parts
         first = relative_parts[0] if relative_parts else ""
-        if len(relative_parts) == 1 and is_forbidden_name(file_path.name, active_policy):
+        if len(relative_parts) == 1 and is_suspicious_root_name(file_path.name, active_policy):
             suspicious_root.append(file_path)
         if first == ".agent_tmp" and not is_layout_marker(file_path):
             agent_tmp.append(file_path)

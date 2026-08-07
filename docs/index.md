@@ -9,11 +9,13 @@ Portfolio and operator notes for **Tidy Skill** (`洁癖.skill`).
 | [../README.md](../README.md) | English product README |
 | [../README.zh-CN.md](../README.zh-CN.md) | Chinese product README |
 | [installation.md](installation.md) | Install matrix, doctor, silent failures |
+| [comparison.md](comparison.md) | Peer positioning + planning-with-files coexistence |
 | [skills-cli-verify.md](skills-cli-verify.md) | Author-run `npx skills add` verification |
 | [../skills/tidy-skill/SKILL.md](../skills/tidy-skill/SKILL.md) | Skill definition (three-layer model, classes A–E) |
 | [../skills/tidy-skill/commands/TRIGGERS.md](../skills/tidy-skill/commands/TRIGGERS.md) | Slash / natural-language triggers |
 | [../skills/tidy-skill/hooks/HOOKS.md](../skills/tidy-skill/hooks/HOOKS.md) | Read-only stop hook notes |
 | [../skills/tidy-skill/references/tidy-skill.policy.example.json](../skills/tidy-skill/references/tidy-skill.policy.example.json) | Optional project policy schema |
+| [../skills/tidy-skill/references/tidy-skill.policy.pwf.example.json](../skills/tidy-skill/references/tidy-skill.policy.pwf.example.json) | Policy for coexisting with planning-with-files |
 | [../CHANGELOG.md](../CHANGELOG.md) | Release history |
 
 ## Platforms

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "_comment": "Opt-in policy for coexisting with planning-with-files (PWF). Place as .tidy-skill.json in a project that uses the PWF 3-file pattern or .planning/ layout. Keep those files gitignored.",
+  "planning_root_globs": [
+    "task_plan.md",
+    "findings.md",
+    "progress.md"
+  ],
+  "min_score": 80,
+  "require_agent_dirs": true
+}

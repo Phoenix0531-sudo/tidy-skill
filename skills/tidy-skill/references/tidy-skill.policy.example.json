@@ -4,6 +4,7 @@
   "forbidden_root_regex": ["^wip_.+\\.md$"],
   "protected_root_globs": ["OWNERS.md"],
   "ignore_root_globs": ["vendor_plan.md"],
+  "planning_root_globs": [],
   "min_score": 80,
   "require_agent_dirs": true
 }

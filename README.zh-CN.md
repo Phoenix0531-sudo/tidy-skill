@@ -24,7 +24,8 @@
   <a href="#自审证据">自审证据</a> ·
   <a href="#产物分类">产物分类</a> ·
   <a href="#范围">范围</a> ·
-  <a href="#常见问题">常见问题</a>
+  <a href="#常见问题">常见问题</a> ·
+  <a href="docs/comparison.md">竞品对照</a>
 </p>
 
 <p align="center">
@@ -233,6 +234,13 @@ Python 负责跨平台、无依赖的仓库检查与环境基线。PowerShell �
 <summary>什么时候不该用这个 skill？</summary>
 
 不要把它当成通用磁盘清理器、安全扫描器或备份替代品。它不会自动修整整个 C 盘、压缩 VHDX，也不会改写 agent 配置。若需要这些操作，请按厂商文档执行，并把本 skill 的输出仅当作建议。
+
+</details>
+
+<details>
+<summary>和 planning-with-files 冲突吗？</summary>
+
+不冲突，解决的是不同问题。PWF 让长任务在上下文丢失后仍能恢复；tidy-skill 管仓库与本机卫生。优先把 PWF 工作记忆放在 <code>.planning/</code>（始终识别为有意的 Class C），或通过 <code>planning_root_globs</code> 把根目录三件套纳入白名单——见 <a href="docs/comparison.md">docs/comparison.md</a> 与 <code>references/tidy-skill.policy.pwf.example.json</code>。
 
 </details>
 

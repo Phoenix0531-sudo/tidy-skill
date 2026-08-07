@@ -24,7 +24,8 @@
   <a href="#self-audit">Self-Audit</a> ·
   <a href="#artifact-classification">Classification</a> ·
   <a href="#scope">Scope</a> ·
-  <a href="#faq">FAQ</a>
+  <a href="#faq">FAQ</a> ·
+  <a href="docs/comparison.md">Comparison</a>
 </p>
 
 <p align="center">
@@ -233,6 +234,13 @@ Python covers portable, dependency-free repo and baseline environment checks on 
 <summary>When should I not use this skill?</summary>
 
 Do not use it as a general disk cleaner, security scanner, or replacement for backup tools. It will not auto-fix a full C: drive, compact VHDX files, or rewrite agent configs. If you need those operations, follow the vendor docs and treat this skill's output as suggestions only.
+
+</details>
+
+<details>
+<summary>Does this conflict with planning-with-files?</summary>
+
+They solve different problems. PWF keeps long tasks alive on disk; tidy-skill keeps the repo and machine clean. Prefer PWF under <code>.planning/</code> (always recognized as intentional working memory), or opt the root triple in with <code>planning_root_globs</code> — see <a href="docs/comparison.md">docs/comparison.md</a> and <code>references/tidy-skill.policy.pwf.example.json</code>.
 
 </details>
 

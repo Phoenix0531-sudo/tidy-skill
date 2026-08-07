@@ -19,7 +19,13 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from policy_loader import Policy, discover_policy, is_forbidden_name, is_protected_name  # noqa: E402
+from policy_loader import (  # noqa: E402
+    Policy,
+    discover_policy,
+    is_forbidden_name,
+    is_planning_root_name,
+    is_protected_name,
+)
 
 
 STATE_DIR_NAMES = {
@@ -129,6 +135,29 @@ def classify_path(path: Path, root: Path | None = None, policy: Policy | None = 
             safe_suggestion="Delete or expire after the task; never promote to root.",
         )
 
+    # Class C — intentional planning layout (e.g. planning-with-files / PWF)
+    # `.planning/` holds gitignored working memory (task_plan / findings /
+    # progress). It is not tidy-skill's preferred home but it is a deliberate,
+    # recognized layout — allow it so a PWF shop is not falsely flagged as
+    # root pollution.
+    if ".planning" in lowered_parts:
+        return Classification(
+            path=display,
+            class_id="C",
+            class_name="Planning working memory",
+            placement=".planning/ (intentional layout)",
+            allowed=True,
+            confidence="high",
+            reasons=[
+                "Lives under .planning/ — an intentional, gitignored planning layout.",
+                "Recognized as working memory, not root pollution.",
+            ],
+            safe_suggestion=(
+                "Keep .planning/ gitignored; expire slug folders after the task; "
+                "promote anything worth keeping into a commit or docs/."
+            ),
+        )
+
     # Root-ish process files
     depth = len(parts)
     if root is not None:
@@ -156,6 +185,26 @@ def classify_path(path: Path, root: Path | None = None, policy: Policy | None = 
             confidence="medium",
             reasons=["Name looks like completion fluff or self-congratulatory noise."],
             safe_suggestion="Do not create this file; summarize in chat instead.",
+        )
+
+    # Intentional planning layouts (planning-with-files / PWF). Opt-in names may
+    # or may not also match the default forbidden list (e.g. findings.md does not).
+    if depth == 1 and is_planning_root_name(name, active):
+        return Classification(
+            path=display,
+            class_id="C",
+            class_name="Planning working memory",
+            placement="repo root (intentional PWF-style triple)",
+            allowed=True,
+            confidence="high",
+            reasons=[
+                "Filename matches the project planning_root_globs opt-in.",
+                "Working-memory file gitignored by convention, not litter.",
+            ],
+            safe_suggestion=(
+                "Confirm .gitignore excludes this file; review at task end; "
+                "promote durable decisions into a commit or docs/."
+            ),
         )
 
     if depth == 1 and is_forbidden_name(name, active):

@@ -18,7 +18,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from policy_loader import Policy, discover_policy, is_forbidden_name  # noqa: E402
+from policy_loader import Policy, discover_policy, is_suspicious_root_name  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -56,7 +56,7 @@ def score_one(repo: Path, policy: Policy | None = None) -> RepoScore:
     active_policy = policy or discover_policy(repo)
     suspicious: list[str] = []
     for file_path in repo.iterdir():
-        if file_path.is_file() and is_forbidden_name(file_path.name, active_policy):
+        if file_path.is_file() and is_suspicious_root_name(file_path.name, active_policy):
             suspicious.append(file_path.name)
 
     has_tmp = (repo / ".agent_tmp").is_dir()

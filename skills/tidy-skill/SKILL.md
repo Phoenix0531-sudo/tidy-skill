@@ -220,7 +220,7 @@ When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_r
 
 **Dimensions:** root cleanliness, artifact placement, protected docs clarity, Git hygiene, agent state isolation, cleanup readiness. Optional weight factors: `--weights references/score-weights.example.json`.
 
-Optional project policy: place `.tidy-skill.json` (or `tidy-skill.policy.json`) at the repo root, or pass `--policy`. Schema example: `references/tidy-skill.policy.example.json`. Policy can extend forbidden/protected root patterns, set `min_score`, and require `.agent_tmp/` + `.agent_reports/`.
+Optional project policy: place `.tidy-skill.json` (or `tidy-skill.policy.json`) at the repo root, or pass `--policy`. Schema example: `references/tidy-skill.policy.example.json`. Policy can extend forbidden/protected root patterns, set `min_score`, require `.agent_tmp/` + `.agent_reports/`, and opt intentional planning-layout root names via `planning_root_globs` (see `references/tidy-skill.policy.pwf.example.json` for planning-with-files coexistence). `.planning/**` is recognized as intentional Class C working memory without a policy.
 
 ### Doctor, classify, snapshots
 

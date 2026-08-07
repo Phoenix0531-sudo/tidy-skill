@@ -36,15 +36,16 @@ $script:TidyDefaultProtectedRegex = @(
 
 function New-TidyPolicy {
     return [pscustomobject]@{
-        Version          = 1
-        ForbiddenRegex   = @($script:TidyDefaultForbiddenRegex)
-        ProtectedRegex   = @($script:TidyDefaultProtectedRegex)
-        ForbiddenGlobs   = @()
-        ProtectedGlobs   = @()
-        IgnoreGlobs      = @()
-        MinScore         = $null
-        RequireAgentDirs = $false
-        Source           = $null
+        Version            = 1
+        ForbiddenRegex     = @($script:TidyDefaultForbiddenRegex)
+        ProtectedRegex     = @($script:TidyDefaultProtectedRegex)
+        ForbiddenGlobs     = @()
+        ProtectedGlobs     = @()
+        IgnoreGlobs        = @()
+        PlanningRootGlobs  = @()
+        MinScore           = $null
+        RequireAgentDirs   = $false
+        Source             = $null
     }
 }
 
@@ -113,6 +114,7 @@ function Import-TidyPolicyFile {
     $policy.ForbiddenGlobs = @(Get-TidyStringList -Value $raw.forbidden_root_globs -FieldName 'forbidden_root_globs')
     $policy.ProtectedGlobs = @(Get-TidyStringList -Value $raw.protected_root_globs -FieldName 'protected_root_globs')
     $policy.IgnoreGlobs = @(Get-TidyStringList -Value $raw.ignore_root_globs -FieldName 'ignore_root_globs')
+    $policy.PlanningRootGlobs = @(Get-TidyStringList -Value $raw.planning_root_globs -FieldName 'planning_root_globs')
 
     $extraProtected = Get-TidyStringList -Value $raw.protected_root_regex -FieldName 'protected_root_regex'
     if ($extraProtected.Count -gt 0) {
@@ -163,6 +165,16 @@ function Test-TidyForbiddenName {
     )
     if ($null -eq $Policy) { $Policy = New-TidyPolicy }
     if (Test-TidyIgnoredName -Name $Name -Policy $Policy) { return $false }
+    # Honor the intentional planning-layout opt-in (planning-with-files):
+    # a recognized, gitignored root working-memory triple is not litter, so it
+    # must not be flagged as suspicious nor picked up by cleanup sweeps.
+    if (@($Policy.PlanningRootGlobs).Count -gt 0) {
+        $lowered = $Name.ToLowerInvariant()
+        foreach ($pattern in @($Policy.PlanningRootGlobs)) {
+            if (Test-TidyNameGlob -Name $Name -Pattern $pattern) { return $false }
+            if ($lowered -eq $pattern.ToLowerInvariant()) { return $false }
+        }
+    }
     $lowered = $Name.ToLowerInvariant()
     foreach ($pattern in @($Policy.ForbiddenGlobs)) {
         if (Test-TidyNameGlob -Name $Name -Pattern $pattern) { return $true }

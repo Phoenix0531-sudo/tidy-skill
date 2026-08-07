@@ -54,12 +54,19 @@ Optional project file discovered automatically by scoring, audit, doctor, classi
 | `forbidden_root_globs` / `forbidden_root_regex` | Extra root process-Markdown patterns |
 | `protected_root_globs` / `protected_root_regex` | Extra protected formal docs |
 | `ignore_root_globs` | Root names that must **not** count as forbidden |
+| `planning_root_globs` | Intentional planning-layout names (e.g. PWF `task_plan.md` / `findings.md` / `progress.md`). Classified as working memory; **not** scored as root litter. Still gitignore them. |
 | `min_score` | CI gate threshold for `hygiene_snapshot.py gate` / doctor |
 | `require_agent_dirs` | Require `.agent_tmp/` and `.agent_reports/` for gate/doctor |
 
-Example: `references/tidy-skill.policy.example.json`. Copy to repo root as `.tidy-skill.json` or `tidy-skill.policy.json`.
+Examples:
+- `references/tidy-skill.policy.example.json` — general schema
+- `references/tidy-skill.policy.pwf.example.json` — coexistence with planning-with-files
+
+Copy to repo root as `.tidy-skill.json` or `tidy-skill.policy.json`.
 
 Python and PowerShell hygiene scripts both honor the same schema via `policy_loader.py` / `Policy.ps1`.
+
+`.planning/**` is always treated as intentional Class C working memory by `classify_artifact.py` (no policy required). Peer positioning: [docs/comparison.md](../../../docs/comparison.md).
 
 ---
 

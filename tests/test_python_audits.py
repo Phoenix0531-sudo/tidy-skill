@@ -170,6 +170,48 @@ class PythonAuditTests(unittest.TestCase):
         self.assertIn(root_plan.class_id, {"C", "D"})
         self.assertFalse(root_plan.allowed)
 
+        planning = classify_artifact.classify_path(
+            Path(".planning/2026-08-07-demo/task_plan.md"), root=root
+        )
+        self.assertEqual("C", planning.class_id)
+        self.assertTrue(planning.allowed)
+        self.assertIn("planning", planning.class_name.lower())
+
+    def test_planning_root_globs_opt_in_is_not_suspicious(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".tidy-skill.json").write_text(
+                '{"planning_root_globs": ["task_plan.md", "findings.md", "progress.md"]}',
+                encoding="utf-8",
+            )
+            (root / "task_plan.md").write_text("phases", encoding="utf-8")
+            (root / "findings.md").write_text("notes", encoding="utf-8")
+            (root / "progress.md").write_text("log", encoding="utf-8")
+            (root / "plan.md").write_text("still bad", encoding="utf-8")
+            (root / "README.md").write_text("readme", encoding="utf-8")
+            (root / ".agent_tmp").mkdir()
+            (root / ".agent_reports").mkdir()
+
+            policy = policy_loader.discover_policy(root)
+            self.assertTrue(policy_loader.is_planning_root_name("task_plan.md", policy))
+            self.assertTrue(policy_loader.is_planning_root_name("findings.md", policy))
+            self.assertFalse(policy_loader.is_suspicious_root_name("task_plan.md", policy))
+            self.assertFalse(policy_loader.is_suspicious_root_name("progress.md", policy))
+            self.assertTrue(policy_loader.is_suspicious_root_name("plan.md", policy))
+
+            audit = artifact_audit.audit(root, max_depth=1, report_path=None, policy=policy)
+            self.assertEqual(["plan.md"], [path.name for path in audit.suspicious_root])
+
+            scored = repo_score.score_repo(root, report_path=None, policy=policy)
+            self.assertEqual(["plan.md"], [path.name for path in scored.suspicious_root_files])
+
+            classified = classify_artifact.classify_path(
+                Path("task_plan.md"), root=root, policy=policy
+            )
+            self.assertEqual("C", classified.class_id)
+            self.assertTrue(classified.allowed)
+            self.assertIn("Planning", classified.class_name)
+
     def test_hygiene_snapshot_save_compare_and_gate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
