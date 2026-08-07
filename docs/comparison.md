@@ -2,6 +2,8 @@
 
 Honest positioning against the skills people most often install next to (or instead of) tidy-skill. Stars and install counts are **not** quality claims — they are market context.
 
+中文版：[comparison.zh-CN.md](comparison.zh-CN.md)
+
 | Project | What it optimizes | Default on-disk behavior | Best when |
 |---|---|---|---|
 | **tidy-skill** (this repo) | Local environment hygiene: repo litter, workspace caches, machine sprawl | Chat-first; Class A–E placement; DryRun cleanup; score/gate | Agents litter roots, caches grow, you want a measurable gate |

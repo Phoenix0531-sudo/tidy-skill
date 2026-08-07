@@ -25,7 +25,7 @@
   <a href="#产物分类">产物分类</a> ·
   <a href="#范围">范围</a> ·
   <a href="#常见问题">常见问题</a> ·
-  <a href="docs/comparison.md">竞品对照</a>
+  <a href="docs/comparison.zh-CN.md">竞品对照</a>
 </p>
 
 <p align="center">

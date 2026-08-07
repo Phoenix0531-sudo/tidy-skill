@@ -126,4 +126,54 @@ try {
     if ($pwfReport) { Remove-Item -LiteralPath $pwfReport -Force -ErrorAction SilentlyContinue }
 }
 
-Write-Host "[OK] Policy.ps1 defaults, discovery, score, audit, and planning opt-in checks passed."
+# Host hook integration (mirrors tidy_doctor.py detect_host_hook_integration).
+$hookRoot = Join-Path $env:TEMP ("tidy-hook-ps1-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Force -Path $hookRoot | Out-Null
+try {
+    # absent: no host config present.
+    $absent = Test-TidyHostHookIntegration -Root $hookRoot
+    if ($absent.Verdict -ne 'absent') {
+        throw "expected absent, got $($absent.Verdict)"
+    }
+
+    # unwired: .claude/settings.json exists but has no stop-hygiene-check reference.
+    New-Item -ItemType Directory -Force -Path (Join-Path $hookRoot ".claude") | Out-Null
+    '{"hooks": {}}' | Out-File -FilePath (Join-Path $hookRoot ".claude/settings.json") -Encoding utf8
+    $unwired = Test-TidyHostHookIntegration -Root $hookRoot
+    if ($unwired.Verdict -ne 'unwired') {
+        throw "expected unwired, got $($unwired.Verdict)"
+    }
+    if ($unwired.HostLabel -ne 'Claude Code') {
+        throw "expected Claude Code, got $($unwired.HostLabel)"
+    }
+    if ($unwired.ConfigPath -ne '.claude/settings.json') {
+        throw "expected .claude/settings.json, got $($unwired.ConfigPath)"
+    }
+
+    # wired: same config now references the stop hook.
+    '{"hooks": {"Stop": [{"command": "python stop-hygiene-check.py --root ."}}]}' |
+        Out-File -FilePath (Join-Path $hookRoot ".claude/settings.json") -Encoding utf8
+    $wired = Test-TidyHostHookIntegration -Root $hookRoot
+    if ($wired.Verdict -ne 'wired') {
+        throw "expected wired, got $($wired.Verdict)"
+    }
+} finally {
+    Remove-Item -LiteralPath $hookRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Get-TidyArtifactClass (PowerShell mirror of classify_artifact.py).
+$classPolicy = New-TidyPolicy
+$a = Get-TidyArtifactClass -Path 'README.md' -Root $repoRoot -Policy $classPolicy
+if ($a.ClassId -ne 'A') { throw "README.md should be Class A, got $($a.ClassId)" }
+$e = Get-TidyArtifactClass -Path '.claude/state.json' -Root $repoRoot -Policy $classPolicy
+if ($e.ClassId -ne 'E') { throw ".claude/state.json should be Class E, got $($e.ClassId)" }
+$cTmp = Get-TidyArtifactClass -Path '.agent_tmp/notes.md' -Root $repoRoot -Policy $classPolicy
+if ($cTmp.ClassId -ne 'C') { throw ".agent_tmp/notes.md should be Class C, got $($cTmp.ClassId)" }
+$cPlan = Get-TidyArtifactClass -Path '.planning/2026/demo/task_plan.md' -Root $repoRoot -Policy $classPolicy
+if ($cPlan.ClassId -ne 'C') { throw ".planning/... should be Class C, got $($cPlan.ClassId)" }
+$d = Get-TidyArtifactClass -Path 'mission_complete.md' -Root $repoRoot -Policy $classPolicy
+if ($d.ClassId -ne 'D') { throw "mission_complete.md should be Class D, got $($d.ClassId)" }
+$cMis = Get-TidyArtifactClass -Path 'plan.md' -Root $repoRoot -Policy $classPolicy
+if ($cMis.ClassId -ne 'C' -or $cMis.Allowed) { throw "plan.md should be Class C not allowed, got $($cMis.ClassId) allowed=$($cMis.Allowed)" }
+
+Write-Host "[OK] Policy.ps1 defaults, discovery, score, audit, planning opt-in, host hook, and artifact class checks passed."

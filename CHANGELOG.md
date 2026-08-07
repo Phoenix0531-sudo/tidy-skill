@@ -2,12 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.5.1] - 2026-08-07
 
 ### Added
 - `tidy_doctor.py` detects host hook integration: scans Claude/Codex/Cursor/Pi
   config files for a `stop-hygiene-check` reference and reports `wired`/
   `unwired`/`absent` (warn-only, never fails the gate)
+- `tidy-install-hooks.py` — DryRun-first emitter for host hook config snippets
+  (claude/codex/cursor/pi); `-W/--write` requires `--force` to overwrite
+- `Policy.ps1` gains `Test-TidyHostHookIntegration` and `Get-TidyArtifactClass`
+  (PowerShell mirrors of the Python doctor integration check and
+  `classify_artifact.py` A–E classes, including `.planning/` and
+  `planning_root_globs` opt-in)
+- `docs/cases/pwf-coexistence.md` — PWF coexistence scenario case
+- `docs/comparison.zh-CN.md` — Chinese mirror of the peer-positioning doc
+
+### Changed
+- `docs/cases/README.md` indexes the PWF case
+- `README.zh-CN.md` links the Chinese comparison doc
+
+### Known limitations
+- `docs/skills-cli-verify.md` still covers only Codex (skills CLI multi-agent
+  re-verification for claude/cursor/pi is blocked when github.com is
+  unreachable; retry after network recovery)
 
 ## [1.5.0] - 2026-08-07
 
