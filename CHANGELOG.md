@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- `tidy_doctor.py` detects host hook integration: scans Claude/Codex/Cursor/Pi
+  config files for a `stop-hygiene-check` reference and reports `wired`/
+  `unwired`/`absent` (warn-only, never fails the gate)
+
 ## [1.5.0] - 2026-08-07
 
 ### Added

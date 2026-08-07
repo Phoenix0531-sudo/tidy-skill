@@ -39,6 +39,42 @@ REQUIRED_RELATIVE = [
     "commands/TRIGGERS.md",
 ]
 
+# Host hook config files that *may* wire tidy-skill's stop hook.
+# We only read them to see if they reference stop-hygiene-check.py.
+# Keys are host labels; values are repo-relative candidate paths (most specific first).
+HOST_HOOK_CONFIGS: dict[str, list[str]] = {
+    "Claude Code": [".claude/settings.json"],
+    "Codex": [".codex/config.json", ".codex/settings.json"],
+    "Cursor": [".cursor/hooks.json", ".cursor/rules/hooks.mdc"],
+    "Pi": ["pi-permissions.jsonc", ".pi/config.json"],
+}
+
+HOOK_MARKER = "stop-hygiene-check"
+
+
+def detect_host_hook_integration(root: Path) -> tuple[str | None, str | None, str | None]:
+    """Return (host_label, config_path, verdict).
+
+    verdict is one of:
+      "wired"   - a host config exists AND references the tidy stop hook
+      "unwired" - a host config exists but does not reference the tidy stop hook
+      "absent"  - no recognized host config exists for any known host
+    All checks are read-only; we never parse JSON strictly, just substring-scan,
+    so malformed or non-JSON configs are tolerated.
+    """
+    for label, candidates in HOST_HOOK_CONFIGS.items():
+        for rel_path in candidates:
+            candidate = root / rel_path
+            if not candidate.is_file():
+                continue
+            try:
+                text = candidate.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            verdict = "wired" if HOOK_MARKER in text else "unwired"
+            return (label, rel_path, verdict)
+    return (None, None, "absent")
+
 
 @dataclass
 class Check:
@@ -160,6 +196,30 @@ def run_doctor(
         report.checks.append(Check("stop_hook", "pass", "stop-hygiene-check.py available (optional wire-up)"))
     else:
         report.checks.append(Check("stop_hook", "warn", "stop hook script missing"))
+
+    # Detect whether a known host has actually wired the stop hook.
+    # Read-only: we only substring-scan host config files. Never fail the gate
+    # on this — hook wiring is optional and host-specific.
+    host_label, config_path, verdict = detect_host_hook_integration(root)
+    if verdict == "absent":
+        report.checks.append(
+            Check("host_hook_integration", "pass", "no recognized host hook config (optional)")
+        )
+    elif verdict == "wired":
+        report.checks.append(
+            Check("host_hook_integration", "pass", f"{host_label} config references stop hook")
+        )
+    else:  # unwired
+        report.checks.append(
+            Check(
+                "host_hook_integration",
+                "warn",
+                f"{host_label} config present at {config_path} but does not reference stop hook",
+            )
+        )
+        report.recommendations.append(
+            "Optional: wire the stop hook per docs/host-samples/ (DryRun, read-only)."
+        )
 
     if not report.recommendations and not report.failed:
         report.recommendations.append("No blocking hygiene issues. Keep DryRun defaults for cleanup.")
