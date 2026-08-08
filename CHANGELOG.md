@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [1.7.1] - 2026-08-08 (patch)
+
+### Fixed
+- **Windows CI 8.3 short-name path mismatch (audit)**: `audit-agent-artifacts.ps1`
+  used `$Root.Substring()` in `Get-RelativePath`; on Windows runners `$env:TEMP`
+  is an 8.3 short name (`C:\Users\RUNNER~1\...`) while `Get-ChildItem -Recurse`
+  returns long-form `FullName`s (`C:\Users\runneradmin\...`), so the prefix never
+  matched and every root file silently dropped out of the suspicious scan.
+  `Get-RelativePath` now does an `OrdinalIgnoreCase` prefix match with a
+  `GetFileName()` fallback, and `$Root` is canonicalized via `Get-Item.FullName`.
+  Fixes `test-policy-ps1.ps1` audit assertion failing only on Windows smoke.
+- **Windows CI 8.3 short-name path mismatch (clean)**: `clean-agent-artifacts.ps1`
+  carried an independent copy of the same `Get-RelativePath` with the identical bug;
+  git-tracked root files were mis-keyed as untracked and deleted. Same fix applied
+  (canonicalized `$Root` + tolerant `Get-RelativePath`). Fixes
+  `test-clean-agent-artifacts.ps1` deleting a tracked `plan.md` on Windows smoke.
+- **Cross-platform test assertion**: `test_classify_artifact_stdin_batch_emits_ndjson`
+  hard-coded Windows backslashes in expected paths and failed on Linux CI.
+  Comparison now normalizes path separators.
+
+## [1.7.0] - 2026-08-08
+
 ### Added
 - `classify_artifact.py` **stdin batch mode**: pass `-` or `--stdin` to read
   one path per line and emit NDJSON (with `--json`). Blank lines and `#`-comment
