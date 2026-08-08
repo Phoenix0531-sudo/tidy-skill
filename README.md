@@ -19,7 +19,9 @@
 
 <p align="center">
   <a href="#before-and-after">Before/After</a> ·
+  <a href="#four-failure-modes">Failure Modes</a> ·
   <a href="#three-layer-hygiene-model">Three Layers</a> ·
+  <a href="#safety-verbs">Safety Verbs</a> ·
   <a href="#quickstart">Quickstart</a> ·
   <a href="#self-audit">Self-Audit</a> ·
   <a href="#artifact-classification">Classification</a> ·
@@ -60,6 +62,17 @@
 </tr>
 </table>
 
+## Four Failure Modes
+
+Tidy-skill is built around the mess agents actually leave, not a giant methodology pack.
+
+| # | Failure | What happens | Fix with tidy-skill |
+|---|---|---|---|
+| 1 | **Root litter** | Agent drops `plan.md` / `todo.md` / `final_report.md` into repo root | `classify_artifact` before write; `tidy_doctor` + `tidy_repair --apply --move-root` to park untracked process Markdown under `.agent_tmp/` |
+| 2 | **Cache sprawl** | `node_modules`, `.venv`, build caches, WSL/Docker VHDX grow silently | `audit_workspace_hygiene` + `audit_dev_environment` (read-only); suggestions only for VHDX/Docker |
+| 3 | **Unsafe cleanup** | Operator (or agent) deletes formal docs, git-tracked files, or host configs | **dryrun** default; **careful** for root moves; **guard** never auto-writes host/VHDX/config |
+| 4 | **No CI gate** | Hygiene drifts with no score or exit code | `score_repo_hygiene`, `hygiene_snapshot gate`, `tidy_doctor` exit 2 on fail |
+
 ## Three-Layer Hygiene Model
 
 | Layer | Governs | Typical Problem | Tools |
@@ -67,6 +80,24 @@
 | **Repository** | Agent artifacts | `plan.md`, `todo.md` pile up in repo root | `audit_agent_artifacts.py`, `score_repo_hygiene.py` |
 | **Workspace** | Dev caches | `node_modules`, `.venv`, `target`, build caches sprawl | `audit-workspace-hygiene.ps1` |
 | **Local machine** | Environment footprint | WSL2/Docker VHDX growth, package/model caches sprawl | `audit-dev-environment.ps1`, `audit_dev_environment.py` |
+
+## Safety Verbs
+
+Three short verbs, always the same meaning:
+
+| Verb | Means | Typical command |
+|---|---|---|
+| **dryrun** | Preview only; no writes, no deletes | `tidy_repair.py --root .` · `clean-agent-artifacts.ps1 -DryRun` · `tidy-install-hooks.py --root . --host claude` |
+| **careful** | Mutates agent working files only, never formal docs / git-tracked / host configs | `tidy_repair.py --root . --apply --move-root` |
+| **guard** | Hard refuse: host settings, VHDX, Docker data, git-tracked files, protected Class A docs | Built into repair/cleanup/install-hooks (exit 2 on refuse) |
+
+Doctor diagnoses; repair is the next step — still DryRun-first:
+
+```bash
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root .
+uv run python skills/tidy-skill/scripts/tidy_repair.py --root .          # plan
+uv run python skills/tidy-skill/scripts/tidy_repair.py --root . --apply # safe layout dirs
+```
 
 <p align="center">
   <img src="docs/screenshots/preview.png" alt="Terminal self-audit: score_repo_hygiene and audit_agent_artifacts" width="90%">
@@ -85,6 +116,9 @@ uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
 
 # One-shot doctor (package + hygiene gate)
 uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
+# DryRun repair plan (create layout dirs / move root litter — apply separately)
+uv run python skills/tidy-skill/scripts/tidy_repair.py --root . --json
 
 # Classify a path before writing (Classes A–E)
 uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
@@ -108,22 +142,29 @@ uv run ruff check . --select E9,F63,F7,F82
 
 ### Install Matrix
 
+Two install philosophies (pick one per machine):
+
+| Path | Philosophy | How |
+|---|---|---|
+| **Subscribe (skills CLI)** | Managed copy into agent skill dirs; re-run to update | `npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill` |
+| **Editable (clone / local)** | You own the tree; hack scripts and policy | `git clone` + `uv sync` or `install-local.ps1` |
+
 | Tier | What you get | How |
 |---|---|---|
 | **Enhanced** | Windows deep audit + DryRun cleanup + optional read-only stop hook | PowerShell scripts + `hooks/stop-hygiene-check.py` |
-| **Standard** | Portable scoring / artifact / env / workspace audits | `uv run python skills/tidy-skill/scripts/*.py` |
+| **Standard** | Portable scoring / artifact / env / workspace / doctor / repair | `uv run python skills/tidy-skill/scripts/*.py` |
 | **Manual** | Shared hygiene rules for multi-agent projects | `install-rule-template.ps1` or copy templates |
 
-**Skills CLI (verified discoverable):** standard `skills/tidy-skill/SKILL.md` package. Author-verified on 2026-08-05:
+**Skills CLI (verified discoverable):** standard `skills/tidy-skill/SKILL.md` package. Author-verified for codex / claude-code / cursor / pi:
 
 ```bash
 npx skills add Phoenix0531-sudo/tidy-skill --list
 # Found 1 skill: tidy-skill
 
-npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill
+npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill -a claude-code -y --copy
 ```
 
-Full matrix, silent failure modes, and doctor steps: [docs/installation.md](docs/installation.md) · verification log: [docs/skills-cli-verify.md](docs/skills-cli-verify.md).
+Full matrix, silent failure modes, doctor/repair, uninstall: [docs/installation.md](docs/installation.md) · verification log: [docs/skills-cli-verify.md](docs/skills-cli-verify.md).
 
 Per-platform notes: [Claude](docs/platforms/claude.md) · [Codex](docs/platforms/codex.md) · [Cursor](docs/platforms/cursor.md) · [Pi](docs/platforms/pi.md) · [OpenCode](docs/platforms/opencode.md).
 
@@ -182,6 +223,8 @@ Five-level placement model (see [SKILL.md](skills/tidy-skill/SKILL.md)):
 |---|---|---|
 | `score_repo_hygiene.py` | Score repo hygiene 0–100 (optional `--weights` / `--policy`) | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
 | `tidy_doctor.py` | One-shot package + hygiene doctor / CI gate | `uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json` |
+| `tidy_repair.py` | DryRun-first safe repairs (layout dirs, optional root moves) | `uv run python skills/tidy-skill/scripts/tidy_repair.py --root .` |
+| `tidy-install-hooks.py` | DryRun host hook config emitter (claude/codex/cursor/pi) | `uv run python skills/tidy-skill/scripts/tidy-install-hooks.py --root . --host claude` |
 | `classify_artifact.py` | Pre-write Class A–E path classifier | `uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json` |
 | `hygiene_snapshot.py` | Score history + CI `gate` on `min_score` | `uv run python skills/tidy-skill/scripts/hygiene_snapshot.py gate --root . --json` |
 | `audit_agent_artifacts.py` | List suspicious root files and protected docs | `uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json` |
@@ -200,8 +243,8 @@ Python scripts are pure stdlib (no network, no third-party runtime deps). Cleanu
 **In scope**
 
 - Read-only audits of agent artifacts, repo hygiene, workspace repos, and local cache footprints
-- Optional project policy (`.tidy-skill.json`), doctor, pre-write classifier, and score history/gate
-- DryRun cleanup previews for `.agent_tmp/` / `.agent_reports/`
+- Optional project policy (`.tidy-skill.json`), doctor, repair, pre-write classifier, and score history/gate
+- DryRun cleanup previews for `.agent_tmp/` / `.agent_reports/` (retention: tmp 7d / reports 30d by default)
 - Optional read-only stop hooks and pre-commit root-process-md guard
 - Rule templates so multiple agents share the same placement policy
 - Offline, local-only operation
@@ -219,7 +262,14 @@ Python scripts are pure stdlib (no network, no third-party runtime deps). Cleanu
 <details>
 <summary>Will cleanup delete my files by default?</summary>
 
-No. `clean-agent-artifacts.ps1` defaults to **DryRun** and only previews candidates under agent temp/report directories. Actual deletion requires explicit confirmation flags. Audits never delete.
+No. `clean-agent-artifacts.ps1` defaults to **DryRun** and only previews candidates under agent temp/report directories. Actual deletion requires explicit confirmation flags. Audits never delete. `tidy_repair.py` defaults to a plan only; `--apply` creates layout dirs; root process moves need both `--apply` and `--move-root`, and still refuse git-tracked / protected files.
+
+</details>
+
+<details>
+<summary>What are dryrun / careful / guard?</summary>
+
+Product safety verbs: <strong>dryrun</strong> = preview only; <strong>careful</strong> = agent working files only (e.g. move untracked root process Markdown into <code>.agent_tmp/</code>); <strong>guard</strong> = hard refuse host configs, VHDX, Docker data, git-tracked files, Class A docs. See <a href="#safety-verbs">Safety Verbs</a>.
 
 </details>
 

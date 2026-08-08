@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-08-07
+
+### Added
+- `tidy_repair.py` — DryRun-first safe repairs companion to doctor
+  (create `.agent_tmp/` + `.agent_reports/` with `.gitkeep`; optional
+  `--apply --move-root` for untracked suspicious root Markdown;
+  refuses git-tracked / protected / host configs)
+- Product **safety verbs**: dryrun · careful · guard (README, SKILL,
+  installation, repair CLI)
+- README **four failure modes** (root litter / cache sprawl / unsafe
+  cleanup / no CI gate) in EN + ZH
+- Dual install philosophy (subscribe via skills CLI vs editable clone/local)
+- Installation: retention knobs table + uninstall/reset section
+- Comparison docs (EN + ZH): ECC, gstack, mattpocock peers + learn-from table
+- Doctor recommendations now point at `tidy_repair` / `tidy-install-hooks`
+
+### Changed
+- `script-usage.md` documents `tidy_repair.py` and `tidy-install-hooks.py`
+- Commands tables in README / README.zh-CN / SKILL.md include repair + hooks emitter
+- Package version bumped to 1.6.0
+
 ## [1.5.1] - 2026-08-07
 
 ### Added

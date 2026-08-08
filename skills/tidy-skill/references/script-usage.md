@@ -13,6 +13,8 @@
 | `classify_artifact.py` | Pre-write Class A–E path classifier | Python, dependency-free, read-only |
 | `hygiene_snapshot.py` | Score history save/compare + CI gate | Writes only under history dir (default `.agent_reports/hygiene-history/`) |
 | `tidy_doctor.py` | One-shot skill + hygiene doctor / gate | Python, dependency-free, read-only |
+| `tidy_repair.py` | DryRun-first safe repairs (layout dirs; optional root moves) | Defaults to plan only; never host/VHDX |
+| `tidy-install-hooks.py` | DryRun host hook config emitter | Defaults to print; `-W` needs `--force` to overwrite |
 | `audit-agent-artifacts.ps1` | Read-only repo audit | Never modifies files |
 | `score-repo-hygiene.ps1` | Windows repo hygiene score (0-100) | Read-only |
 | `audit-workspace-hygiene.ps1` | Multi-repo workspace scan | Read-only, explicit root |
@@ -120,6 +122,56 @@ python tidy_doctor.py --root "." --min-score 80 --report-path ".agent_reports/do
 | `--report-path` | No | none | Optional Markdown report |
 | `--strict` | No | false | Treat warnings as failures |
 | `--json` | No | false | Print JSON output |
+
+Doctor recommendations point at `tidy_repair.py` / `tidy-install-hooks.py` for next steps.
+
+---
+
+## tidy_repair.py
+
+Diagnose→next-step companion to doctor. Default is a **DryRun plan**. Never rewrites host configs, VHDX, Docker data, or git-tracked files.
+
+```powershell
+python tidy_repair.py --root "."
+python tidy_repair.py --root "." --apply
+python tidy_repair.py --root "." --apply --move-root
+python tidy_repair.py --root "." --json
+```
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `--root` | No | `.` | Repository root |
+| `--policy` | No | auto | Optional policy JSON |
+| `--apply` | No | false | Create layout dirs (safe) |
+| `--move-root` | No | false | With `--apply`, move untracked suspicious root Markdown into `.agent_tmp/` (careful) |
+| `--tmp-days` | No | 7 | Retention note window for `.agent_tmp/` |
+| `--report-days` | No | 30 | Retention note window for `.agent_reports/` |
+| `--no-root-moves` | No | false | Omit root-move proposals from the plan |
+| `--json` | No | false | Print JSON plan |
+
+**Safety verbs:** dryrun (default) · careful (`--apply --move-root`) · guard (hard refuse host/git-tracked/protected).
+
+---
+
+## tidy-install-hooks.py
+
+Print (or optionally write) host hook config snippets for the read-only stop check.
+
+```powershell
+python tidy-install-hooks.py --root "." --host claude
+python tidy-install-hooks.py --root "." --host codex --write   # only if target missing
+```
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `--root` | No | `.` | Repository root |
+| `--host` | Yes | — | `claude` / `codex` / `cursor` / `pi` |
+| `--hook-path` | No | skill-relative path | Path embedded in the snippet |
+| `--root-var` | No | `.` | Value passed as hook `--root` |
+| `-W` / `--write` | No | false | Write the config file |
+| `--force` | No | false | Allow overwrite of an existing config |
+
+Exit `2` if the target exists and `--force` was not set.
 
 ---
 

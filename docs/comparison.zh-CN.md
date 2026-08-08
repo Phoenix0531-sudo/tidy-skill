@@ -4,11 +4,14 @@
 
 | 项目 | 优化什么 | 默认磁盘行为 | 适合场景 |
 |---|---|---|---|
-| **tidy-skill**（本仓） | 本地环境洁癖：仓内垃圾、workspace 缓存、机器蔓延 | 对话优先；Class A–E 落位；DryRun 清理；评分/闸门 | Agent 让根目录变脏、缓存膨胀、你想要可度量闸门 |
+| **tidy-skill**（本仓） | 本地环境洁癖：仓内垃圾、workspace 缓存、机器蔓延 | 对话优先；Class A–E 落位；DryRun 清理；评分/闸门；doctor→repair | Agent 让根目录变脏、缓存膨胀、你想要可度量闸门 |
 | [planning-with-files](https://github.com/OthmanAdi/planning-with-files) | 长任务在 `/clear` 和压缩后存活 | 写 `task_plan.md` / `findings.md` / `progress.md`（或 `.planning/<slug>/`） | 多步任务要在上下文丢失后能续跑 |
 | [obra/superpowers](https://github.com/obra/superpowers) | 规格 → 计划 → TDD 方法论包 | 跨多宿主的 skill 库 | 你想要一套有主见的工程工作流，而非洁癖 |
 | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | 定义 → 计划 → 构建 → 验证 → 审查 → 交付 | 24 个生命周期 skill | 你想要生产代码的过程纪律 |
 | [anthropics/skills](https://github.com/anthropics/skills) | Agent Skills 格式 / 参考 | 规格 + 示例 | 你在编写或研究 skill 标准 |
+| [affaan-m/ECC](https://github.com/affaan-m/ECC) | Agent harness OS：skills、hooks、memory、安全 | 大组件安装；doctor/repair；会话保留旋钮 | 你要完整 harness，不只是洁癖 |
+| [garrytan/gstack](https://github.com/garrytan/gstack) | 角色 slash 命令 + 发版安全闸 | `/careful` `/freeze` `/guard`；团队自动更新 | 你要 CEO/QA/CSO 式生产力角色 |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | 小而可组合的工程 skill | 插件订阅 vs skills.sh 可改副本 | 你要失败模式 skill，不是环境治理 |
 
 ## 一句话
 
@@ -51,21 +54,32 @@
 1. **三层洁癖** —— 仓库产物、多仓 workspace 缓存、本机（WSL2 / Docker / VHDX / 包 / 模型缓存）。
 2. **Class A–E + 落位意图检查** —— 写之前先判落位。
 3. **可度量 CI 闸门** —— `score_repo_hygiene`、`hygiene_snapshot gate`、`tidy_doctor` 退出码。
-4. **Python + PowerShell 共享项目 policy** —— `.tidy-skill.json`。
-5. **离线 stdlib Python** —— 核心脚本无运行时网络依赖。
-6. **安全姿态** —— Findings / Safe Suggestions / Manual·Risky；默认 DryRun。
+4. **Doctor → repair 闭环** —— 诊断后 DryRun 优先安全修复（`tidy_repair`），不自动动宿主/VHDX。
+5. **Python + PowerShell 共享项目 policy** —— `.tidy-skill.json`。
+6. **离线 stdlib Python** —— 核心脚本无运行时网络依赖。
+7. **安全动词** —— dryrun / careful / guard（文档与 CLI 同义）。
 
-## 同类做得更好的地方（采纳面）
+## 同类做得更好的地方（以及我们借了什么）
 
-- 更宽的 IDE 镜像树和 marketplace 插件路径（PWF、superpowers、addy）。
-- 擦除后恢复 / 方法论叙事（PWF、superpowers）。
-- 把并排对比页作为一等文档（addy）——本页就是为 tidy-skill 补上这一项。
+| 采纳面 | 谁做得好 | tidy-skill 借了什么 |
+|---|---|---|
+| Doctor → repair / 卸载路径 | ECC | `tidy_repair.py` + installation.md 卸载节 |
+| 安全写成短动词 | gstack（`/careful` `/guard`） | dryrun · careful · guard 产品语言 |
+| 按失败模式写 README，不堆方法论 | mattpocock/skills | 四种失败模式（根垃圾 / 缓存膨胀 / 不安全清理 / 无 CI 闸） |
+| 订阅 vs 可改安装 | mattpocock、ECC | 双路径安装矩阵（skills CLI vs clone/本地） |
+| 会话保留旋钮 | ECC | 文档化 tmp 7 天 / reports 30 天 + clean 脚本参数 |
+| 宽宿主镜像 / marketplace | PWF、superpowers、addy | 保持精简；有真安装路径再扩 |
+| 擦除后恢复叙事 | PWF、superpowers | 诚实自审 + fixture eval；不做假基准 |
+| 并排对比页 | addy | 本文档 |
+
+**仍不抄：** 200+ skill harness、Memory Vault、TDD 方法论包、自动写宿主配置、用 star 当质量指标。
 
 ## 非目标
 
 - 不把 tidy-skill 重新包装成规划或 TDD 方法论包。
 - 不自动删有意的 PWF 计划文件。
 - 不声称没测过的第三方基准或安装排名。
+- 不吞并 ECC/gstack 角色库，不变成完整 agent harness。
 
 ## 相关
 

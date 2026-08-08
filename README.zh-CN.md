@@ -19,7 +19,9 @@
 
 <p align="center">
   <a href="#前后对照">前后对照</a> ·
+  <a href="#四种失败模式">失败模式</a> ·
   <a href="#三层卫生模型">三层模型</a> ·
+  <a href="#安全动词">安全动词</a> ·
   <a href="#快速开始">快速开始</a> ·
   <a href="#自审证据">自审证据</a> ·
   <a href="#产物分类">产物分类</a> ·
@@ -60,6 +62,17 @@
 </tr>
 </table>
 
+## 四种失败模式
+
+洁癖.skill 针对 agent 真实留下的烂摊子，而不是又一套巨型方法论包。
+
+| # | 失败 | 发生了什么 | 用洁癖怎么修 |
+|---|---|---|---|
+| 1 | **根目录垃圾** | Agent 把 `plan.md` / `todo.md` / `final_report.md` 丢在仓库根 | 写前 `classify_artifact`；`tidy_doctor` + `tidy_repair --apply --move-root` 把未跟踪过程 Markdown 挪进 `.agent_tmp/` |
+| 2 | **缓存膨胀** | `node_modules`、`.venv`、构建缓存、WSL/Docker VHDX 悄悄长大 | `audit_workspace_hygiene` + `audit_dev_environment`（只读）；VHDX/Docker 只给建议 |
+| 3 | **不安全清理** | 操作者（或 agent）删正式文档、git 跟踪文件或宿主配置 | **dryrun** 默认；**careful** 只管过程文件；**guard** 永不自动改宿主/VHDX/配置 |
+| 4 | **没有 CI 闸门** | 卫生漂移，没有分数或退出码 | `score_repo_hygiene`、`hygiene_snapshot gate`、`tidy_doctor` 失败时 exit 2 |
+
 ## 三层卫生模型
 
 | 层级 | 治理对象 | 典型问题 | 工具 |
@@ -67,6 +80,24 @@
 | **Repository** | Agent 产物 | `plan.md`、`todo.md` 堆在仓库根目录 | `audit_agent_artifacts.py`、`score_repo_hygiene.py` |
 | **Workspace** | 开发缓存 | `node_modules`、`.venv`、`target`、构建缓存膨胀 | `audit-workspace-hygiene.ps1` |
 | **Local machine** | 本机环境足迹 | WSL2/Docker VHDX 增长，包缓存/模型缓存膨胀 | `audit-dev-environment.ps1`、`audit_dev_environment.py` |
+
+## 安全动词
+
+三个短动词，含义始终一致：
+
+| 动词 | 含义 | 典型命令 |
+|---|---|---|
+| **dryrun** | 只预览；不写、不删 | `tidy_repair.py --root .` · `clean-agent-artifacts.ps1 -DryRun` · `tidy-install-hooks.py --root . --host claude` |
+| **careful** | 只动 agent 工作文件，不动正式文档 / git 跟踪 / 宿主配置 | `tidy_repair.py --root . --apply --move-root` |
+| **guard** | 硬拒绝：宿主设置、VHDX、Docker 数据、git 跟踪文件、受保护 Class A 文档 | 内建于 repair/cleanup/install-hooks（拒绝时 exit 2） |
+
+Doctor 诊断；repair 是下一步——仍默认 DryRun：
+
+```bash
+uv run python skills/tidy-skill/scripts/tidy_doctor.py --root .
+uv run python skills/tidy-skill/scripts/tidy_repair.py --root .          # 计划
+uv run python skills/tidy-skill/scripts/tidy_repair.py --root . --apply # 安全布局目录
+```
 
 <p align="center">
   <img src="docs/screenshots/preview.png" alt="终端自审：score_repo_hygiene 与 audit_agent_artifacts" width="90%">
@@ -85,6 +116,9 @@ uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json
 
 # 一键 doctor（包完整性 + 卫生门禁）
 uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
+# DryRun 修复计划（创建布局目录 / 移动根垃圾 — 应用需另加标志）
+uv run python skills/tidy-skill/scripts/tidy_repair.py --root . --json
 
 # 写文件前做 A–E 路径分类
 uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
@@ -108,22 +142,29 @@ uv run ruff check . --select E9,F63,F7,F82
 
 ### 安装矩阵
 
+两种安装哲学（每台机器选一种）：
+
+| 路径 | 哲学 | 怎么做 |
+|---|---|---|
+| **订阅（skills CLI）** | 托管拷贝进 agent skill 目录；重跑即可更新 | `npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill` |
+| **可改（clone / 本地）** | 你拥有整棵树；可改脚本与 policy | `git clone` + `uv sync` 或 `install-local.ps1` |
+
 | 档位 | 你得到什么 | 怎么做 |
 |---|---|---|
 | **Enhanced** | Windows 深度审计 + DryRun 清理 + 可选只读 stop hook | PowerShell 脚本 + `hooks/stop-hygiene-check.py` |
-| **Standard** | 可移植打分 / 产物 / 环境 / 多仓工作区审计 | `uv run python skills/tidy-skill/scripts/*.py` |
+| **Standard** | 可移植打分 / 产物 / 环境 / 工作区 / doctor / repair | `uv run python skills/tidy-skill/scripts/*.py` |
 | **Manual** | 多 Agent 共用卫生规则模板 | `install-rule-template.ps1` 或复制 templates |
 
-**Skills CLI（已实测可发现）：** 标准 `skills/tidy-skill/SKILL.md` 包。作者于 2026-08-05 验证：
+**Skills CLI（已实测可发现）：** 标准 `skills/tidy-skill/SKILL.md` 包。已验证 codex / claude-code / cursor / pi：
 
 ```bash
 npx skills add Phoenix0531-sudo/tidy-skill --list
 # Found 1 skill: tidy-skill
 
-npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill
+npx skills add Phoenix0531-sudo/tidy-skill --skill tidy-skill -a claude-code -y --copy
 ```
 
-完整矩阵、静默失败与 doctor：[docs/installation.md](docs/installation.md) · 验证记录：[docs/skills-cli-verify.md](docs/skills-cli-verify.md)。
+完整矩阵、静默失败、doctor/repair、卸载：[docs/installation.md](docs/installation.md) · 验证记录：[docs/skills-cli-verify.md](docs/skills-cli-verify.md)。
 
 分平台说明：[Claude](docs/platforms/claude.md) · [Codex](docs/platforms/codex.md) · [Cursor](docs/platforms/cursor.md) · [Pi](docs/platforms/pi.md) · [OpenCode](docs/platforms/opencode.md)。
 
@@ -182,6 +223,8 @@ uv run python tools/run_evals.py
 |---|---|---|
 | `score_repo_hygiene.py` | 仓库卫生 0–100（可选 `--weights` / `--policy`） | `uv run python skills/tidy-skill/scripts/score_repo_hygiene.py --root . --json` |
 | `tidy_doctor.py` | 一键包完整性 + 卫生 doctor / CI 门禁 | `uv run python skills/tidy-skill/scripts/tidy_doctor.py --root . --json` |
+| `tidy_repair.py` | DryRun 优先的安全修复（布局目录；可选根文件移动） | `uv run python skills/tidy-skill/scripts/tidy_repair.py --root .` |
+| `tidy-install-hooks.py` | DryRun 宿主 hook 配置生成器（claude/codex/cursor/pi） | `uv run python skills/tidy-skill/scripts/tidy-install-hooks.py --root . --host claude` |
 | `classify_artifact.py` | 写文件前 A–E 路径分类 | `uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json` |
 | `hygiene_snapshot.py` | 分数历史 + CI `gate`（`min_score`） | `uv run python skills/tidy-skill/scripts/hygiene_snapshot.py gate --root . --json` |
 | `audit_agent_artifacts.py` | 列出可疑根文件与受保护文档 | `uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json` |
@@ -200,8 +243,8 @@ Python 脚本纯标准库。清理与安装默认 DryRun。触发语与命令 st
 **在范围内**
 
 - 对 agent 产物、仓库卫生、多仓工作区、本机缓存足迹的只读审计
-- 可选项目策略（`.tidy-skill.json`）、doctor、写前分类器、分数历史/门禁
-- 对 `.agent_tmp/` / `.agent_reports/` 的 DryRun 清理预览
+- 可选项目策略（`.tidy-skill.json`）、doctor、repair、写前分类器、分数历史/门禁
+- 对 `.agent_tmp/` / `.agent_reports/` 的 DryRun 清理预览（默认保留期：tmp 7 天 / reports 30 天）
 - 可选只读 stop hook 与 pre-commit 根目录过程文档拦截
 - 让多个 Agent 共享同一放置策略的规则模板
 - 纯本地、离线运行
@@ -219,7 +262,14 @@ Python 脚本纯标准库。清理与安装默认 DryRun。触发语与命令 st
 <details>
 <summary>清理会默认删我的文件吗？</summary>
 
-不会。`clean-agent-artifacts.ps1` 默认 **DryRun**，只预览 agent 临时/报告目录下的候选。真正删除需要显式确认参数。审计脚本永不删除。
+不会。`clean-agent-artifacts.ps1` 默认 **DryRun**，只预览 agent 临时/报告目录下的候选。真正删除需要显式确认参数。审计脚本永不删除。`tidy_repair.py` 默认只出计划；`--apply` 创建布局目录；根目录过程文件移动需要同时 `--apply` 与 `--move-root`，且仍拒绝 git 跟踪 / 受保护文件。
+
+</details>
+
+<details>
+<summary>dryrun / careful / guard 是什么？</summary>
+
+产品安全动词：<strong>dryrun</strong> = 只预览；<strong>careful</strong> = 只动 agent 工作文件（例如把未跟踪根过程 Markdown 挪进 <code>.agent_tmp/</code>）；<strong>guard</strong> = 硬拒绝宿主配置、VHDX、Docker 数据、git 跟踪文件、Class A 文档。见 <a href="#安全动词">安全动词</a>。
 
 </details>
 

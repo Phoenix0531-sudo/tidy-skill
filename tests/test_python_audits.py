@@ -28,6 +28,7 @@ workspace_audit = load_module("audit_workspace_hygiene", SCRIPTS_DIR / "audit_wo
 classify_artifact = load_module("classify_artifact", SCRIPTS_DIR / "classify_artifact.py")
 hygiene_snapshot = load_module("hygiene_snapshot", SCRIPTS_DIR / "hygiene_snapshot.py")
 tidy_doctor = load_module("tidy_doctor", SCRIPTS_DIR / "tidy_doctor.py")
+tidy_repair = load_module("tidy_repair", SCRIPTS_DIR / "tidy_repair.py")
 
 
 class PythonAuditTests(unittest.TestCase):
@@ -265,6 +266,66 @@ class PythonAuditTests(unittest.TestCase):
             payload = tidy_doctor.to_payload(report)
             self.assertTrue(payload["failed"])
             self.assertEqual(str(root.resolve()), payload["root"])
+
+    def test_tidy_repair_dryrun_then_apply_creates_dirs_and_moves_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "plan.md").write_text("temporary plan", encoding="utf-8")
+            (root / "README.md").write_text("readme", encoding="utf-8")
+            (root / "LICENSE").write_text("MIT", encoding="utf-8")
+            policy = policy_loader.Policy()
+
+            # DryRun: plan only, nothing on disk yet
+            plan = tidy_repair.build_plan(root, policy)
+            self.assertTrue(plan.dry_run)
+            kinds = [a.kind for a in plan.actions]
+            self.assertIn("create_dir", kinds)
+            self.assertIn("move_root", kinds)
+            self.assertFalse((root / ".agent_tmp").exists())
+            self.assertFalse((root / ".agent_reports").exists())
+            self.assertTrue((root / "plan.md").exists())
+
+            # Apply layout only (safe): dirs created, root plan stays
+            plan = tidy_repair.build_plan(root, policy)
+            rc = tidy_repair.apply_plan(root, plan, move_root=False)
+            self.assertEqual(0, rc)
+            self.assertTrue((root / ".agent_tmp").is_dir())
+            self.assertTrue((root / ".agent_reports").is_dir())
+            self.assertTrue((root / ".agent_tmp" / ".gitkeep").is_file())
+            self.assertTrue((root / ".agent_reports" / ".gitkeep").is_file())
+            self.assertTrue((root / "plan.md").exists())
+
+            # Apply with move_root: plan.md moves into .agent_tmp/
+            plan = tidy_repair.build_plan(root, policy)
+            rc = tidy_repair.apply_plan(root, plan, move_root=True)
+            self.assertEqual(0, rc)
+            self.assertFalse((root / "plan.md").exists())
+            self.assertTrue((root / ".agent_tmp" / "plan.md").is_file())
+
+    def test_tidy_repair_refuses_to_move_protected_and_git_tracked(self) -> None:
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text("formal doc", encoding="utf-8")
+            (root / "plan.md").write_text("plan", encoding="utf-8")
+            subprocess.run(["git", "init"], cwd=root, capture_output=True, check=True)
+            subprocess.run(["git", "add", "plan.md"], cwd=root, capture_output=True, check=True)
+            policy = policy_loader.Policy()
+
+            plan = tidy_repair.build_plan(root, policy)
+            # plan.md is git-tracked: must be skipped (risk=manual), not a move_root
+            plan_md_actions = [a for a in plan.actions if a.path == "plan.md"]
+            self.assertTrue(len(plan_md_actions) >= 1)
+            for a in plan_md_actions:
+                self.assertEqual("skip", a.kind)
+                self.assertEqual("manual", a.risk)
+                self.assertIn("git-tracked", a.detail)
+            # no move_root actions at all (everything suspicious is skipped)
+            self.assertEqual([], [a for a in plan.actions if a.kind == "move_root"])
+
+            rc = tidy_repair.apply_plan(root, plan, move_root=True)
+            self.assertEqual(0, rc)
+            self.assertTrue((root / "plan.md").exists(), "git-tracked plan.md must not be moved")
 
 
 if __name__ == "__main__":

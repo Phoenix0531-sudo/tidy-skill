@@ -222,13 +222,22 @@ When asked for a repo hygiene score, prefer `${CLAUDE_SKILL_DIR}/scripts/score_r
 
 Optional project policy: place `.tidy-skill.json` (or `tidy-skill.policy.json`) at the repo root, or pass `--policy`. Schema example: `references/tidy-skill.policy.example.json`. Policy can extend forbidden/protected root patterns, set `min_score`, require `.agent_tmp/` + `.agent_reports/`, and opt intentional planning-layout root names via `planning_root_globs` (see `references/tidy-skill.policy.pwf.example.json` for planning-with-files coexistence). `.planning/**` is recognized as intentional Class C working memory without a policy.
 
-### Doctor, classify, snapshots
+### Doctor, repair, classify, snapshots
 
 | Need | Script |
 |---|---|
 | One-shot install + hygiene doctor / CI gate | `${CLAUDE_SKILL_DIR}/scripts/tidy_doctor.py` |
+| DryRun-first safe repairs (layout dirs; optional root moves) | `${CLAUDE_SKILL_DIR}/scripts/tidy_repair.py` |
+| DryRun host hook config emitter | `${CLAUDE_SKILL_DIR}/scripts/tidy-install-hooks.py` |
 | Classify a path before writing (Classes A–E) | `${CLAUDE_SKILL_DIR}/scripts/classify_artifact.py` |
 | Save/compare score history; gate on `min_score` | `${CLAUDE_SKILL_DIR}/scripts/hygiene_snapshot.py` |
+
+**Safety verbs (always the same meaning):**
+- **dryrun** — preview only (default for repair, cleanup, install-hooks)
+- **careful** — mutates agent working files only (`tidy_repair.py --apply --move-root`)
+- **guard** — hard refuse host configs, VHDX, Docker data, git-tracked files, Class A docs
+
+`tidy_repair.py` is the diagnose→next-step companion to doctor. Default is a plan only. `--apply` creates `.agent_tmp/` + `.agent_reports/` with `.gitkeep`. Root process moves need both `--apply` and `--move-root`, and still refuse git-tracked / protected names.
 
 `hygiene_snapshot.py save` writes under `.agent_reports/hygiene-history/` by default (Class B deliverable history, not root litter). `gate` and doctor exit `2` on hygiene/policy failure.
 

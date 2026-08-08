@@ -31,6 +31,7 @@ REQUIRED_RELATIVE = [
     "scripts/score_repo_hygiene.py",
     "scripts/audit_agent_artifacts.py",
     "scripts/tidy_doctor.py",
+    "scripts/tidy_repair.py",
     "scripts/classify_artifact.py",
     "scripts/hygiene_snapshot.py",
     "scripts/policy_loader.py",
@@ -165,7 +166,8 @@ def run_doctor(
             )
         )
         report.recommendations.append(
-            "Move process Markdown out of root or delete only with explicit user approval (DryRun first)."
+            "Move process Markdown out of root or delete only with explicit user approval (DryRun first). "
+            "Preview: python skills/tidy-skill/scripts/tidy_repair.py --root ."
         )
     else:
         report.checks.append(Check("suspicious_root", "pass", "0 suspicious root process files"))
@@ -178,7 +180,10 @@ def run_doctor(
             missing.append(".agent_reports/")
         status = "fail" if policy and policy.require_agent_dirs else "warn"
         report.checks.append(Check("agent_dirs", status, "missing " + ", ".join(missing)))
-        report.recommendations.append("Create layout dirs with .gitkeep so placement is explicit.")
+        report.recommendations.append(
+            "Create layout dirs with .gitkeep so placement is explicit. "
+            "Safe apply: python skills/tidy-skill/scripts/tidy_repair.py --root . --apply"
+        )
     else:
         report.checks.append(Check("agent_dirs", "pass", ".agent_tmp/ and .agent_reports/ present"))
 
@@ -218,7 +223,8 @@ def run_doctor(
             )
         )
         report.recommendations.append(
-            "Optional: wire the stop hook per docs/host-samples/ (DryRun, read-only)."
+            "Optional: wire the stop hook per docs/host-samples/ (DryRun, read-only). "
+            "Emitter: python skills/tidy-skill/scripts/tidy-install-hooks.py --root . --host <claude|codex|cursor|pi>"
         )
 
     if not report.recommendations and not report.failed:
