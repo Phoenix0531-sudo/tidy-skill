@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [1.8.0] - 2026-08-08
+
 ### Added
 - `tools/release.py`: dry-run-first release helper. Bumps `pyproject.toml`,
   migrates `[Unreleased]` notes into a dated section, updates the doctor
