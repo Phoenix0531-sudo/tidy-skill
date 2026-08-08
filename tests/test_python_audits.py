@@ -216,8 +216,15 @@ class PythonAuditTests(unittest.TestCase):
         lines = [ln for ln in proc.stdout.splitlines() if ln.strip()]
         self.assertEqual(4, len(lines), f"expected 4 ndjson lines, got: {lines!r}")
         decoded = [json.loads(ln) for ln in lines]
-        self.assertEqual(["plan.md", ".agent_tmp\\notes.md", "docs\\index.md", "mission_complete.md"],
-                         [row["path"] for row in decoded])
+        # Compare with forward-slash-normalized paths so the test is
+        # cross-platform: the classifier emits os-native separators (\ on
+        # Windows, / on POSIX); what matters is that each input path was
+        # classified, not which separator it carries.
+        actual_paths = [row["path"].replace("\\", "/") for row in decoded]
+        self.assertEqual(
+            ["plan.md", ".agent_tmp/notes.md", "docs/index.md", "mission_complete.md"],
+            actual_paths,
+        )
         self.assertEqual(["C", "C", "A", "D"], [row["class_id"] for row in decoded])
         # The pure-batch --stdin flag must produce the same payload.
         proc_flag = subprocess.run(
