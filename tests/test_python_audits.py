@@ -178,6 +178,66 @@ class PythonAuditTests(unittest.TestCase):
         self.assertTrue(planning.allowed)
         self.assertIn("planning", planning.class_name.lower())
 
+    def test_classify_artifact_stdin_batch_emits_ndjson(self) -> None:
+        """Batch mode reads one path per line from stdin and emits NDJSON,
+        skipping blank/comment lines. Mirrors how an agent classifies many
+        candidate paths in one tool call."""
+        import json
+        import subprocess
+
+        stdin_payload = (
+            "plan.md\n"
+            ".agent_tmp/notes.md\n"
+            "docs/index.md\n"
+            "\n"
+            "# a comment line, must be skipped\n"
+            "mission_complete.md\n"
+        )
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS_DIR / "classify_artifact.py"),
+                "-",
+                "--json",
+                "--root",
+                ".",
+            ],
+            input=stdin_payload,
+            capture_output=True,
+            text=True,
+            cwd=str(REPO_ROOT),
+            timeout=30,
+        )
+        self.assertEqual(
+            0,
+            proc.returncode,
+            f"classify_artifact batch exited {proc.returncode}: {proc.stderr}",
+        )
+        lines = [ln for ln in proc.stdout.splitlines() if ln.strip()]
+        self.assertEqual(4, len(lines), f"expected 4 ndjson lines, got: {lines!r}")
+        decoded = [json.loads(ln) for ln in lines]
+        self.assertEqual(["plan.md", ".agent_tmp\\notes.md", "docs\\index.md", "mission_complete.md"],
+                         [row["path"] for row in decoded])
+        self.assertEqual(["C", "C", "A", "D"], [row["class_id"] for row in decoded])
+        # The pure-batch --stdin flag must produce the same payload.
+        proc_flag = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS_DIR / "classify_artifact.py"),
+                "--stdin",
+                "--json",
+                "--root",
+                ".",
+            ],
+            input=stdin_payload,
+            capture_output=True,
+            text=True,
+            cwd=str(REPO_ROOT),
+            timeout=30,
+        )
+        self.assertEqual(0, proc_flag.returncode)
+        self.assertEqual(lines, [ln for ln in proc_flag.stdout.splitlines() if ln.strip()])
+
     def test_planning_root_globs_opt_in_is_not_suspicious(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -326,6 +386,93 @@ class PythonAuditTests(unittest.TestCase):
             rc = tidy_repair.apply_plan(root, plan, move_root=True)
             self.assertEqual(0, rc)
             self.assertTrue((root / "plan.md").exists(), "git-tracked plan.md must not be moved")
+
+    def test_tidy_repair_dest_collision_refuses_with_exit_2(self) -> None:
+        # If the same root process filename already exists under .agent_tmp/,
+        # apply must refuse (guard) by returning exit code 2 and not overwrite.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "plan.md").write_text("root plan", encoding="utf-8")
+            (root / ".agent_tmp").mkdir()
+            (root / ".agent_tmp" / "plan.md").write_text("stale plan", encoding="utf-8")
+            policy = policy_loader.Policy()
+
+            plan = tidy_repair.build_plan(root, policy)
+            # layout dirs already present so only the move_root action matters here
+            rc = tidy_repair.apply_plan(root, plan, move_root=True)
+            self.assertEqual(2, rc, "dest collision must return exit code 2")
+            # both files untouched (root version stays, stale not overwritten)
+            self.assertTrue((root / "plan.md").exists())
+            self.assertEqual("root plan", (root / "plan.md").read_text(encoding="utf-8"))
+            self.assertEqual("stale plan", (root / ".agent_tmp" / "plan.md").read_text(encoding="utf-8"))
+
+    def test_tidy_repair_refuses_became_git_tracked_at_apply_time(self) -> None:
+        # Plan was built when the file was untracked, then it becomes git-tracked
+        # before apply. The apply-time guard must catch it and return 2.
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "plan.md").write_text("plan", encoding="utf-8")
+            subprocess.run(["git", "init"], cwd=root, capture_output=True, check=True)
+            policy = policy_loader.Policy()
+
+            plan = tidy_repair.build_plan(root, policy)
+            self.assertTrue(any(a.kind == "move_root" for a in plan.actions))
+
+            # Stage the file AFTER plan was built but BEFORE apply
+            subprocess.run(["git", "add", "plan.md"], cwd=root, capture_output=True, check=True)
+            rc = tidy_repair.apply_plan(root, plan, move_root=True)
+            self.assertEqual(2, rc, "apply must refuse a file that became git-tracked")
+            self.assertTrue((root / "plan.md").exists(), "now-tracked file must remain in place")
+
+    def test_tidy_repair_default_only_targets_markdown_process_files(self) -> None:
+        # Default forbidden patterns are all .md-anchored. A stray non-Markdown
+        # file (e.g. notes.txt) is NOT a repair move candidate by default; it is
+        # out of tidy-skill's placement scope without a custom policy.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "notes.txt").write_text("scratch", encoding="utf-8")
+            policy = policy_loader.Policy()
+            plan = tidy_repair.build_plan(root, policy)
+            self.assertEqual([], [a for a in plan.actions if a.path == "notes.txt"],
+                             "non-Markdown stray files are not default repair candidates")
+            rc = tidy_repair.apply_plan(root, plan, move_root=True)
+            self.assertEqual(0, rc)
+            self.assertTrue((root / "notes.txt").exists(), "non-Markdown file must remain untouched")
+
+    def test_tidy_repair_custom_policy_non_markdown_move_candidate(self) -> None:
+        # With a custom policy that forbids a non-.md glob, repair will move it.
+        # This guards that the move logic is not accidentally .md-only.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "scratch.txt").write_text("scratch", encoding="utf-8")
+            policy = policy_loader.Policy(forbidden_globs=["scratch.txt"])
+            plan = tidy_repair.build_plan(root, policy)
+            scratch_actions = [a for a in plan.actions if a.path == "scratch.txt"]
+            self.assertTrue(any(a.kind == "move_root" for a in scratch_actions),
+                            "custom-forbidden non-Markdown file should be a move_root candidate")
+            rc = tidy_repair.apply_plan(root, plan, move_root=True)
+            self.assertEqual(0, rc)
+            self.assertFalse((root / "scratch.txt").exists())
+            self.assertTrue((root / ".agent_tmp" / "scratch.txt").is_file())
+
+    def test_tidy_repair_leaves_planning_directory_files_untouched(self) -> None:
+        # .planning/ is intentional Class C working memory. Files inside it are
+        # never root-litter candidates and repair must not touch them.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".planning").mkdir()
+            (root / ".planning" / "task_plan.md").write_text("plan", encoding="utf-8")
+            (root / ".planning" / "progress.md").write_text("progress", encoding="utf-8")
+            policy = policy_loader.Policy()
+
+            plan = tidy_repair.build_plan(root, policy)
+            self.assertEqual([], [a for a in plan.actions if a.kind == "move_root"],
+                             ".planning/ files must never produce move_root actions")
+            rc = tidy_repair.apply_plan(root, plan, move_root=True)
+            self.assertEqual(0, rc)
+            self.assertTrue((root / ".planning" / "task_plan.md").exists())
+            self.assertTrue((root / ".planning" / "progress.md").exists())
 
 
 if __name__ == "__main__":

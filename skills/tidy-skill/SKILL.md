@@ -229,7 +229,7 @@ Optional project policy: place `.tidy-skill.json` (or `tidy-skill.policy.json`) 
 | One-shot install + hygiene doctor / CI gate | `${CLAUDE_SKILL_DIR}/scripts/tidy_doctor.py` |
 | DryRun-first safe repairs (layout dirs; optional root moves) | `${CLAUDE_SKILL_DIR}/scripts/tidy_repair.py` |
 | DryRun host hook config emitter | `${CLAUDE_SKILL_DIR}/scripts/tidy-install-hooks.py` |
-| Classify a path before writing (Classes A–E) | `${CLAUDE_SKILL_DIR}/scripts/classify_artifact.py` |
+| Classify a path before writing (Classes A–E); batch via `--stdin --json` | `${CLAUDE_SKILL_DIR}/scripts/classify_artifact.py` |
 | Save/compare score history; gate on `min_score` | `${CLAUDE_SKILL_DIR}/scripts/hygiene_snapshot.py` |
 
 **Safety verbs (always the same meaning):**

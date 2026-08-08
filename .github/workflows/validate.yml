@@ -43,6 +43,9 @@ jobs:
       - name: Doctor (package + hygiene)
         run: python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
 
+      - name: Repair DryRun smoke
+        run: python skills/tidy-skill/scripts/tidy_repair.py --root . --json
+
       - name: Score gate (min 80)
         run: python skills/tidy-skill/scripts/hygiene_snapshot.py gate --root . --min-score 80 --json
 
@@ -71,6 +74,9 @@ jobs:
 
       - name: Doctor (Python)
         run: python skills/tidy-skill/scripts/tidy_doctor.py --root . --json
+
+      - name: Repair DryRun smoke (Python)
+        run: python skills/tidy-skill/scripts/tidy_repair.py --root . --json
 
       - name: Score repo
         shell: pwsh

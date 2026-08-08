@@ -76,16 +76,31 @@ Python and PowerShell hygiene scripts both honor the same schema via `policy_loa
 
 Classify a path into Classes A–E **before** writing. Does not create files.
 
+Single path:
+
 ```powershell
 python classify_artifact.py plan.md --root "." --json
 ```
 
+Batch many candidate paths at once (NDJSON per line; blank lines and `#`-comment lines are skipped) — ideal for an agent classifying a whole proposed layout in one call:
+
+```powershell
+# POSIX shell
+printf 'plan.md\n.agent_tmp/notes.md\ndocs/index.md\nmission_complete.md\n' \
+  | python classify_artifact.py - --json --root "."
+
+# PowerShell
+"plan.md",".agent_tmp/notes.md","docs/index.md","mission_complete.md" \
+  | python classify_artifact.py --stdin --json --root "."
+```
+
 | Parameter | Required | Default | Description |
 |---|---|---|---|
-| `path` | Yes | — | File or directory path (may not exist yet) |
+| `path` | No | — | File or directory path (may not exist yet). Pass `-` or use `--stdin` for batch mode |
+| `--stdin` | No | false | Batch mode: read one path per line from stdin, emit NDJSON (with `--json`) |
 | `--root` | No | `.` | Repository root for relative classification |
 | `--policy` | No | auto | Optional policy JSON |
-| `--json` | No | false | Print JSON output |
+| `--json` | No | false | Print JSON (single) or NDJSON (batch) |
 
 ---
 

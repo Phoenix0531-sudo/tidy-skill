@@ -401,3 +401,175 @@ function Get-TidyArtifactClass {
         SafeSuggestion = 'Run the Artifact Intent Check before creating; set lifetime and reader.'
     }
 }
+
+# ---------------------------------------------------------------------------
+# Invoke-TidyRepair - PowerShell mirror of tidy_repair.py
+# Safety verbs: dryrun (default) / careful (--Apply -MoveRoot) / guard (refuse
+# host/git-tracked/protected). Never rewrites host configs or VHDX.
+# ---------------------------------------------------------------------------
+function Test-TidyGitTracked {
+    param(
+        [Parameter(Mandatory = $true)][string]$Root,
+        [Parameter(Mandatory = $true)][string]$RelativePath
+    )
+    $gitDir = Join-Path $Root '.git'
+    if (-not (Test-Path -LiteralPath $gitDir)) { return $false }
+    try {
+        $null = & git -C $Root ls-files --error-unmatch -- $RelativePath 2>$null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    }
+}
+
+function Invoke-TidyRepair {
+    param(
+        [string]$Root = '.',
+        $Policy,
+        [switch]$Apply,
+        [switch]$MoveRoot,
+        [switch]$NoRootMoves,
+        [int]$TmpDays = 7,
+        [int]$ReportDays = 30
+    )
+    # Returns [pscustomobject]@{ Root; DryRun; Actions; Notes; ExitCode }
+    # Action items: Kind, Path, Detail, Risk, Applied
+    if ($null -eq $Policy) { $Policy = New-TidyPolicy }
+    if (-not (Test-Path -LiteralPath $Root -PathType Container)) {
+        throw "Root is not a directory: $Root"
+    }
+    $resolvedRoot = (Resolve-Path -LiteralPath $Root).Path
+    $actions = New-Object System.Collections.Generic.List[object]
+    $notes = New-Object System.Collections.Generic.List[string]
+
+    # --- layout dirs (safe) ---
+    foreach ($name in @('.agent_tmp', '.agent_reports')) {
+        $dir = Join-Path $resolvedRoot $name
+        $gitkeep = Join-Path $dir '.gitkeep'
+        if ((Test-Path -LiteralPath $dir -PathType Container) -and (Test-Path -LiteralPath $gitkeep -PathType Leaf)) {
+            $actions.Add([pscustomobject]@{ Kind = 'skip'; Path = "$name/"; Detail = 'already present with .gitkeep'; Risk = 'safe'; Applied = $false })
+            continue
+        }
+        if (Test-Path -LiteralPath $dir -PathType Container) {
+            if (-not (Test-Path -LiteralPath $gitkeep -PathType Leaf)) {
+                $actions.Add([pscustomobject]@{ Kind = 'create_dir'; Path = "$name/.gitkeep"; Detail = "add .gitkeep under existing $name/"; Risk = 'safe'; Applied = $false })
+            }
+        } else {
+            $actions.Add([pscustomobject]@{ Kind = 'create_dir'; Path = "$name/"; Detail = "create $name/ with .gitkeep (explicit placement)"; Risk = 'safe'; Applied = $false })
+        }
+    }
+
+    # --- root process moves (careful) ---
+    if (-not $NoRootMoves) {
+        Get-ChildItem -LiteralPath $resolvedRoot -File -ErrorAction SilentlyContinue | ForEach-Object {
+            $fname = $_.Name
+            if (-not (Test-TidyForbiddenName -Name $fname -Policy $Policy)) { return }
+            if (Test-TidyProtectedName -Name $fname -Policy $Policy) {
+                $actions.Add([pscustomobject]@{ Kind = 'skip'; Path = $fname; Detail = 'protected formal doc - never move'; Risk = 'manual'; Applied = $false })
+                return
+            }
+            if (Test-TidyGitTracked -Root $resolvedRoot -RelativePath $fname) {
+                $actions.Add([pscustomobject]@{ Kind = 'skip'; Path = $fname; Detail = 'git-tracked - refuse automatic move; untrack or move manually'; Risk = 'manual'; Applied = $false })
+                return
+            }
+            $actions.Add([pscustomobject]@{ Kind = 'move_root'; Path = $fname; Detail = "move root process Markdown -> .agent_tmp/$fname (Class C)"; Risk = 'careful'; Applied = $false })
+        }
+    }
+
+    # --- retention notes (careful, never auto-delete) ---
+    $now = Get-Date
+    foreach ($pair in @(
+        @{ Dir = '.agent_tmp'; Days = $TmpDays },
+        @{ Dir = '.agent_reports'; Days = $ReportDays }
+    )) {
+        $folder = Join-Path $resolvedRoot $pair.Dir
+        if (-not (Test-Path -LiteralPath $folder -PathType Container)) { continue }
+        $eligible = 0
+        Get-ChildItem -LiteralPath $folder -File -ErrorAction SilentlyContinue | ForEach-Object {
+            if ($_.Name -eq '.gitkeep') { return }
+            $age = ($now - $_.LastWriteTime).Days
+            if ($age -ge $pair.Days) { $eligible++ }
+        }
+        if ($eligible -gt 0) {
+            $actions.Add([pscustomobject]@{
+                Kind = 'retention_note'; Path = "$($pair.Dir)/"
+                Detail = "$eligible file(s) older than $($pair.Days)d - preview with clean-agent-artifacts.ps1 -Root . -DryRun"
+                Risk = 'careful'; Applied = $false
+            })
+        }
+    }
+
+    $notes.Add('Verbs: dryrun (default preview) / careful (root moves need -Apply -MoveRoot) / guard (never auto host/VHDX/config).')
+
+    $exitCode = 0
+    $dryRun = -not $Apply.IsPresent
+
+    if ($Apply) {
+        foreach ($action in $actions) {
+            if ($action.Kind -eq 'create_dir') {
+                $rel = $action.Path.TrimEnd('/', '\')
+                if ($rel.EndsWith('.gitkeep')) {
+                    $parent = Split-Path $rel -Parent
+                    $targetDir = if ($parent) { Join-Path $resolvedRoot $parent } else { $resolvedRoot }
+                    $gitkeep = Join-Path $resolvedRoot $rel
+                } else {
+                    $targetDir = Join-Path $resolvedRoot $rel
+                    $gitkeep = Join-Path $targetDir '.gitkeep'
+                }
+                New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+                if (-not (Test-Path -LiteralPath $gitkeep -PathType Leaf)) {
+                    New-Item -ItemType File -Force -Path $gitkeep | Out-Null
+                }
+                $action.Applied = $true
+            } elseif ($action.Kind -eq 'move_root') {
+                if (-not $MoveRoot) { continue }
+                $src = Join-Path $resolvedRoot $action.Path
+                $destDir = Join-Path $resolvedRoot '.agent_tmp'
+                New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+                $dest = Join-Path $destDir $action.Path
+                if (-not (Test-Path -LiteralPath $src -PathType Leaf)) {
+                    $action.Detail = $action.Detail + ' (source missing at apply time)'
+                    continue
+                }
+                if (Test-Path -LiteralPath $dest) {
+                    $action.Detail = $action.Detail + " (refused: $($action.Path) already exists under .agent_tmp/)"
+                    $exitCode = 2
+                    break
+                }
+                if (Test-TidyGitTracked -Root $resolvedRoot -RelativePath $action.Path) {
+                    $action.Detail = $action.Detail + ' (refused: became git-tracked)'
+                    $exitCode = 2
+                    break
+                }
+                Move-Item -LiteralPath $src -Destination $dest -Force
+                $action.Applied = $true
+            }
+        }
+        if (-not $MoveRoot -and ($actions | Where-Object { $_.Kind -eq 'move_root' })) {
+            $notes.Add('Root moves planned but not applied (careful). Re-run with -Apply -MoveRoot.')
+        }
+    } else {
+        $notes.Add('DryRun only. Re-run with -Apply for safe layout creates.')
+        if ($actions | Where-Object { $_.Kind -eq 'move_root' }) {
+            $notes.Add('Root moves need -Apply -MoveRoot (careful verb).')
+        }
+    }
+
+    $actionArr = [object[]]@($actions.ToArray())
+    $noteArr = [string[]]@($notes.ToArray())
+    $safeN = 0
+    $carefulN = 0
+    foreach ($a in $actionArr) {
+        if ($a.Risk -eq 'safe') { $safeN++ }
+        elseif ($a.Risk -eq 'careful') { $carefulN++ }
+    }
+    $result = New-Object PSObject
+    $result | Add-Member -NotePropertyName Root -NotePropertyValue $resolvedRoot
+    $result | Add-Member -NotePropertyName DryRun -NotePropertyValue ([bool]$dryRun)
+    $result | Add-Member -NotePropertyName Actions -NotePropertyValue $actionArr
+    $result | Add-Member -NotePropertyName Notes -NotePropertyValue $noteArr
+    $result | Add-Member -NotePropertyName ExitCode -NotePropertyValue ([int]$exitCode)
+    $result | Add-Member -NotePropertyName SafeCount -NotePropertyValue ([int]$safeN)
+    $result | Add-Member -NotePropertyName CarefulCount -NotePropertyValue ([int]$carefulN)
+    return $result
+}

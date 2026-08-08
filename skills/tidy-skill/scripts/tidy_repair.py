@@ -132,7 +132,8 @@ def plan_layout(root: Path) -> list[PlannedAction]:
 
 def plan_root_moves(root: Path, policy: Policy) -> list[PlannedAction]:
     actions: list[PlannedAction] = []
-    audit = audit_mod.audit(root, max_depth=1, report_path=None)
+    # Pass policy so custom forbidden_globs / planning_root_globs are honored.
+    audit = audit_mod.audit(root, max_depth=1, report_path=None, policy=policy)
     for path in audit.suspicious_root:
         name = path.name
         if is_protected_name(name, policy):

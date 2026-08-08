@@ -41,6 +41,8 @@ python skills\tidy-skill\scripts\audit_dev_environment.py --root . --json
 python skills\tidy-skill\scripts\audit_workspace_hygiene.py --root . --json
 python skills\tidy-skill\scripts\tidy_doctor.py --root . --json
 python skills\tidy-skill\scripts\classify_artifact.py plan.md --root . --json
+# Batch many candidate paths from stdin (NDJSON per line):
+printf 'plan.md\n.todo.md\ndocs/index.md\n' | python skills\tidy-skill\scripts\classify_artifact.py --stdin --json --root .
 python skills\tidy-skill\scripts\hygiene_snapshot.py gate --root . --min-score 80 --json
 python -m unittest discover -s tests -p "test_*.py"
 powershell -ExecutionPolicy Bypass -File .\skills\tidy-skill\scripts\clean-agent-artifacts.ps1 -Root . -DryRun

@@ -176,4 +176,73 @@ if ($d.ClassId -ne 'D') { throw "mission_complete.md should be Class D, got $($d
 $cMis = Get-TidyArtifactClass -Path 'plan.md' -Root $repoRoot -Policy $classPolicy
 if ($cMis.ClassId -ne 'C' -or $cMis.Allowed) { throw "plan.md should be Class C not allowed, got $($cMis.ClassId) allowed=$($cMis.Allowed)" }
 
-Write-Host "[OK] Policy.ps1 defaults, discovery, score, audit, planning opt-in, host hook, and artifact class checks passed."
+# Invoke-TidyRepair (PowerShell mirror of tidy_repair.py).
+$repairRoot = Join-Path $env:TEMP ("tidy-repair-ps1-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Force -Path $repairRoot | Out-Null
+try {
+    "plan" | Out-File -FilePath (Join-Path $repairRoot "plan.md") -Encoding utf8
+    "readme" | Out-File -FilePath (Join-Path $repairRoot "README.md") -Encoding utf8
+
+    # DryRun: plan only, nothing on disk yet.
+    $dry = Invoke-TidyRepair -Root $repairRoot
+    if (-not $dry.DryRun) { throw "expected DryRun=true" }
+    if ($dry.ExitCode -ne 0) { throw "DryRun exit should be 0, got $($dry.ExitCode)" }
+    $kinds = @($dry.Actions | ForEach-Object { $_.Kind })
+    if ($kinds -notcontains 'create_dir') { throw "expected create_dir in DryRun plan" }
+    if ($kinds -notcontains 'move_root') { throw "expected move_root for plan.md" }
+    if (Test-Path -LiteralPath (Join-Path $repairRoot ".agent_tmp")) {
+        throw "DryRun must not create .agent_tmp"
+    }
+
+    # Apply layout only (safe): dirs created, plan.md stays.
+    $safe = Invoke-TidyRepair -Root $repairRoot -Apply
+    if ($safe.ExitCode -ne 0) { throw "safe apply exit should be 0, got $($safe.ExitCode)" }
+    if (-not (Test-Path -LiteralPath (Join-Path $repairRoot ".agent_tmp\.gitkeep"))) {
+        throw ".agent_tmp/.gitkeep missing after -Apply"
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $repairRoot ".agent_reports\.gitkeep"))) {
+        throw ".agent_reports/.gitkeep missing after -Apply"
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $repairRoot "plan.md"))) {
+        throw "plan.md must stay without -MoveRoot"
+    }
+
+    # Careful: move untracked plan.md into .agent_tmp/.
+    $careful = Invoke-TidyRepair -Root $repairRoot -Apply -MoveRoot
+    if ($careful.ExitCode -ne 0) { throw "careful apply exit should be 0, got $($careful.ExitCode)" }
+    if (Test-Path -LiteralPath (Join-Path $repairRoot "plan.md")) {
+        throw "plan.md should have moved under -Apply -MoveRoot"
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $repairRoot ".agent_tmp\plan.md"))) {
+        throw "plan.md missing under .agent_tmp after move"
+    }
+    # README stays (protected).
+    if (-not (Test-Path -LiteralPath (Join-Path $repairRoot "README.md"))) {
+        throw "README.md must never be moved"
+    }
+} finally {
+    Remove-Item -LiteralPath $repairRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Guard: git-tracked process file is skipped, not moved.
+$guardRoot = Join-Path $env:TEMP ("tidy-repair-guard-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Force -Path $guardRoot | Out-Null
+try {
+    "tracked plan" | Out-File -FilePath (Join-Path $guardRoot "plan.md") -Encoding utf8
+    & git -C $guardRoot init 2>$null | Out-Null
+    & git -C $guardRoot add plan.md 2>$null | Out-Null
+    $guard = Invoke-TidyRepair -Root $guardRoot -Apply -MoveRoot
+    $planActs = @($guard.Actions | Where-Object { $_.Path -eq 'plan.md' })
+    if ($planActs.Count -lt 1) { throw "expected an action for tracked plan.md" }
+    foreach ($a in $planActs) {
+        if ($a.Kind -ne 'skip') { throw "tracked plan.md must be skip, got $($a.Kind)" }
+        if ($a.Risk -ne 'manual') { throw "tracked plan.md risk must be manual, got $($a.Risk)" }
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $guardRoot "plan.md"))) {
+        throw "git-tracked plan.md must remain in place"
+    }
+} finally {
+    Remove-Item -LiteralPath $guardRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host "[OK] Policy.ps1 defaults, discovery, score, audit, planning opt-in, host hook, artifact class, and repair checks passed."

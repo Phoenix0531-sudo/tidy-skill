@@ -123,6 +123,10 @@ uv run python skills/tidy-skill/scripts/tidy_repair.py --root . --json
 # 写文件前做 A–E 路径分类
 uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
 
+# 从 stdin 批量分类候选路径（每行一个，输出 NDJSON）
+printf 'plan.md\n.agent_tmp/notes.md\ndocs/index.md\n' \
+  | uv run python skills/tidy-skill/scripts/classify_artifact.py --stdin --json --root .
+
 # 审计 agent 产物
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
 

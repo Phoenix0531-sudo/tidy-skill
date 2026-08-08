@@ -123,6 +123,10 @@ uv run python skills/tidy-skill/scripts/tidy_repair.py --root . --json
 # Classify a path before writing (Classes A–E)
 uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
 
+# Classify many candidate paths at once from stdin (NDJSON per line)
+printf 'plan.md\n.agent_tmp/notes.md\ndocs/index.md\n' \
+  | uv run python skills/tidy-skill/scripts/classify_artifact.py --stdin --json --root .
+
 # Audit agent artifacts
 uv run python skills/tidy-skill/scripts/audit_agent_artifacts.py --root . --json
 

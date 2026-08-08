@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- `classify_artifact.py` **stdin batch mode**: pass `-` or `--stdin` to read
+  one path per line and emit NDJSON (with `--json`). Blank lines and `#`-comment
+  lines are skipped, so an agent can classify a whole proposed layout in one
+  tool call without scripting a loop.
+- `Invoke-TidyRepair` in `Policy.ps1` — PowerShell mirror of `tidy_repair.py`
+  (dryrun default, `-Apply` for layout dirs, `-Apply -MoveRoot` for careful root
+  moves; same guard contract: never auto-write host configs, never move
+  protected/git-tracked files).
+- `tidy_repair.py` added to the Windows PowerShell smoke step and a new Repair
+  DryRun smoke step in the CI workflow (`.github/workflows/validate.yml`).
+- `docs/cases/guard-contract.md` — reference case documenting the guard verb
+  (protected docs, git-tracked files, apply-time recheck, destination
+  collision, host configs, VHDX/Docker) with reproduction commands and the
+  exit-code 2 semantics; indexed in `docs/cases/README.md`.
+- Repair test boundary cases: destination collision (exit 2), apply-time
+  git-tracked recheck, custom non-Markdown forbidden policy, and `.planning/`
+  files untouched.
+
+### Changed
+- Docs (README EN/ZH, script-usage, SKILL, CONTRIBUTING) document the stdin
+  batch mode for `classify_artifact.py`.
+- `tidy_repair.py` `plan_root_moves` now passes the policy to `audit()` so
+  custom `forbidden_globs` / `planning_root_globs` are honored at repair time.
+
 ## [1.6.0] - 2026-08-07
 
 ### Added

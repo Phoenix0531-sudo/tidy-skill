@@ -246,26 +246,13 @@ def classify_path(path: Path, root: Path | None = None, policy: Policy | None = 
     )
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Classify a path into tidy-skill Classes A–E.")
-    parser.add_argument("path", help="File or directory path to classify (may not exist yet).")
-    parser.add_argument("--root", default=".", help="Repository root for relative classification.")
-    parser.add_argument("--policy", help="Optional policy JSON path.")
-    parser.add_argument("--json", action="store_true", help="Print JSON.")
-    args = parser.parse_args()
-
-    root = Path(args.root)
-    if not root.is_dir():
-        parser.error(f"--root is not a directory: {root}")
-    try:
-        policy = discover_policy(root, Path(args.policy) if args.policy else None)
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
-        parser.error(f"invalid policy: {exc}")
-
-    result = classify_path(Path(args.path), root=root, policy=policy)
+def _classify_one(path_str: str, root: Path, policy: Policy, *, json_out: bool) -> int:
+    """Classify a single path and print the result. Returns 0 (never fails on
+    a non-allowed path — the point is to inform the agent, not to block it)."""
+    result = classify_path(Path(path_str), root=root, policy=policy)
     payload = asdict(result)
     payload["policy_source"] = policy.source
-    if args.json:
+    if json_out:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print("tidy-skill - Artifact Classification")
@@ -278,6 +265,92 @@ def main() -> int:
             print(f"- {reason}")
         print(f"Safe suggestion: {result.safe_suggestion}")
     return 0 if result.allowed or result.class_id in {"C", "D"} else 0
+
+
+def _classify_stdin(root: Path, policy: Policy, *, json_out: bool) -> int:
+    """Batch mode: read one path per line from stdin, classify each, and emit
+    one NDJSON object per line (or one human report separated by a blank line).
+    Blank lines and lines starting with '#' are ignored so callers can paste
+    annotated lists. Exit code is 0 unless an input line raises a hard error.
+
+    This lets an agent ask about many candidate paths in a single tool call
+    without scripting a loop:
+        echo -e 'plan.md\n.agent_tmp/notes.md\ndocs/index.md' | classify_artifact - --json
+    """
+    exit_code = 0
+    first = True
+    for raw_line in sys.stdin:
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        try:
+            result = classify_path(Path(line), root=root, policy=policy)
+            payload = asdict(result)
+            payload["policy_source"] = policy.source
+        except Exception as exc:  # noqa: BLE001 - never abort the whole batch on one bad line
+            payload = {
+                "path": line,
+                "class_id": "?",
+                "class_name": "Classification error",
+                "placement": "",
+                "allowed": False,
+                "confidence": "high",
+                "reasons": [str(exc)],
+                "safe_suggestion": "Fix or remove this line and rerun.",
+            }
+            exit_code = 2
+        if json_out:
+            print(json.dumps(payload, ensure_ascii=False))
+        else:
+            if not first:
+                print()
+            first = False
+            print(f"Path: {payload['path']}")
+            print(f"Class: {payload['class_id']} — {payload['class_name']}")
+            print(f"Placement: {payload['placement']}")
+            print(f"Allowed at this path: {'yes' if payload['allowed'] else 'no'}")
+            print(f"Confidence: {payload['confidence']}")
+            for reason in payload.get("reasons", []):
+                print(f"- {reason}")
+            print(f"Safe suggestion: {payload['safe_suggestion']}")
+    return exit_code
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Classify a path into tidy-skill Classes A–E.")
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default=None,
+        help=(
+            "File or directory path to classify (may not exist yet). "
+            "Pass '-' or use '--stdin' to read one path per line from stdin "
+            "for batch classification."
+        ),
+    )
+    parser.add_argument(
+        "--stdin",
+        action="store_true",
+        help="Batch mode: read one path per line from stdin and emit NDJSON (with --json).",
+    )
+    parser.add_argument("--root", default=".", help="Repository root for relative classification.")
+    parser.add_argument("--policy", help="Optional policy JSON path.")
+    parser.add_argument("--json", action="store_true", help="Print JSON (single) or NDJSON (batch).")
+    args = parser.parse_args()
+
+    root = Path(args.root)
+    if not root.is_dir():
+        parser.error(f"--root is not a directory: {root}")
+    try:
+        policy = discover_policy(root, Path(args.policy) if args.policy else None)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        parser.error(f"invalid policy: {exc}")
+
+    if args.stdin or args.path == "-":
+        return _classify_stdin(root, policy, json_out=args.json)
+    if args.path is None:
+        parser.error("path is required (or use '--stdin' for batch mode)")
+    return _classify_one(args.path, root, policy, json_out=args.json)
 
 
 if __name__ == "__main__":
