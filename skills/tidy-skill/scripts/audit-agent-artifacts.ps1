@@ -51,22 +51,8 @@ param(
 . (Join-Path $PSScriptRoot 'Policy.ps1')
 
 # ---- Helpers ----
-
-function Get-RelativePath {
-    param([string]$FullPath)
-    # Case-insensitive (Windows) prefix match; fall back to ordinal on others.
-    $cmp = [System.StringComparison]::OrdinalIgnoreCase
-    if ($FullPath.Length -ge $Root.Length -and $FullPath.Substring(0, $Root.Length) -eq $Root) {
-        $rel = $FullPath.Substring($Root.Length).TrimStart('\').TrimStart('/')
-    } else {
-        # Prefix mismatch (8.3 vs long name, junction, etc.): strip any leading
-        # directory components and keep just the file name so root-level files
-        # are still attributed to the root bucket instead of being dropped.
-        $rel = [System.IO.Path]::GetFileName($FullPath)
-    }
-    if ($rel -eq '') { return '.' }
-    return $rel
-}
+# Get-RelativePath and Resolve-TidyRoot are provided by Policy.ps1
+# (shared, 8.3-short-name safe). See get-relative-path helpers there.
 
 function Format-FileSize {
     param([long]$Bytes)
@@ -112,15 +98,9 @@ $skipDirPatterns = @(
 # Get-ChildItem -Recurse. On Windows CI runners, $env:TEMP often carries an
 # 8.3 short name (e.g. C:\Users\RUNNER~1\...) while Get-ChildItem returns
 # long-form FullNames (C:\Users\runneradmin\...); without canonicalization
-# the substring-based Get-RelativePath below sees a non-matching prefix and
-# silently drops every root file from the suspicious scan.
-$Root = (Resolve-Path -LiteralPath $Root).Path
-# Resolve-Path usually keeps 8.3 segments; re-expand against a real child so
-# the prefix matches FullNames exactly.
-$probeDir = Get-Item -LiteralPath $Root
-if ($probeDir -and $probeDir.FullName) {
-    $Root = $probeDir.FullName.TrimEnd('\').TrimEnd('/')
-}
+# the shared Get-RelativePath sees a non-matching prefix and silently drops
+# every root file from the suspicious scan.
+$Root = Resolve-TidyRoot -Path $Root
 $tidyPolicy = Get-TidyPolicy -Root $Root -PolicyPath $Policy
 
 Write-Host "tidy-skill - Artifact Audit" -ForegroundColor Cyan
@@ -142,7 +122,7 @@ $results = @{
 $allFiles = Get-FilesRecursive -Path $Root -Depth $MaxDepth
 
 foreach ($file in $allFiles) {
-    $relPath = Get-RelativePath -FullPath $file.FullName
+    $relPath = Get-RelativePath -FullPath $file.FullName -Root $Root
     $relDir = [System.IO.Path]::GetDirectoryName($relPath)
     if ($relDir -eq '.') { $relDir = '' }
 
@@ -219,7 +199,7 @@ else {
     [void]$lines.Add("| File | Size | Last modified |")
     [void]$lines.Add("|---|---|---|")
     foreach ($f in $results.AgentTmp) {
-        [void]$lines.Add("| $(Get-RelativePath $f.FullName) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
+        [void]$lines.Add("| $(Get-RelativePath -FullPath $f.FullName -Root $Root) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
     }
 }
 [void]$lines.Add("")
@@ -234,7 +214,7 @@ else {
     [void]$lines.Add("| File | Size | Last modified |")
     [void]$lines.Add("|---|---|---|")
     foreach ($f in $results.AgentReports) {
-        [void]$lines.Add("| $(Get-RelativePath $f.FullName) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
+        [void]$lines.Add("| $(Get-RelativePath -FullPath $f.FullName -Root $Root) | $(Format-FileSize $f.Length) | $($f.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) |")
     }
 }
 [void]$lines.Add("")

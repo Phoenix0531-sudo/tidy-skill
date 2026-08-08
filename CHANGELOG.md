@@ -4,7 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+- `tools/release.py`: dry-run-first release helper. Bumps `pyproject.toml`,
+  migrates `[Unreleased]` notes into a dated section, updates the doctor
+  version label in `docs/index.md`, regenerates `docs/self-audit/tidy_doctor.md`
+  under `--strict`, then optionally `--commit` / `--tag` / `--push` as a chained
+  opt-in sequence. Refuses empty Unreleased notes, dirty trees, and non-strict
+  version increments.
+- `tests/test_release.py` covers version math, CHANGELOG migration, empty
+  Unreleased rejection, index label rewrite, default read-only CLI, and the
+  apply/commit/tag/push guard chain.
+
+### Changed
+- **Get-RelativePath / Resolve-TidyRoot dedup**: the 8.3-safe path helpers live
+  once in `Policy.ps1`. `audit-agent-artifacts.ps1` and `clean-agent-artifacts.ps1`
+  call the shared functions instead of carrying independent copies.
+- `CONTRIBUTING.md` documents the release workflow.
 
 ## [1.7.1] - 2026-08-08 (patch)
 

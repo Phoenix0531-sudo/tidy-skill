@@ -63,6 +63,33 @@ powershell -ExecutionPolicy Bypass -File .\tests\test-clean-agent-artifacts.ps1
 powershell -ExecutionPolicy Bypass -File .\tests\test-policy-ps1.ps1
 ```
 
+## Releasing
+
+Use `tools/release.py`. Default mode is a **read-only preview**. Git write
+steps are separately opt-in and must chain: `--apply` → `--commit` → `--tag` →
+`--push`.
+
+```powershell
+# Preview only (no file writes)
+python tools\release.py --bump patch
+
+# Write pyproject / CHANGELOG / docs/index / doctor snapshot
+python tools\release.py --bump patch --apply
+
+# Write + commit + annotated tag + push (all opt-in)
+python tools\release.py --bump minor --apply --commit --tag --push
+```
+
+Requirements before `--apply`:
+
+- Working tree is clean.
+- `[Unreleased]` in `CHANGELOG.md` has real notes (not `_Nothing yet._`).
+- Target version is strictly greater than the current `pyproject.toml` version
+  and does not already exist as a CHANGELOG section.
+
+`--apply` always regenerates `docs/self-audit/tidy_doctor.md` via
+`tidy_doctor.py --strict` before writing release metadata.
+
 ## Pull Request Checklist
 
 - The display name remains `洁癖.skill`.

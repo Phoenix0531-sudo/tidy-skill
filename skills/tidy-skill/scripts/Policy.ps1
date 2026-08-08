@@ -403,6 +403,44 @@ function Get-TidyArtifactClass {
 }
 
 # ---------------------------------------------------------------------------
+# Resolve-TidyRoot / Get-RelativePath - shared path helpers.
+# Windows CI runners expose $env:TEMP as an 8.3 short name
+# (C:\Users\RUNNER~1\...) while Get-ChildItem returns long-form FullNames
+# (C:\Users\runneradmin\...). Without canonicalization, substring-based
+# relative-path math silently drops every root file from the suspicious scan
+# and mis-keys git-tracked checks. Centralized here so every script that
+# scans files against $Root uses the same, 8.3-safe normalization.
+# ---------------------------------------------------------------------------
+function Resolve-TidyRoot {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $probe = Get-Item -LiteralPath $resolved
+    if ($probe -and $probe.FullName) {
+        return $probe.FullName.TrimEnd('\').TrimEnd('/')
+    }
+    return $resolved.TrimEnd('\').TrimEnd('/')
+}
+
+function Get-RelativePath {
+    param(
+        [string]$FullPath,
+        [Parameter(Mandatory = $true)][string]$Root
+    )
+    if (-not $Root) { return $FullPath }
+    $cmp = [System.StringComparison]::OrdinalIgnoreCase
+    if ($FullPath.Length -ge $Root.Length -and $FullPath.Substring(0, $Root.Length).Equals($Root, $cmp)) {
+        $rel = $FullPath.Substring($Root.Length).TrimStart('\').TrimStart('/')
+    } else {
+        # Prefix mismatch (8.3 vs long name, junction, etc.): strip any leading
+        # directory components and keep just the file name so root-level files
+        # are still attributed to the root bucket instead of being dropped.
+        $rel = [System.IO.Path]::GetFileName($FullPath)
+    }
+    if ($rel -eq '') { return '.' }
+    return $rel
+}
+
+# ---------------------------------------------------------------------------
 # Invoke-TidyRepair - PowerShell mirror of tidy_repair.py
 # Safety verbs: dryrun (default) / careful (--Apply -MoveRoot) / guard (refuse
 # host/git-tracked/protected). Never rewrites host configs or VHDX.
