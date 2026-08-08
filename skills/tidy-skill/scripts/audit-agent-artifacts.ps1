@@ -54,7 +54,16 @@ param(
 
 function Get-RelativePath {
     param([string]$FullPath)
-    $rel = $FullPath.Substring($Root.Length).TrimStart('\').TrimStart('/')
+    # Case-insensitive (Windows) prefix match; fall back to ordinal on others.
+    $cmp = [System.StringComparison]::OrdinalIgnoreCase
+    if ($FullPath.Length -ge $Root.Length -and $FullPath.Substring(0, $Root.Length) -eq $Root) {
+        $rel = $FullPath.Substring($Root.Length).TrimStart('\').TrimStart('/')
+    } else {
+        # Prefix mismatch (8.3 vs long name, junction, etc.): strip any leading
+        # directory components and keep just the file name so root-level files
+        # are still attributed to the root bucket instead of being dropped.
+        $rel = [System.IO.Path]::GetFileName($FullPath)
+    }
     if ($rel -eq '') { return '.' }
     return $rel
 }
@@ -99,7 +108,19 @@ $skipDirPatterns = @(
 )
 
 # ---- Resolve ----
+# Canonicalize $Root so it prefix-matches the FullNames returned by
+# Get-ChildItem -Recurse. On Windows CI runners, $env:TEMP often carries an
+# 8.3 short name (e.g. C:\Users\RUNNER~1\...) while Get-ChildItem returns
+# long-form FullNames (C:\Users\runneradmin\...); without canonicalization
+# the substring-based Get-RelativePath below sees a non-matching prefix and
+# silently drops every root file from the suspicious scan.
 $Root = (Resolve-Path -LiteralPath $Root).Path
+# Resolve-Path usually keeps 8.3 segments; re-expand against a real child so
+# the prefix matches FullNames exactly.
+$probeDir = Get-Item -LiteralPath $Root
+if ($probeDir -and $probeDir.FullName) {
+    $Root = $probeDir.FullName.TrimEnd('\').TrimEnd('/')
+}
 $tidyPolicy = Get-TidyPolicy -Root $Root -PolicyPath $Policy
 
 Write-Host "tidy-skill - Artifact Audit" -ForegroundColor Cyan
