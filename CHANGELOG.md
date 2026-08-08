@@ -28,6 +28,11 @@ All notable changes to this project will be documented in this file.
   batch mode for `classify_artifact.py`.
 - `tidy_repair.py` `plan_root_moves` now passes the policy to `audit()` so
   custom `forbidden_globs` / `planning_root_globs` are honored at repair time.
+- `docs/skills-cli-verify.md` records a **2026-08-08 re-verification**: with
+  github.com connectivity restored, `npx skills add --list` plus `--copy`
+  installs to codex / claude-code / cursor / pi all succeeded (exit 0) into
+  `.agents/` / `.claude/` / `.pi/` landing trees, closing the earlier
+  transient network-block.
 
 ## [1.6.0] - 2026-08-07
 

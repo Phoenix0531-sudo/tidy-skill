@@ -1,8 +1,31 @@
 # skills CLI verification log
 
-**Date:** 2026-08-05 (Codex); 2026-08-07 (claude-code/cursor/pi added) — author machine, Windows  
+**Date:** 2026-08-05 (Codex); 2026-08-07 (claude-code/cursor/pi added); **2026-08-08 re-verified** — author machine, Windows  
 **CLI:** `npx skills` (vercel-labs/skills style package)  
 **Source:** `https://github.com/Phoenix0531-sudo/tidy-skill.git`
+
+## 2026-08-08 re-verification (network recovered)
+
+After github.com connectivity was restored, re-ran discovery + all four
+target installs in a fresh empty `%TEMP%` folder. All `--copy` mode.
+
+| Step | Command | Result |
+|---|---|---|
+| Discover | `npx.cmd skills add Phoenix0531-sudo/tidy-skill --list -y` | Found 1 skill: `tidy-skill` (exit 0) |
+| Install codex | `... --skill tidy-skill -a codex -y --copy` | Installed 1 skill (exit 0) |
+| Install claude-code | `... -a claude-code ...` | Installed 1 skill (exit 0) |
+| Install cursor | `... -a cursor ...` | Installed 1 skill (exit 0) |
+| Install pi | `... -a pi ...` | Installed 1 skill (exit 0) |
+
+Landing trees confirmed (one SKILL.md each, full tree: agents/ commands/
+examples/ hooks/ references/ scripts/ templates/):
+
+- `.agents/skills/tidy-skill/` — codex **and** cursor share this root
+- `.claude/skills/tidy-skill/` — claude-code only
+- `.pi/skills/tidy-skill/` — pi only
+
+Frontmatter of the installed SKILL.md matches the current repo `name`/`description`.
+This closes the transient network-block from earlier runs.
 
 ## List
 
