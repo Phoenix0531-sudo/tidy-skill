@@ -4,8 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [1.9.0] - 2026-08-09
+
 ### Added
-- **Project logo + README motion GIF.** Minimal geometric mark (`assets/readme/logo.svg`, 512px icon: tidy folder-box + clean check + amber "lit-clean" dot) with exported PNG sizes (16/32/48/192/512/1024/2048) and favicon. A GitHub-safe animated `tidy-motion.gif` (doctor → repair → clean dot lights) replaces the top banner as the README hero; the three-layer mechanism banner moves inline to the *Three-Layer Hygiene Model* section.
+- **Project logo + README motion GIF.** Voxel-badge mark in the same design family as BondLens (`assets/readme/logo.svg`, 512px icon: dark rounded hex prism with three teal governance tiers and one amber "checked" focal dot), with exported PNG sizes (16/32/48/192/512/1024/2048) and favicon. A GitHub-safe animated `tidy-motion.gif` (hex prism draws in → tiers place → clean dot lights) replaces the top banner as the README hero; the three-layer mechanism banner moves inline to the *Three-Layer Hygiene Model* section. See [docs/branding.md](docs/branding.md).
 - `tools/svg_to_png.js` — zero-native-dep SVG→PNG exporter using `@resvg/resvg-js` (WASM).
 - `tools/render_motion_frames.js` — per-frame renderer for the motion GIF (resvg does not run SMIL timelines).
 - Logo concept art and preview under `logos/` (`concept-1..4`, `iteration-1`, `preview.html`).

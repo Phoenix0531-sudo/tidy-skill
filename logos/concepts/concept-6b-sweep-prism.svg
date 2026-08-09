@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — Prism with sweep check">
+  <!-- Concept 6b: Same hex prism, but the three tiers are a rising "tidy sweep"
+       (each tier shifted up-left), and the amber dot sits at the sweep's tail
+       like the clean-check endpoint. Reads as "left-to-right tidy pass". -->
+  <g id="icon">
+    <rect width="512" height="512" rx="96" fill="#17211d"/>
+    <path d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z"
+          fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M256 118 L376 186 L376 326 L256 394 L136 326 L136 186 Z"
+          fill="#0f6b5f" opacity="0.18"/>
+    <!-- rising tidy tiers -->
+    <rect x="150" y="300" width="212" height="28" rx="9" fill="#0f6b5f" opacity="0.45"/>
+    <rect x="150" y="256" width="212" height="28" rx="9" fill="#0f6b5f" opacity="0.65"/>
+    <rect x="150" y="212" width="212" height="28" rx="9" fill="#0f6b5f" opacity="0.85"/>
+    <!-- sweep check tail -->
+    <path d="M150 240 L224 290 L320 198" fill="none" stroke="#fffdf8" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- amber dot at the check endpoint -->
+    <circle cx="320" cy="198" r="17" fill="#c07a22"/>
+    <circle cx="320" cy="198" r="6" fill="#fffdf8"/>
+  </g>
+</svg>

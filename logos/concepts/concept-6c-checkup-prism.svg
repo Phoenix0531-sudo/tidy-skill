@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — Prism with single check-up mark">
+  <!-- Concept 6c: Calmest. No tiers. A single clean check-up mark rises through
+       the hex prism, amber at the apex = "one run, everything placed".
+       Nearest relative to BondLens' yield-curve composition, but the curve is a check. -->
+  <g id="icon">
+    <rect width="512" height="512" rx="96" fill="#17211d"/>
+    <path d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z"
+          fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M256 118 L376 186 L376 326 L256 394 L136 326 L136 186 Z"
+          fill="#0f6b5f" opacity="0.18"/>
+    <!-- single clean check-up stroke (slightly rising) -->
+    <path d="M168 312 L232 352 L344 196" fill="none" stroke="#fffdf8" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- amber at apex -->
+    <circle cx="344" cy="196" r="20" fill="#c07a22"/>
+    <circle cx="344" cy="196" r="7" fill="#fffdf8"/>
+  </g>
+</svg>

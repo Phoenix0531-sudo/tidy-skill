@@ -1,32 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill: doctor to repair, clean check lights up">
-  <!-- Animated motion source. SMIL timeline:
-       0.0-0.6s  folder-box draws in (stroke-dashoffset sweep)
-       0.6-1.4s  check mark strokes in (stroke-dashoffset sweep)
-       1.4-1.8s  amber "lit-clean" dot pops at the check endpoint
-       1.8-2.4s  hold, then loops -->
-  <rect width="512" height="512" fill="#ffffff"/>
-
-  <g id="icon">
-    <!-- Folder-box body (drawn via stroke-dashoffset) -->
-    <path id="box" pathLength="100"
-          d="M108 144 Q108 116 136 116 L208 116 L244 152 L376 152 Q404 152 404 180 L404 372 Q404 404 372 404 L140 404 Q108 404 108 372 Z"
-          fill="#ffffff" stroke="#0f172a" stroke-width="18" stroke-linejoin="round"
-          stroke-dasharray="100" stroke-dashoffset="100">
-      <animate attributeName="stroke-dashoffset" from="100" to="0" dur="0.6s" begin="0s" fill="freeze"/>
-    </path>
-
-    <!-- Clean check (drawn via stroke-dashoffset) -->
-    <path id="check" pathLength="100"
-          d="M176 280 L236 340 L352 212"
-          fill="none" stroke="#0f172a" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"
-          stroke-dasharray="100" stroke-dashoffset="100">
-      <animate attributeName="stroke-dashoffset" from="100" to="0" dur="0.8s" begin="0.6s" fill="freeze"/>
-    </path>
-
-    <!-- Amber "lit-clean" dot pops -->
-    <circle id="dot" cx="352" cy="212" r="0" fill="#f59e0b" stroke="#0f172a" stroke-width="10">
-      <animate attributeName="r" from="0" to="22" dur="0.4s" begin="1.4s" fill="freeze"
-               keyTimes="0;0.6;1" values="0;26;22" calcMode="spline" keySplines="0.2 0.8 0.4 1; 0.4 0 0.6 1"/>
-    </circle>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill motion — tiers place, clean dot lights">
+  <!-- Animated motion source (SMIL spec kept as editable reference).
+     resvg does not run SMIL timelines, so the GIF is rendered frame-by-frame
+     by tools/render_motion_frames.js. Timeline:
+       0.0-0.5s  hex prism frame draws in (stroke-dashoffset)
+       0.5-1.5s  three tiers drop in top->bottom (opacity 0->target)
+       1.5-2.0s  amber "placed" dot pops at the top-tier right end
+       2.0-2.6s  hold -->
+  <rect width="512" height="512" rx="96" fill="#17211d"/>
+  <path id="hex" pathLength="100"
+        d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z"
+        fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"
+        stroke-dasharray="100" stroke-dashoffset="100">
+    <animate attributeName="stroke-dashoffset" from="100" to="0" dur="0.5s" begin="0s" fill="freeze"/>
+  </path>
+  <rect id="tier1" x="168" y="206" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.55" dur="0.3s" begin="0.5s" fill="freeze"/>
+  </rect>
+  <rect id="tier2" x="144" y="248" width="224" height="34" rx="10" fill="#0f6b5f" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.85" dur="0.3s" begin="0.8s" fill="freeze"/>
+  </rect>
+  <rect id="tier3" x="168" y="290" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.55" dur="0.3s" begin="1.1s" fill="freeze"/>
+  </rect>
+  <circle id="dot" cx="312" cy="223" r="0" fill="#c07a22" stroke="#fffdf8" stroke-width="3">
+    <animate attributeName="r" from="0" to="18" dur="0.4s" begin="1.5s" fill="freeze"
+             keyTimes="0;0.6;1" values="0;22;18" calcMode="spline"
+             keySplines="0.2 0.8 0.4 1; 0.4 0 0.6 1"/>
+  </circle>
 </svg>

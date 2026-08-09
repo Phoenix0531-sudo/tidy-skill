@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — Prism of three layers">
+  <!-- Concept 6a: Same hex-vowel family as BondLens, semantic = three tidy layers.
+       Inside the hex prism sit three aligned teal tiers (repo / workspace / machine).
+       One amber "placed" dot on the top tier = the one artifact the doctor just checked. -->
+  <g id="icon">
+    <rect width="512" height="512" rx="96" fill="#17211d"/>
+    <!-- hex prism outer frame -->
+    <path d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z"
+          fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"/>
+    <!-- inner facet tint -->
+    <path d="M256 118 L376 186 L376 326 L256 394 L136 326 L136 186 Z"
+          fill="#0f6b5f" opacity="0.18"/>
+    <!-- three tidy tiers, increasingly prominent toward the middle (widest = workspace) -->
+    <rect x="168" y="208" width="176" height="30" rx="9" fill="#0f6b5f" opacity="0.5"/>
+    <rect x="144" y="250" width="224" height="30" rx="9" fill="#0f6b5f" opacity="0.8"/>
+    <rect x="168" y="292" width="176" height="30" rx="9" fill="#0f6b5f" opacity="0.5"/>
+    <!-- amber "placed/checked" dot on the top tier -->
+    <circle cx="304" cy="223" r="17" fill="#c07a22"/>
+    <circle cx="304" cy="223" r="6" fill="#fffdf8"/>
+  </g>
+</svg>

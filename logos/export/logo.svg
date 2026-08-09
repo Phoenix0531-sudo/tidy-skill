@@ -1,21 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill mark: tidy box with clean check">
-  <!-- Iteration 1 — Tidy box + clean check (refined from concept-2).
-       Refinements over concept-2:
-         - folder tab closed into a single tidy path (no open edges)
-         - drop-slot removed (disappeared at 16px)
-         - amber accent enlarged to a clear "lit clean dot"
-         - check stroke widened for stronger 16px fidelity
-       Identity: doctor = 100 clean. Artifacts always have a home. -->
-
-  <rect width="512" height="512" fill="none"/>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — three-layer hygiene prism">
+  <!-- Iteration of 6a: Tier heights normalized; amber "placed" dot moved onto
+       the top tier's right end so it reads as a check point, not a stray mark.
+       Tier tints tuned so the middle (workspace) tier is the strongest teal. -->
   <g id="icon">
-    <!-- Tidy folder-box body -->
-    <path d="M108 144 Q108 116 136 116 L208 116 L244 152 L376 152 Q404 152 404 180 L404 372 Q404 404 372 404 L140 404 Q108 404 108 372 Z"
-          fill="#ffffff" stroke="#0f172a" stroke-width="18" stroke-linejoin="round"/>
-    <!-- Clean check, centered -->
-    <path d="M176 280 L236 340 L352 212" fill="none" stroke="#0f172a" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Amber accent: lit-clean dot on the check endpoint -->
-    <circle cx="352" cy="212" r="22" fill="#f59e0b" stroke="#0f172a" stroke-width="10"/>
+    <rect width="512" height="512" rx="96" fill="#17211d"/>
+    <!-- hex prism outer frame -->
+    <path d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z"
+          fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"/>
+    <!-- inner facet tint -->
+    <path d="M256 118 L376 186 L376 326 L256 394 L136 326 L136 186 Z"
+          fill="#0f6b5f" opacity="0.20"/>
+    <!-- three tidy tiers: repo (top), workspace (middle, widest/strongest), machine (bottom) -->
+    <rect x="168" y="206" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0.55"/>
+    <rect x="144" y="248" width="224" height="34" rx="10" fill="#0f6b5f" opacity="0.85"/>
+    <rect x="168" y="290" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0.55"/>
+    <!-- amber "placed/checked" dot on the top-tier right end -->
+    <circle cx="312" cy="223" r="18" fill="#c07a22"/>
+    <circle cx="312" cy="223" r="6" fill="#fffdf8"/>
   </g>
 </svg>

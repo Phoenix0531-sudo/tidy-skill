@@ -1,7 +1,7 @@
 <div align="center">
-<img src="assets/readme/logo.svg" alt="洁癖.skill 标识" width="128" height="128">
+<img src="assets/readme/logo.svg" alt="洁癖.skill 标识——三层卫生棱镜" width="128" height="128">
 
-<img src="assets/readme/tidy-motion.gif" alt="洁癖.skill：doctor 诊断、repair 勾选仓库、clean 点点亮" width="320" height="320">
+<img src="assets/readme/tidy-motion.gif" alt="洁癖.skill：六边棱镜画出、三层整洁分层落位、clean 点点亮" width="320" height="320">
 </div>
 
 <h1 align="center">洁癖.skill</h1>
