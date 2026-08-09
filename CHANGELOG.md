@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [1.11.0] - 2026-08-09
+
 ### Changed
 - **Logo redesign (broom, pure b/w).** Replaced the vacuum-nozzle mark from v1.10.0 with a **broom** silhouette: a scattered chaos cluster (△ □ + ~ stray dots) beyond the broom head, and a tidy aligned row of three dots + one sparkle behind the handle root — density contrast carries the *sweep → tidy* story. Silhouette is the Phosphor `ph/broom` MIT icon path used verbatim (redrawn vacuum silhouettes failed recognition in v1.10.0; the industry icon's recognizability lives in its specific path, so it's not redrawn). Pure black on a rounded white card — no teal, no sage, no check — per the brief. See [docs/branding.md](docs/branding.md).
 - Added logo concept art for the broom theme: `logos/iterations/iteration-8.svg` (final), `logos/preview.html` updated.
