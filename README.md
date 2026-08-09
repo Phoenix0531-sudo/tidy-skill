@@ -14,7 +14,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB.svg" alt="Python">
   <img src="https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg" alt="PowerShell">
-  <img src="https://img.shields.io/badge/network-offline-lightgrey.svg" alt="offline">
 </p>
 
 <p align="center">
@@ -127,7 +126,7 @@ uv run python skills/tidy-skill/scripts/tidy_repair.py --root . --json
 # Classify a path before writing (Classes A–E)
 uv run python skills/tidy-skill/scripts/classify_artifact.py plan.md --root . --json
 
-# Classify many candidate paths at once from stdin (NDJSON per line)
+# Classify many candidate paths at once from stdin (one path per line; emits one NDJSON line per path)
 printf 'plan.md\n.agent_tmp/notes.md\ndocs/index.md\n' \
   | uv run python skills/tidy-skill/scripts/classify_artifact.py --stdin --json --root .
 

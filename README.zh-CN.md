@@ -14,7 +14,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB.svg" alt="Python">
   <img src="https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg" alt="PowerShell">
-  <img src="https://img.shields.io/badge/network-offline-lightgrey.svg" alt="offline">
 </p>
 
 <p align="center">
