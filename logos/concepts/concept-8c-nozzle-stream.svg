@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — vacuum head swallowing a debris stream">
+  <!-- 8c: silhouetted vacuum suction head (top) swallowing ONE converging
+       debris stream (bottom). Layered for favicon:
+         - the big suction head is a strong solid silhouette that survives at 16px
+         - the debris stream is one tapering wedge (not many small dots)
+         - the sage "cleaned" tip is the focal inside the head
+       Everything reads as solid masses, no thin strokes. -->
+  <rect width="512" height="512" fill="#f7f8f9"/>
+  <g id="icon">
+    <!-- nozzle neck going up -->
+    <rect x="238" y="92" width="36" height="68" rx="8" fill="#2b3a47"/>
+    <!-- nozzle head: solid trapezoid, wide suction base -->
+    <path d="M178 160 L334 160 L300 232 L212 232 Z" fill="#2b3a47"/>
+    <!-- suction mouth slot cut into the head base -->
+    <rect x="224" y="220" width="64" height="18" rx="6" fill="#f7f8f9"/>
+    <!-- one converging debris stream: a tapering wedge from wide base to narrow tip -->
+    <path d="M188 384 L324 384 L288 240 L224 240 Z" fill="#5a6b78" opacity="0.9"/>
+    <!-- the inside-bottom of the neck shows the swirl point = sage "cleaned" -->
+    <circle cx="256" cy="160" r="15" fill="#3f9d7a"/>
+  </g>
+</svg>

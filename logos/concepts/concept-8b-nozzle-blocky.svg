@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — blocky vacuum mouth sucking debris">
+  <!-- 8b: same theme (nozzle sucking debris), but BLOCKY so it survives 16px.
+       Instead of line-art: solid slate fills, thick rounded strokes.
+       Nozzle = solid trapezoid head + neck; debris = a few solid dots
+       converging into the slot; the entering dot = sage "cleaned".
+       Heavier masses = better favicon. Still line-art-on-paper aesthetic
+       because the masses are flat color, not gradients. -->
+  <rect width="512" height="512" fill="#f7f8f9"/>
+  <g id="icon">
+    <!-- nozzle neck (solid) -->
+    <rect x="232" y="112" width="48" height="64" fill="#2b3a47"/>
+    <!-- nozzle head: solid trapezoid, wide bottom -->
+    <path d="M188 176 L324 176 L300 232 L212 232 Z" fill="#2b3a47"/>
+    <!-- suction slot mouth: the gap -->
+    <rect x="220" y="220" width="72" height="20" rx="6" fill="#f7f8f9"/>
+    <!-- debris: solid dots converging upward into the slot -->
+    <circle cx="124" cy="332" r="16" fill="#2b3a47"/>
+    <circle cx="388" cy="332" r="16" fill="#2b3a47"/>
+    <circle cx="168" cy="300" r="14" fill="#2b3a47"/>
+    <circle cx="344" cy="300" r="14" fill="#2b3a47"/>
+    <circle cx="220" cy="272" r="12" fill="#2b3a47"/>
+    <circle cx="292" cy="272" r="12" fill="#2b3a47"/>
+    <!-- sage "just cleaned" dot entering the slot -->
+    <circle cx="256" cy="252" r="16" fill="#3f9d7a"/>
+  </g>
+</svg>

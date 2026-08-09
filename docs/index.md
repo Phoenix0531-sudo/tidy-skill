@@ -8,7 +8,7 @@ Portfolio and operator notes for **Tidy Skill** (`洁癖.skill`).
 |---|---|
 | [../README.md](../README.md) | English product README |
 | [../README.zh-CN.md](../README.zh-CN.md) | Chinese product README |
-| [branding.md](branding.md) | Logo, motion GIF, and asset usage |
+| [branding.md](branding.md) | Logo, asset usage, and concept history |
 | [installation.md](installation.md) | Install matrix, doctor→repair, retention, uninstall |
 | [comparison.md](comparison.md) | Peer positioning + PWF coexistence + learn-from table |
 | [skills-cli-verify.md](skills-cli-verify.md) | Author-run `npx skills add` verification |

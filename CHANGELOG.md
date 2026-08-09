@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+- **Logo redesign (vacuum nozzle).** Replaced the abstract "three dots on a cradle" mark from v1.9.1 with a literal cleaning gesture: a vacuum nozzle (top) swallowing a converging debris stream (bottom), the stream tip turning sage-green as it enters the slot = "just got cleaned". Solid silhouette (no line-art: line-art dies at favicon 16px), light paper-white field, one saturated accent. See [docs/branding.md](docs/branding.md).
+- **Removed motion GIF.** The static pose carries the "swallow → cleaned" beat; a loop competes with the badge and cheapens it. Deleted `assets/readme/tidy-motion.gif` and `assets/readme/tidy-motion.svg`; README hero is now the logo mark alone at 160px.
+- `tools/render_motion_frames.js` and `.agent_tmp/_stitch_gif.py` are retained for historical reference but no longer produce shipped assets.
+
+### Added
+- Logo concept art for the nozzle theme under `logos/concepts/` (`concept-8a-nozzle.svg` line-art study, `concept-8b-nozzle-blocky.svg` blocky-pass, `concept-8c-nozzle-stream.svg` consolidated) plus `logos/iterations/iteration-4.svg` (final 16px-fidelity pass). `logos/preview.html` updated.
 
 ## [1.9.1] - 2026-08-09
 

@@ -1,7 +1,5 @@
 <div align="center">
-<img src="assets/readme/logo.svg" alt="洁癖.skill 标识——三个点排在一道整齐弧线上、第三点就绪亮起" width="128" height="128">
-
-<img src="assets/readme/tidy-motion.gif" alt="洁癖.skill：点依次落到整齐弧线上、最后一个点亮就绪" width="320" height="320">
+<img src="assets/readme/logo.svg" alt="洁癖.skill 标识——吸尘器喷嘴吸走一束杂质，进入嘴口的点变 sage 绿 = 已清干净" width="160" height="160">
 </div>
 
 <h1 align="center">洁癖.skill</h1>
