@@ -1,21 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — three-layer hygiene prism">
-  <!-- Iteration of 6a: Tier heights normalized; amber "placed" dot moved onto
-       the top tier's right end so it reads as a check point, not a stray mark.
-       Tier tints tuned so the middle (workspace) tier is the strongest teal. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — three dots, the third is ready">
+  <!-- Iteration 7c-2: 16px fidelity pass.
+       - slate dots now fully opaque and slightly larger so they survive at favicon
+       - cradle arc a touch heavier (still light)
+       - sage dot remains the focal (biggest, saturated)
+       Background stays paper-white for the light/airy brief. -->
+  <rect width="512" height="512" fill="#f7f8f9"/>
   <g id="icon">
-    <rect width="512" height="512" rx="96" fill="#17211d"/>
-    <!-- hex prism outer frame -->
-    <path d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z"
-          fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"/>
-    <!-- inner facet tint -->
-    <path d="M256 118 L376 186 L376 326 L256 394 L136 326 L136 186 Z"
-          fill="#0f6b5f" opacity="0.20"/>
-    <!-- three tidy tiers: repo (top), workspace (middle, widest/strongest), machine (bottom) -->
-    <rect x="168" y="206" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0.55"/>
-    <rect x="144" y="248" width="224" height="34" rx="10" fill="#0f6b5f" opacity="0.85"/>
-    <rect x="168" y="290" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0.55"/>
-    <!-- amber "placed/checked" dot on the top-tier right end -->
-    <circle cx="312" cy="223" r="18" fill="#c07a22"/>
-    <circle cx="312" cy="223" r="6" fill="#fffdf8"/>
+    <!-- shallow cradle: the tidy line holding the three layers in order -->
+    <path d="M150 340 Q256 300 362 340" fill="none" stroke="#c0c8d2" stroke-width="14" stroke-linecap="round"/>
+    <!-- three dots: repo / workspace / machine; third is sage and focal -->
+    <circle cx="184" cy="256" r="38" fill="#2b3a47"/>
+    <circle cx="256" cy="216" r="42" fill="#2b3a47"/>
+    <circle cx="328" cy="176" r="52" fill="#3f9d7a"/>
   </g>
 </svg>

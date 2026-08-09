@@ -1,7 +1,7 @@
 <div align="center">
-<img src="assets/readme/logo.svg" alt="Tidy Skill mark — three-layer hygiene prism" width="128" height="128">
+<img src="assets/readme/logo.svg" alt="Tidy Skill mark — three dots on a tidy line, the third is ready" width="128" height="128">
 
-<img src="assets/readme/tidy-motion.gif" alt="Tidy Skill: hex prism draws in, three tidy tiers place, clean dot lights up" width="320" height="320">
+<img src="assets/readme/tidy-motion.gif" alt="Tidy Skill: dots drop onto the tidy line in order, the last lights up ready" width="320" height="320">
 </div>
 
 <h1 align="center">Tidy Skill</h1>

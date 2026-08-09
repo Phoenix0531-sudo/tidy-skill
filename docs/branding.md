@@ -4,11 +4,11 @@ Tidy Skill project mark and motion GIF.
 
 ## Mark
 
-`assets/readme/logo.svg` — 512px icon: a dark rounded **hex prism** containing three aligned teal tiers (`repo / workspace / machine`), with one amber "placed/checked" dot marking the tier the doctor just inspected.
+`assets/readme/logo.svg` — 512px icon: **three dots riding a shallow cradle arc**, the third lit sage-green to mean "ready" while the first two hold slate-dark. Light, airy, tidy.
 
-- **Style**: voxel-badge, same design family as the BondLens project mark — dark rounded square + hex prism frame + teal interior + amber focal dot. Same family, different semantics: where BondLens focuses a bond yield curve, tidy-skill stacks three governance tiers.
-- **Palette**: badge `#17211d`, prism frame warm-white `#fffdf8`, tiers teal `#0f6b5f` (top/bottom opacity 0.55, middle 0.85 so the workspace layer reads strongest), focal dot amber `#c07a22` with a warm-white core `#fffdf8`.
-- **16px fidelity**: the hex prism outline (22px stroke in the 512 viewBox) survives at favicon size; the tier bands and amber dot drop below 1px at 16px and are intentionally allowed to vanish — the prism silhouette carries the identity, same as the BondLens favicon.
+- **Style**: minimal geometric on a paper-white field — Notion/Linear family, *not* the BondLens dark-voxel badge (that one is BondLens' avatar/PWA icon; README-side it ships a white-background variant too). Tidy-skill goes light-first because the brief is "clean, tidy" — light palette and geometry-first, not decorated containers.
+- **Palette**: paper `#f7f8f9`, cradle arc `#c0c8d2` (10px stroke so it survives at favicon), dots slate `#2b3a47` (repo / workspace layers), focal "ready" dot sage `#3f9d7a`. Neutral base + one accent = tidy.
+- **16px fidelity**: the three dots survive at favicon size (slate r=38→1.19px at 16, sage r=52→1.63px at 16 — both stay visible); the cradle arc drops below 1px at 16 and is allowed to vanish. The two darker dots + one sage dot read as "a few things put in order" even cropped.
 
 ### Exported sizes
 
@@ -22,7 +22,7 @@ node tools/svg_to_png.js logos/export/logo.svg logos/export/
 
 ## Motion GIF
 
-`assets/readme/tidy-motion.gif` — 320px, ~2.6s loop: hex prism frame draws in → three tidy tiers place top-to-bottom → amber "checked" dot pops at the top-tier right end. Renders the *doctor → repair → clean* narrative the rest of the README describes.
+`assets/readme/tidy-motion.gif` — 320px, ~2.5s loop: the cradle arc draws in → two slate dots drop onto it in order → the sage "ready" dot pops last, slightly bigger as the focal. Renders the *doctor → repair → clean* narrative the rest of the README describes.
 
 Source timeline is `assets/readme/tidy-motion.svg` (SMIL, kept as the editable spec), but resvg does not run SMIL timelines, so the GIF is rendered frame-by-frame:
 
@@ -41,8 +41,11 @@ Final dot-lit frames hold ~140ms (vs 55ms mid-timeline) so the loop has a beat b
 
 ## Concepts and iteration
 
-Two rounds were explored. **Round 1** (`concept-1` to `concept-4`) used a line-art folder-box + clean-check on a white field — rejected as too icon-pack-flat and not in the same design family as the BondLens project mark. **Round 2** (`concept-6a / 6b / 6c`) re-anchored the mark on the BondLens hex-prism + amber-peak skeleton with tidy semantics. `concept-6a` (three-tier prism) was selected; `logos/iterations/iteration-2.svg` is the refined export source (tier height normalized, amber dot moved onto the top-tier right end). `logos/preview.html` is the side-by-side concept/iteration gallery.
+Three rounds were explored.
+- **Round 1** (`concept-1` to `concept-4`): line-art folder-box + clean-check on white — rejected as too icon-pack-flat.
+- **Round 2** (`concept-6a / 6b / 6c`): re-anchored on the BondLens dark-voxel hex-prism + amber-peak skeleton — rejected on review: the dark badge felt heavy and "stacked load" rather than "clean, tidy".
+- **Round 3** (`concept-7a / 7b / 7c`): went light-first, Notion/Linear family. `concept-7c` (three dots on a cradle, third lit sage) was selected; `logos/iterations/iteration-3.svg` is the refined export source (opaque larger dots for 16px survival, cradle slightly heavier). `logos/preview.html` is the side-by-side concept/iteration gallery.
 
 ## Philosophy
 
-The mark is project-native, not stock iconography: the hex prism is the same artifact-placement metaphor the skill teaches (Classes **A** formal docs at root, **C** temp in `.agent_tmp/`, **E** tool state outside the tree — here as three stacked governance tiers), and the amber focal dot is the `tidy_doctor` exit-0 read on the tier just inspected. Same voxel-badge family as the BondLens project mark, so the two repos read as one authored family while carrying distinct semantics — bond yield curve over there, governance tiers over here. No decorative swirls, no generic rocket — the identity has to read at 16px and survive being a favicon.
+The mark is project-native, not stock iconography. Three dots ride a shallow cradle arc — the three hygiene layers (Classes **A** formal docs at root, **C** temp in `.agent_tmp/`, **E** tool state outside the tree) held in order by one tidy line, the third lit sage because that's the layer `tidy_doctor` just exited clean. Light palette and geometry-first because the project's promise is literally "clean, tidy" — a dark decorated badge would contradict the product. No container shapes, no rocket — the mark has to read at 16px and survive being a favicon.

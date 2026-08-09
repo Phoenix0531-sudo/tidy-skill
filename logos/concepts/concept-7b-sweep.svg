@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — sweep to clean">
+  <!-- Concept 7b: Light. The brand gesture = "tidy sweep".
+       A single fluid slate stroke sweeps left-to-right, the tail curling into
+       a check mark; a sage dot closes the check. Empty space dominates — calm,
+       clean, tidy. One meaningful mark, lots of air. -->
+  <rect width="512" height="512" fill="#f7f8f9"/>
+  <g id="icon">
+    <!-- base baseline (the "before" mess, faded) -->
+    <path d="M120 320 L392 320" stroke="#d8dde3" stroke-width="10" stroke-linecap="round"/>
+    <!-- tidy sweep, becoming a check -->
+    <path d="M120 320 C200 320, 232 220, 280 200 C320 184, 340 232, 360 288"
+          fill="none" stroke="#2b3a47" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- sage "clean" dot at the sweep's end -->
+    <circle cx="360" cy="288" r="20" fill="#3f9d7a"/>
+  </g>
+</svg>

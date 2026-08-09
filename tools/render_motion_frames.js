@@ -1,14 +1,15 @@
-// Frame-by-frame motion GIF renderer for the three-layer-prism tidy logo.
+// Frame-by-frame motion GIF renderer for the "three dots, one ready" tidy logo.
 // resvg does not run SMIL timelines, so we compute per-frame:
-//   - hex frame stroke-dashoffset (0..0.5s)
-//   - three tiers opacity cascade (0.5..1.4s)
-//   - amber dot radius pop (1.5..1.9s)
-//   - hold to 2.6s
+//   - cradle arc stroke-dashoffset (0..0.5s)
+//   - dot1 radius pop (0.5..0.9s)
+//   - dot2 radius pop (0.9..1.3s)
+//   - dot3 (sage focal) radius pop (1.3..1.9s)
+//   - hold to 2.5s
 const fs = require('fs');
 const path = require('path');
 const { Resvg } = require('@resvg/resvg-js');
 
-const TOTAL = 2.6;
+const TOTAL = 2.5;
 const FPS = 18;
 const FRAMES = Math.round(TOTAL * FPS);
 const W = 320;
@@ -18,32 +19,31 @@ fs.mkdirSync(outDir, { recursive: true });
 const easeOut = (x) => 1 - Math.pow(1 - x, 2.5);
 const clamp = (x) => Math.max(0, Math.min(1, x));
 
-const tpl = (hexOff, op1, op2, op3, dotR) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#17211d"/>
-  <path d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z" fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"
-        ${hexOff < 100 ? `stroke-dasharray="100" stroke-dashoffset="${hexOff.toFixed(2)}"` : ''}/>
-  <rect x="168" y="206" width="176" height="34" rx="10" fill="#0f6b5f" opacity="${op1.toFixed(3)}"/>
-  <rect x="144" y="248" width="224" height="34" rx="10" fill="#0f6b5f" opacity="${op2.toFixed(3)}"/>
-  <rect x="168" y="290" width="176" height="34" rx="10" fill="#0f6b5f" opacity="${op3.toFixed(3)}"/>
-  ${dotR > 0.2 ? `<circle cx="312" cy="223" r="${dotR.toFixed(2)}" fill="#c07a22"/><circle cx="312" cy="223" r="${(dotR*0.34).toFixed(2)}" fill="#fffdf8"/>` : ''}
+// Pop with a small overshoot: 0 -> overshoot*rest at 60% -> rest at 100%.
+function popRadius(t, start, dur, rest, overshootRatio = 1.1) {
+  if (t < start) return 0;
+  const p = clamp((t - start) / dur);
+  if (p < 0.6) return rest * overshootRatio * easeOut(p / 0.6);
+  return rest * overshootRatio - (rest * overshootRatio - rest) * easeOut((p - 0.6) / 0.4);
+}
+
+const tpl = (cradleOff, r1, r2, r3) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#f7f8f9"/>
+  <path d="M150 340 Q256 300 362 340" fill="none" stroke="#c0c8d2" stroke-width="14" stroke-linecap="round"
+        ${cradleOff < 100 ? `stroke-dasharray="100" stroke-dashoffset="${cradleOff.toFixed(2)}"` : ''}/>
+  ${r1 > 0.2 ? `<circle cx="184" cy="256" r="${r1.toFixed(2)}" fill="#2b3a47"/>` : ''}
+  ${r2 > 0.2 ? `<circle cx="256" cy="216" r="${r2.toFixed(2)}" fill="#2b3a47"/>` : ''}
+  ${r3 > 0.2 ? `<circle cx="328" cy="176" r="${r3.toFixed(2)}" fill="#3f9d7a"/>` : ''}
 </svg>`;
 
 for (let i = 0; i < FRAMES; i++) {
   const t = i / (FRAMES - 1) * TOTAL;
-  const hexP = clamp(t / 0.5);
-  const hexOff = 100 * (1 - easeOut(hexP));
-  // tier opacities cascade
-  const op1 = clamp((t - 0.5) / 0.3) * 0.55;
-  const op2 = clamp((t - 0.8) / 0.3) * 0.85;
-  const op3 = clamp((t - 1.1) / 0.3) * 0.55;
-  // amber dot pops
-  let dotR = 0;
-  if (t >= 1.5) {
-    const dotP = clamp((t - 1.5) / 0.4);
-    dotR = easeOut(dotP) * 18;
-    if (t >= 1.5 && t < 1.9) dotR = easeOut(dotP) * 22 * 0.5 + easeOut(dotP) * 18 * 0.5;
-  }
-  const svg = tpl(hexOff, op1, op2, op3, Math.max(0, dotR));
+  const cradleP = clamp(t / 0.5);
+  const cradleOff = 100 * (1 - easeOut(cradleP));
+  const r1 = popRadius(t, 0.5, 0.4, 38, 1.1);   // overshoot to ~42 then settle 38
+  const r2 = popRadius(t, 0.9, 0.4, 42, 1.1);   // overshoot to ~46 then settle 42
+  const r3 = popRadius(t, 1.3, 0.6, 52, 1.12);  // overshoot to ~58 then settle 52
+  const svg = tpl(cradleOff, Math.max(0, r1), Math.max(0, r2), Math.max(0, r3));
   const r = new Resvg(svg, { fitTo: { mode: 'width', value: W } });
   fs.writeFileSync(path.join(outDir, `f_${String(i).padStart(3, '0')}.png`), r.render().asPng());
 }

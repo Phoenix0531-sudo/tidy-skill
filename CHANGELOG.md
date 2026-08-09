@@ -4,12 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+- **Logo redesign (light, tidy).** Replaced the dark hex-prism mark from v1.9.0 with a light, airy Notion/Linear-family mark: three dots riding a shallow cradle arc, the third lit sage-green = "ready", first two slate-dark. Same for the motion GIF (cradle arc draws in → dots drop in order → ready dot lights). Re-audited 16px favicon fidelity (opaque larger dots survive at 16px). See [docs/branding.md](docs/branding.md).
 
 ## [1.9.0] - 2026-08-09
 
 ### Added
-- **Project logo + README motion GIF.** Voxel-badge mark in the same design family as BondLens (`assets/readme/logo.svg`, 512px icon: dark rounded hex prism with three teal governance tiers and one amber "checked" focal dot), with exported PNG sizes (16/32/48/192/512/1024/2048) and favicon. A GitHub-safe animated `tidy-motion.gif` (hex prism draws in → tiers place → clean dot lights) replaces the top banner as the README hero; the three-layer mechanism banner moves inline to the *Three-Layer Hygiene Model* section. See [docs/branding.md](docs/branding.md).
+- **Project logo + README motion GIF.** Light, tidy mark (`assets/readme/logo.svg`, 512px icon: three dots riding a shallow cradle arc, the third lit sage-green = "ready", first two slate-dark) — Notion/Linear family, light palette per the "clean/tidy" brief. Exported PNG sizes (16/32/48/192/512/1024/2048) and favicon. A GitHub-safe animated `tidy-motion.gif` (cradle arc draws in → dots drop in order → ready dot lights) replaces the top banner as the README hero; the three-layer mechanism banner moves inline to the *Three-Layer Hygiene Model* section. See [docs/branding.md](docs/branding.md).
 - `tools/svg_to_png.js` — zero-native-dep SVG→PNG exporter using `@resvg/resvg-js` (WASM).
 - `tools/render_motion_frames.js` — per-frame renderer for the motion GIF (resvg does not run SMIL timelines).
 - Logo concept art and preview under `logos/` (`concept-1..4`, `iteration-1`, `preview.html`).

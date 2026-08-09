@@ -1,30 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill motion — tiers place, clean dot lights">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill motion — dots place, ready lights">
   <!-- Animated motion source (SMIL spec kept as editable reference).
      resvg does not run SMIL timelines, so the GIF is rendered frame-by-frame
      by tools/render_motion_frames.js. Timeline:
-       0.0-0.5s  hex prism frame draws in (stroke-dashoffset)
-       0.5-1.5s  three tiers drop in top->bottom (opacity 0->target)
-       1.5-2.0s  amber "placed" dot pops at the top-tier right end
-       2.0-2.6s  hold -->
-  <rect width="512" height="512" rx="96" fill="#17211d"/>
-  <path id="hex" pathLength="100"
-        d="M256 56 L424 152 L424 360 L256 456 L88 360 L88 152 Z"
-        fill="none" stroke="#fffdf8" stroke-width="22" stroke-linejoin="round"
+       0.0-0.5s  shallow cradle arc draws in
+       0.5-0.9s  first slate dot drops onto the arc
+       0.9-1.3s  second slate dot drops onto the arc
+       1.3-1.9s  sage "ready" focal dot pops (slightly larger) at the right
+       1.9-2.5s  hold -->
+  <rect width="512" height="512" fill="#f7f8f9"/>
+  <path id="cradle" pathLength="100"
+        d="M150 340 Q256 300 362 340" fill="none" stroke="#c0c8d2" stroke-width="14" stroke-linecap="round"
         stroke-dasharray="100" stroke-dashoffset="100">
     <animate attributeName="stroke-dashoffset" from="100" to="0" dur="0.5s" begin="0s" fill="freeze"/>
   </path>
-  <rect id="tier1" x="168" y="206" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0">
-    <animate attributeName="opacity" from="0" to="0.55" dur="0.3s" begin="0.5s" fill="freeze"/>
-  </rect>
-  <rect id="tier2" x="144" y="248" width="224" height="34" rx="10" fill="#0f6b5f" opacity="0">
-    <animate attributeName="opacity" from="0" to="0.85" dur="0.3s" begin="0.8s" fill="freeze"/>
-  </rect>
-  <rect id="tier3" x="168" y="290" width="176" height="34" rx="10" fill="#0f6b5f" opacity="0">
-    <animate attributeName="opacity" from="0" to="0.55" dur="0.3s" begin="1.1s" fill="freeze"/>
-  </rect>
-  <circle id="dot" cx="312" cy="223" r="0" fill="#c07a22" stroke="#fffdf8" stroke-width="3">
-    <animate attributeName="r" from="0" to="18" dur="0.4s" begin="1.5s" fill="freeze"
-             keyTimes="0;0.6;1" values="0;22;18" calcMode="spline"
+  <circle id="dot1" cx="184" cy="256" r="0" fill="#2b3a47">
+    <animate attributeName="r" from="0" to="38" dur="0.4s" begin="0.5s" fill="freeze"
+             keyTimes="0;0.6;1" values="0;42;38" calcMode="spline"
+             keySplines="0.2 0.8 0.4 1; 0.4 0 0.6 1"/>
+  </circle>
+  <circle id="dot2" cx="256" cy="216" r="0" fill="#2b3a47">
+    <animate attributeName="r" from="0" to="42" dur="0.4s" begin="0.9s" fill="freeze"
+             keyTimes="0;0.6;1" values="0;46;42" calcMode="spline"
+             keySplines="0.2 0.8 0.4 1; 0.4 0 0.6 1"/>
+  </circle>
+  <circle id="dot3" cx="328" cy="176" r="0" fill="#3f9d7a">
+    <animate attributeName="r" from="0" to="52" dur="0.6s" begin="1.3s" fill="freeze"
+             keyTimes="0;0.6;1" values="0;58;52" calcMode="spline"
              keySplines="0.2 0.8 0.4 1; 0.4 0 0.6 1"/>
   </circle>
 </svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — aligned rows, tidy state">
+  <!-- Concept 7a: Light, airy. A rounded container (the tidy repo) holding
+       three evenly aligned rows; the third row's right end has a small sage-green
+       "ready" dot. Reads as a checklist that's been put in order.
+       Light palette: paper-white card, slate-gray rows, single sage accent. -->
+  <rect width="512" height="512" fill="#f7f8f9"/>
+  <g id="icon">
+    <!-- tidy rounded card -->
+    <rect x="104" y="120" width="304" height="272" rx="36" fill="#ffffff" stroke="#d8dde3" stroke-width="6"/>
+    <!-- three aligned rows (the three layers, now calm and ordered) -->
+    <rect x="148" y="168" width="216" height="36" rx="10" fill="#e8edf2"/>
+    <rect x="148" y="222" width="216" height="36" rx="10" fill="#e8edf2"/>
+    <rect x="148" y="276" width="216" height="36" rx="10" fill="#d6e4dc"/>
+    <!-- small sage "ready" dot on the third row right end -->
+    <circle cx="340" cy="294" r="11" fill="#3f9d7a"/>
+  </g>
+</svg>

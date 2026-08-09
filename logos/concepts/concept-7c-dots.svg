@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill — three dots aligned, one ready">
+  <!-- Concept 7c: Lightest, most abstract. Three dots in a clean diagonal
+       (the three layers), the third is sage (ready). A whisper of a containment
+       arc behind them. Most Notion/Linear-like; pure "tidy" as geometry. -->
+  <rect width="512" height="512" fill="#f7f8f9"/>
+  <g id="icon">
+    <!-- faint containment arc (the governed space) -->
+    <path d="M160 360 Q256 120 352 360" fill="none" stroke="#d8dde3" stroke-width="8" stroke-linecap="round"/>
+    <!-- three dots: repo, workspace, machine; third is "ready" sage -->
+    <circle cx="208" cy="300" r="26" fill="#2b3a47" opacity="0.85"/>
+    <circle cx="256" cy="220" r="26" fill="#2b3a47" opacity="0.85"/>
+    <circle cx="304" cy="140" r="30" fill="#3f9d7a"/>
+  </g>
+</svg>
