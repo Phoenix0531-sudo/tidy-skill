@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy-Skill — vacuum sweeping chaos into a glowing green order">
+  <!--
+    Tidy-Skill mark, reconstructed per the detailed brief:
+      - one rounded-square icon container
+      - diagonal motion upper-right -> lower-left
+      - geometric vacuum (nozzle lower-left, body+handle upper-right) as solid masses
+      - chaos cluster just ahead of the nozzle: scattered triangle / square / plus / wave / dots (muted neutral)
+      - order cluster behind the body: green check + 3 aligned dots + sparkles
+      - thin grid swept (full skill map, not one cell)
+      - tech-teal vacuum, muted neutral chaos, fresh-green order, white bg
+  -->
+  <defs>
+    <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#17a2a8"/>
+      <stop offset="1" stop-color="#0c7c8a"/>
+    </linearGradient>
+    <radialGradient id="checkGlow" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0" stop-color="#3fcf7f" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3fcf7f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- clean white card with rounded corners -->
+  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+  <!-- very faint full skill-map grid the vacuum rides over -->
+  <g stroke="#e8eef0" stroke-width="3" opacity="0.9">
+    <path d="M128 128 H384 M128 256 H384 M128 384 H384 M128 128 V384 M256 128 V384 M384 128 V384"/>
+  </g>
+
+  <!-- ===== VACUUM (diagonal: nose lower-left, body/handle upper-right) ===== -->
+  <g id="vacuum">
+    <!-- handle arc going up to upper-right -->
+    <path d="M232 232 Q296 168 360 168"
+          fill="none" stroke="url(#bodyGrad)" stroke-width="30" stroke-linecap="round"/>
+    <!-- connection between handle and head -->
+    <path d="M232 232 L208 272"
+          fill="none" stroke="url(#bodyGrad)" stroke-width="26" stroke-linecap="round"/>
+    <!-- suction head: stylized flat rectangular nozzle pointing lower-left -->
+    <g transform="rotate(-32 168 304)">
+      <rect x="116" y="286" width="104" height="42" rx="10" fill="url(#bodyGrad)"/>
+      <!-- the suction mouth slit -->
+      <rect x="122" y="320" width="92" height="8" rx="4" fill="#ffffff" opacity="0.92"/>
+    </g>
+  </g>
+
+  <!-- ===== CHAOS cluster: just ahead of the nozzle (lower-left), scattered, muted ===== -->
+  <g id="chaos" stroke="#9aa6b0" fill="#9aa6b0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95">
+    <polygon points="40,346 64,346 52,328" fill="none"/>              <!-- triangle △ -->
+    <rect x="34" y="380" width="24" height="24" fill="none"/>          <!-- square □ -->
+    <path d="M76 372 h22 M87 361 v22"/>                               <!-- plus + -->
+    <path d="M28 416 q6 -10 12 0 t12 0" fill="none"/>                  <!-- wave ~ -->
+    <circle cx="68" cy="420" r="4"/>                                  <!-- stray dot -->
+    <circle cx="100" cy="398" r="3.5"/>
+    <circle cx="52" cy="412" r="2.6"/>
+    <path d="M86 338 q5 -6 10 0 t10 0" fill="none" stroke-width="5"/> <!-- small swirl hint -->
+  </g>
+
+  <!-- ===== ORDER cluster: behind the body (upper-right), glowing green ===== -->
+  <g id="order">
+    <!-- soft glow behind the check -->
+    <circle cx="416" cy="160" r="58" fill="url(#checkGlow)"/>
+    <!-- the perfect green check-mark (the punctuation of the whole mark) -->
+    <path d="M376 162 L406 192 L462 130"
+          fill="none" stroke="#2fbf6a" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- three aligned dots below the check -->
+    <circle cx="386" cy="220" r="6" fill="#2fbf6a"/>
+    <circle cx="416" cy="220" r="6" fill="#2fbf6a"/>
+    <circle cx="446" cy="220" r="6" fill="#2fbf6a"/>
+    <!-- small sparkles -->
+    <g fill="#2fbf6a">
+      <path d="M452 96 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z" opacity="0.9"/>
+      <path d="M348 116 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" opacity="0.75"/>
+    </g>
+  </g>
+</svg>

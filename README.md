@@ -1,5 +1,5 @@
 <div align="center">
-<img src="assets/readme/logo.svg" alt="Tidy Skill mark — vacuum nozzle swallowing a debris stream; the entering dot turns sage, cleaned" width="160" height="160">
+<img src="assets/readme/logo.svg" alt="Tidy Skill mark — a broom sweeping scattered chaos (△□+~) into a tidy aligned row of dots" width="160" height="160">
 </div>
 
 <h1 align="center">Tidy Skill</h1>

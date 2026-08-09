@@ -1,5 +1,5 @@
 <div align="center">
-<img src="assets/readme/logo.svg" alt="洁癖.skill 标识——吸尘器喷嘴吸走一束杂质，进入嘴口的点变 sage 绿 = 已清干净" width="160" height="160">
+<img src="assets/readme/logo.svg" alt="洁癖.skill 标识——一把扫把把散乱的几何符号（△□+~）扫成整齐对齐的一排点" width="160" height="160">
 </div>
 
 <h1 align="center">洁癖.skill</h1>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy-Skill — vacuum sweeping chaos into order, pure black on white">
+  <!--
+    Pure black & white reconstruction. No teal, no green, no check, no GIF.
+    Narrative carried by density:
+      - ahead of nozzle (lower-left): dense, scattered, overlapping chaos cluster
+      - the vacuum solid silhouette sweeping across
+      - behind the body (upper-right): sparse, aligned, evenly-spaced dots = ordered
+    The vacuum leaves a cleared lane between chaos (busy) and order (calm).
+  -->
+  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+
+  <!-- ===== VACUUM (diagonal: nozzle lower-left, body+handle upper-right) ===== -->
+  <g id="vacuum" fill="#000000" stroke="#000000">
+    <!-- handle arc going up to upper-right -->
+    <path d="M232 232 Q296 168 368 168"
+          fill="none" stroke-width="30" stroke-linecap="round"/>
+    <!-- connection between handle and head -->
+    <path d="M232 232 L208 272"
+          fill="none" stroke-width="26" stroke-linecap="round"/>
+    <!-- suction head: stylized flat nozzle pointing lower-left -->
+    <g transform="rotate(-32 168 304)">
+      <rect x="116" y="286" width="104" height="42" rx="10"/>
+      <rect x="122" y="320" width="92" height="8" rx="4" fill="#ffffff" stroke="none"/>
+    </g>
+  </g>
+
+  <!-- ===== CHAOS cluster: just ahead of the nozzle (lower-left) =====
+       dense, scattered, overlapping, misaligned. Uniform black. -->
+  <g id="chaos" stroke="#000000" fill="#000000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="44,346 70,346 57,322" fill="none"/>              <!-- triangle △ -->
+    <rect x="32" y="380" width="26" height="26" fill="none"/>        <!-- square □ -->
+    <path d="M76 372 h24 M88 360 v24"/>                             <!-- plus + -->
+    <path d="M26 418 q7 -11 14 0 t14 0" fill="none" stroke-width="5"/> <!-- wave ~ -->
+    <circle cx="70" cy="424" r="4"/>
+    <circle cx="102" cy="398" r="3.5"/>
+    <circle cx="54" cy="416" r="2.8"/>
+    <circle cx="86" cy="344" r="3"/>
+    <path d="M14 360 q4 -6 8 0 t8 0" fill="none" stroke-width="4"/>  <!-- small swirl -->
+  </g>
+
+  <!-- ===== ORDER cluster: behind the body (upper-right), aligned, sparse =====
+       Three evenly spaced small dots in a clean horizontal row + one tidy sparkle.
+       Uniform black, not green, no check. -->
+  <g id="order" fill="#000000">
+    <circle cx="384" cy="218" r="7"/>
+    <circle cx="416" cy="218" r="7"/>
+    <circle cx="448" cy="218" r="7"/>
+    <!-- tidy sparkle (4-point) -->
+    <path d="M452 102 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3 z"/>
+    <path d="M348 132 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 z" opacity="0.7"/>
+  </g>
+</svg>

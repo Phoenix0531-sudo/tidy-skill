@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy-Skill — recognizable vacuum (MDI industry icon) plus chaos left and order right">
+  <!--
+    Use the industry-recognizable vacuum path verbatim (mdi/vacuum CC-BY,
+    Material Design Icons) so the silhouette is no longer "my drawing" but
+    the canonical one. Placed in 512 box, offset/scaled; chaos before the
+    nozzle (lower-left), order behind the handle (upper-right). Pure b/w.
+  -->
+  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+
+  <!-- MDI vacuum path scaled into the upper region of the card.
+       Original viewBox 24x24; scale = 420/24 ≈ 17.5, translate to (46, 56).
+       Filled black. -->
+  <g transform="translate(46 56) scale(17.5)" fill="#000000">
+    <path d="M23 20v2h-7v-2h2.46L12 4.61c-.19-.47-.5-.85-.94-1.15S10.14 3 9.61 3c-.71 0-1.33.27-1.85.79S7 4.92 7 5.64V9h1c2.21 0 4 1.79 4 4v9H8c.61-.84 1-1.87 1-3c0-2.76-2.24-5-5-5c-.71 0-1.39.15-2 .42V9h3V5.64c0-.84.23-1.64.63-2.32c.41-.7.96-1.26 1.67-1.69Q8.35 1 9.61 1c.94 0 1.79.26 2.55.77s1.34 1.2 1.71 2.04L20.66 20zM7 19c0 1.66-1.34 3-3 3s-3-1.34-3-3s1.34-3 3-3s3 1.34 3 3m-2 0c0-.55-.45-1-1-1s-1 .45-1 1s.45 1 1 1s1-.45 1-1"/>
+  </g>
+
+  <!-- chaos directly ahead of the nozzle (lower-left), outside the card center -->
+  <g id="chaos" stroke="#000000" fill="#000000" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(-8 8)">
+    <polygon points="34,400 56,400 45,380" fill="none"/>
+    <rect x="120" y="436" width="20" height="20" fill="none"/>
+    <path d="M44 438 h18 M53 428 v18"/>
+    <path d="M82 444 q5 -8 10 0 t10 0" fill="none" stroke-width="3.5"/>
+    <circle cx="78" cy="416" r="3.2"/>
+    <circle cx="106" cy="426" r="2.8"/>
+    <circle cx="62" cy="422" r="2.2"/>
+  </g>
+
+  <!-- order behind the handle (upper-right) -->
+  <g id="order" fill="#000000" transform="translate(-4 4)">
+    <circle cx="420" cy="232" r="6"/>
+    <circle cx="444" cy="232" r="6"/>
+    <circle cx="468" cy="232" r="6"/>
+    <path d="M448 96 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z"/>
+    <path d="M392 120 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" opacity="0.7"/>
+  </g>
+</svg>

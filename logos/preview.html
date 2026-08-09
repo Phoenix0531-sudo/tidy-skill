@@ -2,50 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tidy Skill — vacuum nozzle theme (round 4)</title>
+<title>Tidy-Skill — broom sweep (iteration 8)</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 1.5rem; background: #eef0f2; color: #222; }
-  h1 { font-size: 1.15rem; margin-bottom: 0.3rem; }
-  .note { color: #555; font-size: 0.85rem; margin-bottom: 1.3rem; line-height: 1.5; }
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
-  .card { background: #fff; border-radius: 14px; padding: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  .preview { display: flex; align-items: center; justify-content: center; background: #f7f8f9; border-radius: 10px; padding: 1.4rem; height: 200px; }
-  .preview img { max-width: 160px; max-height: 160px; }
-  .label { margin-top: 0.5rem; font-weight: 700; font-size: 0.95rem; color: #2b3a47; }
-  .desc { font-size: 0.82rem; color: #666; margin-top: 0.25rem; line-height: 1.45; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 1.4rem; background: #eef0f2; color: #222; }
+  h1 { font-size: 1.1rem; margin-bottom: 0.3rem; }
+  .note { color: #555; font-size: 0.82rem; margin-bottom: 1.1rem; line-height: 1.5; max-width: 760px; }
+  .card { background: #fff; border-radius: 14px; padding: 0.9rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); max-width: 560px; }
+  .preview { display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 10px; padding: 1rem; height: 360px; }
+  .preview img { max-width: 320px; max-height: 320px; }
+  .label { margin-top: 0.45rem; font-weight: 700; color: #000; }
+  .desc { font-size: 0.8rem; color: #666; margin-top: 0.2rem; line-height: 1.45; }
+  .src { font-size: 0.72rem; color: #2b7a55; }
   .fv { margin-top: 0.5rem; display: flex; gap: 0.5rem; align-items: center; background: #f0f2f4; border-radius: 8px; padding: 0.4rem 0.6rem; }
-  .fv img { display: block; }
-  .fv span { font-size: 0.72rem; color: #555; }
-  .rec { color: #2b7a55; font-weight: 700; }
+  .fv img { display: block; } .fv span { font-size: 0.72rem; color: #555; }
 </style>
 </head>
 <body>
-  <h1>Tidy Skill — vacuum nozzle theme (round 4)</h1>
-  <div class="note">Brief: 极简线描浅色 · 喷嘴 + 被吸的碎屑流 · 上半喷嘴 / 中间汇拢碎屑 / 进入嘴的 sage 点 = "已吸走清理干净"。纯线描在 16px 全化，已转块面 silhouette 保 favicon。</div>
+  <h1>Tidy-Skill — broom sweep logo (iteration 8)</h1>
+  <div class="note">
+    Broom silhouette = Phosphor <code>ph/broom</code> MIT path used <b>verbatim</b> (not redrawn — proven recognizable, no attribution needed). Scaled 1.75x inside 512 card. Chaos (△ □ + ~ ·) sits beyond the broom head (lower-right = un-swept); order (three aligned vertical dots + one sparkle) sits behind the handle root (upper-left = swept-clean). Pure black on white. No check, no GIF.
+  </div>
 
-  <div class="grid">
-    <div class="card">
-      <div class="preview"><img src="concepts/concept-8c-nozzle-stream.svg"></div>
-      <div class="label">8c · Nozzle + stream (first pass)</div>
-      <div class="desc">Solid trapezoid nozzle (neck up top) + one tapering debris wedge converging into the slot. Sage dot was inside the neck = a bit lost.</div>
-      <div class="fv">
-        <img src="concepts/concept-8c-nozzle-stream-16.png" width="32" height="32"><span>16</span>
-        <img src="concepts/concept-8c-nozzle-stream-32.png" width="28" height="28"><span>32</span>
-        <img src="concepts/concept-8c-nozzle-stream-64.png" width="24" height="24"><span>64</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="preview"><img src="iterations/iteration-4.svg"></div>
-      <div class="label">8c-2 · Bigger sage focal <span class="rec">(latest)</span></div>
-      <div class="desc">Sage "cleaned" dot moved to the stream's entry into the slot and made bigger (r=22) — the moment of "just got swallowed". Stream tapered harder.</div>
-      <div class="fv">
-        <img src="iterations/iteration-4-16.png" width="32" height="32"><span>16</span>
-        <img src="iterations/iteration-4-32.png" width="28" height="28"><span>32</span>
-        <img src="iterations/iteration-4-64.png" width="24" height="24"><span>64</span>
-      </div>
+  <div class="card">
+    <div class="preview"><img src="iterations/iteration-8.svg"></div>
+    <div class="label">Iteration 8 — broom sweep, pure b/w</div>
+    <div class="src">silhouette: Phosphor ph/broom (MIT) · chaos + order: original</div>
+    <div class="desc">Long handle to upper-left · wedge broom head lower-right · scattered chaos beyond the head · aligned sparse dots + spark over the swept handle root.</div>
+    <div class="fv">
+      <img src="iterations/iteration-8-16.png" width="40" height="40"><span>16</span>
+      <img src="iterations/iteration-8-32.png" width="32" height="32"><span>32</span>
+      <img src="iterations/iteration-8-64.png" width="28" height="28"><span>64</span>
+      <img src="iterations/iteration-8-512.png" width="24" height="24"><span>full</span>
     </div>
   </div>
 </body>
