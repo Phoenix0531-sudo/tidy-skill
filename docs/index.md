@@ -38,7 +38,7 @@ Optional host wiring samples: [host-samples/](host-samples/).
 | [self-audit/repo_hygiene_score.md](self-audit/repo_hygiene_score.md) | Repo hygiene score |
 | [self-audit/agent_artifacts_audit.md](self-audit/agent_artifacts_audit.md) | Agent artifact audit |
 | [self-audit/dev_environment_audit.md](self-audit/dev_environment_audit.md) | Portable dev-environment audit |
-| [self-audit/tidy_doctor.md](self-audit/tidy_doctor.md) | One-shot doctor (v1.9.0) |
+| [self-audit/tidy_doctor.md](self-audit/tidy_doctor.md) | One-shot doctor (v1.9.1) |
 | [evals/latest.md](evals/latest.md) | Deterministic fixture evals |
 | [cases/](cases/) | Before/after case studies |
 

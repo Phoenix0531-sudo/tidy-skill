@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [1.9.1] - 2026-08-09
+
 ### Changed
 - **Logo redesign (light, tidy).** Replaced the dark hex-prism mark from v1.9.0 with a light, airy Notion/Linear-family mark: three dots riding a shallow cradle arc, the third lit sage-green = "ready", first two slate-dark. Same for the motion GIF (cradle arc draws in → dots drop in order → ready dot lights). Re-audited 16px favicon fidelity (opaque larger dots survive at 16px). See [docs/branding.md](docs/branding.md).
 
