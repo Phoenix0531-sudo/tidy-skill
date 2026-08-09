@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill mark: tidy box with clean check">
+  <!-- Iteration 1 — Tidy box + clean check (refined from concept-2).
+       Refinements over concept-2:
+         - folder tab closed into a single tidy path (no open edges)
+         - drop-slot removed (disappeared at 16px)
+         - amber accent enlarged to a clear "lit clean dot"
+         - check stroke widened for stronger 16px fidelity
+       Identity: doctor = 100 clean. Artifacts always have a home. -->
+
+  <rect width="512" height="512" fill="none"/>
+
+  <g id="icon">
+    <!-- Tidy folder-box body -->
+    <path d="M108 144 Q108 116 136 116 L208 116 L244 152 L376 152 Q404 152 404 180 L404 372 Q404 404 372 404 L140 404 Q108 404 108 372 Z"
+          fill="#ffffff" stroke="#0f172a" stroke-width="18" stroke-linejoin="round"/>
+    <!-- Clean check, centered -->
+    <path d="M176 280 L236 340 L352 212" fill="none" stroke="#0f172a" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Amber accent: lit-clean dot on the check endpoint -->
+    <circle cx="352" cy="212" r="22" fill="#f59e0b" stroke="#0f172a" stroke-width="10"/>
+  </g>
+</svg>

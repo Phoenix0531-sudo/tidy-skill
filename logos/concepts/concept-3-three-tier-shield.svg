@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill mark: three-tier guard shield">
+  <!-- Concept 3 — Three-tier shield.
+       Guard read: a shield split into three horizontal bands (repo / workspace /
+       local). Carries the "guard verb" story (never auto-writes host/VHDX/git-
+       tracked). Bands widen downward like slab concept 1. One amber band is the
+       workspace accent. Bold fills for 16px legibility; sharp shield tip anchors
+       the tidy/recoverable motif. -->
+
+  <defs>
+    <clipPath id="shield">
+      <path d="M256 96 L404 140 L404 264 Q404 360 256 416 Q108 360 108 264 L108 140 Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" fill="none"/>
+
+  <g id="icon">
+    <!-- Shield body fill -->
+    <path d="M256 96 L404 140 L404 264 Q404 360 256 416 Q108 360 108 264 L108 140 Z"
+          fill="#0f172a"/>
+    <!-- Three bands, widening bottom -->
+    <g clip-path="url(#shield)">
+      <rect x="100" y="150" width="312" height="62"  fill="#eef5ff"/>
+      <rect x="100" y="218" width="312" height="78"  fill="#fff7ee"/>
+      <rect x="100" y="302" width="312" height="118" fill="#e8ecf1"/>
+    </g>
+    <!-- Band dividers -->
+    <g stroke="#0f172a" stroke-width="8">
+      <line x1="108" y1="212" x2="404" y2="212"/>
+      <line x1="108" y1="302" x2="404" y2="302"/>
+    </g>
+    <!-- Single tidy check at center -->
+    <path d="M214 250 L246 282 L300 224" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Shield outline reinforcement -->
+    <path d="M256 96 L404 140 L404 264 Q404 360 256 416 Q108 360 108 264 L108 140 Z"
+          fill="none" stroke="#0f172a" stroke-width="10" stroke-linejoin="round"/>
+  </g>
+</svg>

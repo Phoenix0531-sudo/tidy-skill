@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill mark: tidy box with check">
+  <!-- Concept 2 — Tidy box + clean check.
+       Binary-clean read: folded box (artifacts always have a home) + a single
+       check mark that survives at 16px. One amber accent (the check tip) keeps
+       continuity with the workspace-slab color. No three-tier reading; meant
+       for the "audit/doctor = 100 clean" identity. -->
+
+  <rect width="512" height="512" fill="none"/>
+
+  <g id="icon">
+    <!-- Outer tidy box -->
+    <rect x="108" y="108" width="296" height="296" rx="56" fill="#ffffff" stroke="#0f172a" stroke-width="14"/>
+    <!-- Folded tab (folder origin) -->
+    <path d="M108 168 L108 128 Q108 108 128 108 L196 108 L224 144 L384 144 Q404 144 404 164" fill="none" stroke="#0f172a" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Drop slot (entry into tidy home) -->
+    <rect x="232" y="170" width="120" height="22" rx="11" fill="#cbd5e1"/>
+    <!-- Clean check -->
+    <path d="M168 272 L228 332 L344 196" fill="none" stroke="#1f2937" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Amber accent on check tip -->
+    <circle cx="344" cy="196" r="10" fill="#f59e0b"/>
+  </g>
+</svg>

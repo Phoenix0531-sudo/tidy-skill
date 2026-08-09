@@ -1,5 +1,7 @@
 <div align="center">
-<img src="docs/screenshots/banner.png" alt="洁癖.skill：三层卫生模型" width="100%">
+<img src="assets/readme/logo.svg" alt="洁癖.skill 标识" width="128" height="128">
+
+<img src="assets/readme/tidy-motion.gif" alt="洁癖.skill：doctor 诊断、repair 勾选仓库、clean 点点亮" width="320" height="320">
 </div>
 
 <h1 align="center">洁癖.skill</h1>
@@ -74,6 +76,10 @@
 | 4 | **没有 CI 闸门** | 卫生漂移，没有分数或退出码 | `score_repo_hygiene`、`hygiene_snapshot gate`、`tidy_doctor` 失败时 exit 2 |
 
 ## 三层卫生模型
+
+<p align="center">
+  <img src="docs/screenshots/banner.png" alt="洁癖.skill：三层卫生模型" width="90%">
+</p>
 
 | 层级 | 治理对象 | 典型问题 | 工具 |
 |---|---|---|---|

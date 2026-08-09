@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill mark: folded T with sweep underline">
+  <!-- Concept 4 — Folded T + sweep underline.
+       Wordmark-free initial mark: a "T" built from a folder tab + slab body,
+       plus a sweeping underline that reads "tidy sweep across the layers".
+       Most abstract of the four — no shield/check literalism. Heavy strokes for
+       16px fidelity. Single amber accent on the sweep tip. -->
+
+  <rect width="512" height="512" fill="none"/>
+
+  <g id="icon">
+    <!-- T crossbar: folder tab shape -->
+    <path d="M128 132 L248 132 L288 176 L384 176 Q396 176 396 188 L396 200 Q396 212 384 212 L128 212 Q116 212 116 200 L116 144 Q116 132 128 132 Z"
+          fill="#eef5ff" stroke="#0f172a" stroke-width="12" stroke-linejoin="round"/>
+    <!-- T stem: tidy slab -->
+    <rect x="220" y="220" width="72" height="160" rx="14" fill="#fff7ee" stroke="#0f172a" stroke-width="12"/>
+    <!-- Three internal divider ticks on the stem -->
+    <g stroke="#0f172a" stroke-width="8" stroke-linecap="round">
+      <line x1="256" y1="248" x2="256" y2="262"/>
+      <line x1="256" y1="286" x2="256" y2="300"/>
+      <line x1="256" y1="324" x2="256" y2="338"/>
+    </g>
+    <!-- Sweep underline -->
+    <path d="M140 412 C200 432 312 432 372 412" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="round"/>
+  </g>
+</svg>

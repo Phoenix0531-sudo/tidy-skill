@@ -1,5 +1,7 @@
 <div align="center">
-<img src="docs/screenshots/banner.png" alt="Tidy Skill: three-layer hygiene model" width="100%">
+<img src="assets/readme/logo.svg" alt="Tidy Skill mark" width="128" height="128">
+
+<img src="assets/readme/tidy-motion.gif" alt="Tidy Skill: doctor diagnoses, repair checks the repo, clean dot lights up" width="320" height="320">
 </div>
 
 <h1 align="center">Tidy Skill</h1>
@@ -74,6 +76,10 @@ Tidy-skill is built around the mess agents actually leave, not a giant methodolo
 | 4 | **No CI gate** | Hygiene drifts with no score or exit code | `score_repo_hygiene`, `hygiene_snapshot gate`, `tidy_doctor` exit 2 on fail |
 
 ## Three-Layer Hygiene Model
+
+<p align="center">
+  <img src="docs/screenshots/banner.png" alt="Tidy Skill: three-layer hygiene model" width="90%">
+</p>
 
 | Layer | Governs | Typical Problem | Tools |
 |---|---|---|---|

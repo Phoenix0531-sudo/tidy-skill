@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+- **Project logo + README motion GIF.** Minimal geometric mark (`assets/readme/logo.svg`, 512px icon: tidy folder-box + clean check + amber "lit-clean" dot) with exported PNG sizes (16/32/48/192/512/1024/2048) and favicon. A GitHub-safe animated `tidy-motion.gif` (doctor → repair → clean dot lights) replaces the top banner as the README hero; the three-layer mechanism banner moves inline to the *Three-Layer Hygiene Model* section.
+- `tools/svg_to_png.js` — zero-native-dep SVG→PNG exporter using `@resvg/resvg-js` (WASM).
+- `tools/render_motion_frames.js` — per-frame renderer for the motion GIF (resvg does not run SMIL timelines).
+- Logo concept art and preview under `logos/` (`concept-1..4`, `iteration-1`, `preview.html`).
 
 ## [1.8.0] - 2026-08-08
 

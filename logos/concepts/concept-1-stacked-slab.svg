@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tidy Skill mark: three stacked hygiene slabs">
+  <!-- Concept 1 — Stacked slabs.
+       Direct read of the three-layer hygiene model: Repository / Workspace / Local.
+       Slabs tidily aligned, top band narrowest (closest repo = closest to view),
+       bottom band widest (local machine = largest footprint). Amber accent on the
+       middle band echoes the existing banner's workspace slab. -->
+
+  <rect width="512" height="512" fill="none"/>
+
+  <g id="backdrop" fill="none">
+    <rect x="96" y="96" width="320" height="320" rx="44" fill="#f7f8fa"/>
+  </g>
+
+  <g id="icon">
+    <!-- Repository slab: narrowest top -->
+    <rect x="160" y="150" width="192" height="48" rx="10" fill="#eef5ff" stroke="#4f86d6" stroke-width="6"/>
+    <!-- Workspace slab: middle, amber accent -->
+    <rect x="140" y="226" width="232" height="56" rx="11" fill="#fff7ee" stroke="#f59e0b" stroke-width="6"/>
+    <!-- Local machine slab: widest bottom -->
+    <rect x="120" y="308" width="272" height="64" rx="12" fill="#e8ecf1" stroke="#94a3b8" stroke-width="6"/>
+    <!-- Centered tidy divider tick marks -->
+    <g stroke="#0f172a" stroke-width="6" stroke-linecap="round">
+      <line x1="256" y1="166" x2="256" y2="182"/>
+      <line x1="256" y1="244" x2="256" y2="264"/>
+      <line x1="256" y1="328" x2="256" y2="352"/>
+    </g>
+    <!-- Sweeping underline -->
+    <path d="M156 392 C200 410 312 410 356 392" fill="none" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>
